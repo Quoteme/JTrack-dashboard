@@ -15,8 +15,14 @@ app.layout = html.Div([
 
 
 index_page = html.Div([
-    html.A('Create Study', href='/create-study'),
+    html.H1(children='JuTrack Dashboard', id='index-page-title'),
+    html.A('Create Study', href='/create-study')
+])
 
+create_study_page = html.Div([
+    html.H3(children='Create new study', id='create-study-title'),
+    dcc.Input(id='study-name', placeholder='Your study', type='text'),
+    html.Button(children='Create', id='create-study-button')
 ])
 
 
@@ -25,10 +31,8 @@ index_page = html.Div([
 @app.callback(dash.dependencies.Output('page-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/page-1':
-        return page_1_layout
-    elif pathname == '/page-2':
-        return page_2_layout
+    if pathname == '/create-study':
+        return create_study_page
     else:
         return index_page
     # You could also return a 404 "URL not found" page here
