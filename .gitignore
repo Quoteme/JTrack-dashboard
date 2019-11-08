@@ -1,2 +1,5 @@
-#Pycharm
+# Pycharm
 .idea/
+
+# Working dir content
+working/*
