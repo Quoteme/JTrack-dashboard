@@ -54,6 +54,7 @@ def create_new_study_folder(n_clicks, input1):
     if n_clicks and input1:
         print(n_clicks)
         os.system('mkdir ' + study_dir + '/' + input1)
+        os.system('python create_random_users.py ' + input1 + ' 15')
         return "You created the study:\t", input1
 
 
