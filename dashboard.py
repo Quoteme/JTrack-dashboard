@@ -50,7 +50,7 @@ def make_study_control_page():
 # Display study info
 def make_study_info_page(study):
     study_path = study_dir + '/' + study
-    n_subj = str(len(os.listdir(study_path)))
+    n_subj = str(len(os.listdir(study_path))-1)
 
     return html.Div([
         html.H2(children=study),
@@ -64,7 +64,7 @@ def make_study_info_page(study):
 def get_current_studies():
     html_study_list = []
     current_studies = os.listdir(study_dir)
-    print(current_studies)
+    current_studies.remove('.gitkeep')
     for study in current_studies:
         html_study_list.append(dcc.Link(children=study, href='/create-study/' + study))
         html_study_list.append(html.Br())
