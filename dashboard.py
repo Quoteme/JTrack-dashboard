@@ -50,7 +50,8 @@ def make_study_control_page():
 # Display study info
 def make_study_info_page(study):
     study_path = study_dir + '/' + study
-    n_subj = str(len(os.listdir(study_path))-1)
+    enrolled_subjects = os.listdir(study_path)
+    n_subj = str(len(enrolled_subjects))
 
     return html.Div([
         html.H2(children=study),
