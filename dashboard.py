@@ -4,87 +4,67 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import os
+import menu_tabs.about as about
+import menu_tabs.create_study as create_study
+import menu_tabs.current_studies as current_studies
 
-# Declare paths
-cwd = os.getcwd()
-working_dir = './working'
-study_dir = working_dir + '/studies'
 
-# Basic css
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# Generate dash app
+app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
+logo = app.get_asset_url('jutrack.png')
+study_dir = './studies'
+os.makedirs(study_dir, exist_ok=True)
 
 
-# General page layout, changes page when URL is modified (c. display_page function below)
+# Create menu bar
+def create_menu():
+    return html.Div(id='menu-items', style={'padding': '12px'}, children=[
+        html.Button(id='create-button', children='Create Study'),
+        html.Br(),
+        html.Button(id='current-studies', children='Current studies'),
+        html.Br(),
+        html.Button(id='about-button', children='About')
+    ])
+
+
+# General dash app layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
+    html.Div(id='top-bar', className='row', style={'background-color': '#004176'}, children=[
+        html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
+                                                                             style={'padding': '12px', 'width': '192px',
+                                                                                    'height': '128px'})),
+        html.H1(id='header', className='column-big', children='JuTrack Dashboard', style={'color': 'white', 'text-align': 'center',
+                                                                  'line-height': '102px', 'vertical-align': 'middle'})
+    ]),
+    html.Div(id='menu-and-content', className='row', children=[
+        html.Div(id='menu', className='column', children=[
+            html.H3(id='menu-title', style={'padding': '12 px'}, children='Menu'),
+            create_menu()]),
+        html.Div(id='page-content',style={'margin': '12px', 'border': 'thin dotted blue'}, className='column-big')
+    ]),
 ])
 
 
-# Start page
-def make_index_page():
-    return html.Div([
-        html.H1(children='JuTrack Dashboard', id='index-page-title'),
-        html.P(children='Welcome to JuTrack'),
-        dcc.Link(children='Create Study', href='/create-study')
-    ])
-
-
-# Page for creating new studies
-def make_study_control_page():
-    return html.Div([
-        html.H2(children='Create new study', id='create-study-title'),
-        dcc.Input(id='study-name', placeholder='Your study', type='text'),
-        html.A(children=html.Button(id='create-study-button', children='Create'), href='/create-study'),
-        html.Br(),
-        html.Div(id='output-state'),
-        html.Br(),
-        html.P(children='Current studies:'),
-        html.Div(get_current_studies()),
-        dcc.Link(children='Home', href='/')
-    ])
-
-
-# Display study info
-def make_study_info_page(study):
-    study_path = study_dir + '/' + study
-    enrolled_subjects = os.listdir(study_path)
-    n_subj = str(len(enrolled_subjects))
-
-    return html.Div([
-        html.H2(children=study),
-        html.P(children='Number of enrolled subjects:\t' + n_subj),
-        dcc.Link(children='Back', href='/create-study'),
-        html.Br(),
-        dcc.Link(children='Home', href='/')
-    ])
-
-
-def get_current_studies():
-    html_study_list = []
-    current_studies = os.listdir(study_dir)
-    current_studies.remove('.gitkeep')
-    for study in current_studies:
-        html_study_list.append(dcc.Link(children=study, href='/create-study/' + study))
-        html_study_list.append(html.Br())
-    html_study_list.append(html.Br())
-    return html_study_list
-
-
 @app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
-def display_page(pathname):
-    pathname = str(pathname)
-    if pathname.endswith('/'):
-        return make_index_page()
-    elif pathname.endswith('/create-study'):
-        return make_study_control_page()
-    elif pathname.find('create-study/') != -1:
-        return make_study_info_page(pathname.split('/')[-1])
+              [Input('create-button', 'n_clicks'),
+               Input('about-button', 'n_clicks'),
+               Input('current-studies', 'n_clicks')
+               ])
+def display_menu_tab_content(btn1, btn2, btn3):
+    ctx = dash.callback_context
+
+    if ctx.triggered[0]['value']:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if button_id == 'create-button':
+            return create_study.get_create_study_div(study_dir)
+        if button_id == 'current-studies':
+            return current_studies.get_current_studies_div(study_dir)
+        if button_id == 'about-button':
+            return about.get_about_div()
     else:
-        return make_index_page()
+        return
 
 
 @app.callback(Output('output-state', 'children'),
@@ -92,11 +72,26 @@ def display_page(pathname):
               [State('study-name', 'value')])
 def create_new_study_folder(n_clicks, input1):
     if n_clicks and input1:
-        os.system('mkdir ' + study_dir + '/' + input1)
-        os.system('python create_random_users.py ' + input1 + ' 15')
+        os.makedirs(study_dir + '/' + input1)
+        os.system('python menu_tabs/create_random_users.py ' + input1 + ' 15')
         return "You created the study:\t" + input1
     else:
         raise PreventUpdate
+
+
+@app.callback(Output('selected-study', 'children'),
+              [Input('study-list', 'value')])
+def display_study_info(study_name):
+    if study_name:
+        study_path = study_dir + '/' + study_name
+        enrolled_subjects = os.listdir(study_path)
+        n_subj = str(len(enrolled_subjects))
+        return html.Div([
+            html.H2(children=study_name),
+            html.P(children='Number of enrolled subjects:\t' + n_subj),
+        ])
+    else:
+        PreventUpdate
 
 
 if __name__ == '__main__':
