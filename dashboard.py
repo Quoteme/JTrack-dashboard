@@ -8,8 +8,7 @@ import shutil
 import menu_tabs.about as about
 import menu_tabs.create_study as create_study
 import menu_tabs.current_studies as current_studies
-import  menu_tabs.delete_study as delete_study
-
+import menu_tabs.delete_study as delete_study
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -39,12 +38,13 @@ app.layout = html.Div([
         html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
                                                                              style={'padding': '12px', 'width': '192px',
                                                                                     'height': '128px'})),
-        html.H1(id='header', className='column-big', children='JuTrack Dashboard', style={'color': 'white', 'text-align': 'center',
-                                                                  'line-height': '102px', 'vertical-align': 'middle'})
+        html.H1(id='header', className='column-big', children='JuTrack Dashboard',
+                style={'color': 'white', 'text-align': 'center',
+                       'line-height': '102px', 'vertical-align': 'middle'})
     ]),
     html.Div(id='menu-and-content', className='row', children=[
-        html.Div(id='menu', className='column', children=[
-            html.H3(id='menu-title', style={'padding': '12 px'}, children='Menu'),
+        html.Div(id='menu', className='column', style={'margin': '6px', 'border-style': 'solid', 'border-color': '#004176'}, children=[
+            html.H2(id='menu-title', style={'margin': '6px'}, children='Menu'),
             create_menu()]),
         html.Div(id='page-content', style={'margin': '12px'}, className='column-big')
     ]),

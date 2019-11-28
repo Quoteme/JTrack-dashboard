@@ -4,7 +4,7 @@ import dash_html_components as html
 
 def get_about_div():
     return html.Div(id='about1-div', children=html.P(id='about1-p', children=[
-        html.Span('Michael Stolz'),
+        html.A('Michael Stolz', href='https://www.fz-juelich.de/inm/inm-7/EN/UeberUns/Mitarbeiter/mitarbeiter_node.html?cms_notFirst=true&cms_docId=2552232'),
         html.Br(),
-        html.Span('m.stolz@fz-juelich.de')])
-    )
+        html.A('m.stolz@fz-juelich.de', href='mailto:m.stolz@fz-juelich.de')
+    ]))
