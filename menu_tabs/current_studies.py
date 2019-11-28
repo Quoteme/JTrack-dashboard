@@ -8,6 +8,6 @@ def get_current_studies_div(study_dir):
     current_studies = os.listdir(study_dir)
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
-    return html.Div(id='current-studies-div',children=[dcc.Dropdown(id='study-list', options=study_list),
-                                                       html.Div(id='selected-study')])
+    return html.Div(id='current-studies-div', children=[dcc.Dropdown(id='study-list', options=study_list),
+                                                        html.Div(id='selected-study')])
 

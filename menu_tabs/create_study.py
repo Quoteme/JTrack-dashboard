@@ -7,7 +7,7 @@ def get_create_study_div(study_dir):
     return html.Div([
         html.H2(children='Create new study', id='create-study-title'),
         dcc.Input(id='study-name', placeholder='Your study', type='text'),
-        html.A(children=html.Button(id='create-study-button', children='Create'), href='/create-study'),
+        html.A(children=html.Button(id='create-study-button', children='Create')),
         html.Br(),
         html.Div(id='output-state'),
         html.Br(),

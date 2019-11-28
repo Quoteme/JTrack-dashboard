@@ -42,7 +42,7 @@ app.layout = html.Div([
         html.Div(id='menu', className='column', children=[
             html.H3(id='menu-title', style={'padding': '12 px'}, children='Menu'),
             create_menu()]),
-        html.Div(id='page-content',style={'margin': '12px', 'border': 'thin dotted blue'}, className='column-big')
+        html.Div(id='page-content',style={'margin': '12px'}, className='column-big')
     ]),
 ])
 
@@ -72,9 +72,11 @@ def display_menu_tab_content(btn1, btn2, btn3):
               [State('study-name', 'value')])
 def create_new_study_folder(n_clicks, input1):
     if n_clicks and input1:
+        if os.path.isdir(study_dir + '/' + input1):
+            return input1 + ' already exists'
         os.makedirs(study_dir + '/' + input1)
-        os.system('python menu_tabs/create_random_users.py ' + input1 + ' 15')
-        return "You created the study:\t" + input1
+        os.system('python create_random_users.py ' + input1 + ' 15')
+        return 'You created the study:\t' + input1
     else:
         raise PreventUpdate
 

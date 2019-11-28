@@ -6,4 +6,4 @@ number_users = int(sys.argv[2])
 study_dir = './studies/' + study_name
 
 for i in range(number_users):
-	os.makedirs(study_dir + '/Subject' + str(i+1))
+	os.makedirs(study_dir + '/Subject' + str(i+1), exist_ok=True)
