@@ -4,9 +4,11 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import os
+import shutil
 import menu_tabs.about as about
 import menu_tabs.create_study as create_study
 import menu_tabs.current_studies as current_studies
+import  menu_tabs.delete_study as delete_study
 
 
 # Generate dash app
@@ -22,7 +24,9 @@ def create_menu():
     return html.Div(id='menu-items', style={'padding': '12px'}, children=[
         html.Button(id='create-button', children='Create Study'),
         html.Br(),
-        html.Button(id='current-studies', children='Current studies'),
+        html.Button(id='delete-button', children='Delete Study'),
+        html.Br(),
+        html.Button(id='current-studies', children='Current Studies'),
         html.Br(),
         html.Button(id='about-button', children='About')
     ])
@@ -42,23 +46,26 @@ app.layout = html.Div([
         html.Div(id='menu', className='column', children=[
             html.H3(id='menu-title', style={'padding': '12 px'}, children='Menu'),
             create_menu()]),
-        html.Div(id='page-content',style={'margin': '12px'}, className='column-big')
+        html.Div(id='page-content', style={'margin': '12px'}, className='column-big')
     ]),
 ])
 
 
 @app.callback(Output('page-content', 'children'),
               [Input('create-button', 'n_clicks'),
+               Input('delete-button', 'n_clicks'),
+               Input('current-studies', 'n_clicks'),
                Input('about-button', 'n_clicks'),
-               Input('current-studies', 'n_clicks')
                ])
-def display_menu_tab_content(btn1, btn2, btn3):
+def display_menu_tab_content(btn1, btn2, btn3, btn4):
     ctx = dash.callback_context
 
     if ctx.triggered[0]['value']:
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if button_id == 'create-button':
-            return create_study.get_create_study_div(study_dir)
+            return create_study.get_create_study_div()
+        if button_id == 'delete-button':
+            return delete_study.get_delete_study_div(study_dir)
         if button_id == 'current-studies':
             return current_studies.get_current_studies_div(study_dir)
         if button_id == 'about-button':
@@ -67,22 +74,23 @@ def display_menu_tab_content(btn1, btn2, btn3):
         return
 
 
-@app.callback(Output('output-state', 'children'),
+@app.callback([Output('create-output-state', 'children'),
+               Output('create-study-name', 'value')],
               [Input('create-study-button', 'n_clicks')],
-              [State('study-name', 'value')])
+              [State('create-study-name', 'value')])
 def create_new_study_folder(n_clicks, input1):
     if n_clicks and input1:
         if os.path.isdir(study_dir + '/' + input1):
-            return input1 + ' already exists'
+            return input1 + ' already exists', ''
         os.makedirs(study_dir + '/' + input1)
         os.system('python create_random_users.py ' + input1 + ' 15')
-        return 'You created the study:\t' + input1
+        return 'You created the study:\t' + input1, ''
     else:
         raise PreventUpdate
 
 
-@app.callback(Output('selected-study', 'children'),
-              [Input('study-list', 'value')])
+@app.callback(Output('current-selected-study', 'children'),
+              [Input('current-study-list', 'value')])
 def display_study_info(study_name):
     if study_name:
         study_path = study_dir + '/' + study_name
@@ -92,6 +100,19 @@ def display_study_info(study_name):
             html.H2(children=study_name),
             html.P(children='Number of enrolled subjects:\t' + n_subj),
         ])
+    else:
+        PreventUpdate
+
+
+@app.callback([Output('delete-output-state', 'children'),
+               Output('to-delete-study-list', 'options')],
+              [Input('delete-study-button', 'n_clicks')],
+              [State('to-delete-study-list', 'value')])
+def display_study_info(btn1, study_name):
+    if btn1 and study_name:
+        study_path = study_dir + '/' + study_name
+        shutil.rmtree(study_path)
+        return 'You removed:\t' + study_name, delete_study.refresh_drop_down(study_dir)
     else:
         PreventUpdate
 
