@@ -34,7 +34,7 @@ def create_menu():
 # General dash app layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='top-bar', className='row', style={'background-color': '#004176'}, children=[
+    html.Div(id='top-bar', className='row', style={'border-radius': '10px', 'background-color': '#004176'}, children=[
         html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
                                                                              style={'padding': '12px', 'width': '192px',
                                                                                     'height': '128px'})),
