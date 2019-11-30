@@ -1,5 +1,9 @@
 # Pycharm
 .idea/
 
-# Working dir content
-working/*
+# pycache
+menu_tabs/__pycache__
+__pycache__
+
+# Study folder
+studies/

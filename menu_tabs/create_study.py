@@ -6,9 +6,9 @@ import os
 def get_create_study_div():
     return html.Div([
         html.H2(children='Create new study', id='create-study-title'),
-        dcc.Input(id='create-study-name', placeholder='Your study', type='text'),
-        html.A(children=html.Button(id='create-study-button', children='Create')),
+        dcc.Input(id='create-study-input', placeholder='Your study', type='text'),
+        html.Button(id='create-study-button', children='Create'),
         html.Br(),
-        html.Div(id='create-output-state'),
+        html.Div(id='create-study-output-state'),
         html.Br(),
-    ])
+        ])

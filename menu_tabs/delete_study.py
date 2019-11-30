@@ -14,7 +14,7 @@ def get_delete_study_div(study_dir):
         dcc.Dropdown(id='to-delete-study-list', options=study_list),
         html.Button(id='delete-study-button', children='Delete'),
         html.Br(),
-        html.Div(id='delete-output-state'),
+        html.Div(id='delete-study-output-state'),
         html.Br(),
     ])
 
