@@ -6,6 +6,11 @@ import os
 def get_delete_study_div(study_dir):
     """Returns the delete study div
 
+            Parameters
+            ----------
+                study_dir
+                    path to chosen study directory
+
             Return
             -------
             Delete study div

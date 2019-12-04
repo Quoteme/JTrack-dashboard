@@ -31,7 +31,7 @@ def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 	pdf = FPDF()
 	pdf.add_page()
 	pdf.set_font("Arial", size=12)
-	pdf.cell(200, 10, txt=new_subj_name, ln=1, align="C")
+	pdf.cell(200, 10, txt=new_subj_name, ln=5, align="C")
 	pdf.image(qr_code_path, x=100, y=50, w=100)
 	pdf.output(pdf_path)
 
