@@ -6,6 +6,7 @@ import os
 def get_delete_study_div(study_dir):
     study_list = []
     current_studies = os.listdir(study_dir)
+    current_studies.remove('.DS_Store')
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
 

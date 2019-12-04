@@ -6,6 +6,7 @@ import os
 def get_current_studies_div(study_dir):
     study_list = []
     current_studies = os.listdir(study_dir)
+    current_studies.remove('.DS_Store')
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
     return html.Div(id='current-studies-div', children=[html.H2('Current Studies'),
@@ -29,5 +30,5 @@ def get_study_info_div(selected_study_dir):
 
 def get_number_enrolled_subjects(selected_study_dir):
     enrolled_subjects = os.listdir(selected_study_dir)
-    n_subj = str(len(enrolled_subjects)-1)
+    n_subj = str(len(enrolled_subjects)-2)
     return n_subj
