@@ -4,6 +4,13 @@ import os
 
 
 def get_delete_study_div(study_dir):
+    """Returns the delete study div
+
+            Return
+            -------
+            Delete study div
+    """
+
     study_list = []
     current_studies = os.listdir(study_dir)
     current_studies.remove('.DS_Store')
@@ -12,7 +19,7 @@ def get_delete_study_div(study_dir):
 
     return html.Div([
         html.H2(children='Delete study', id='delete-study-title'),
-        dcc.Dropdown(id='to-delete-study-list', options=study_list),
+        dcc.Dropdown(id='delete-study-list', options=study_list),
         html.Button(id='delete-study-button', children='Delete'),
         html.Br(),
         html.Div(id='delete-study-output-state'),
@@ -20,9 +27,21 @@ def get_delete_study_div(study_dir):
     ])
 
 
-def refresh_drop_down(study_dir):
+def refresh_drop_down(studies_dir):
+    """Returns the create study div
+
+            Parameters
+            ----------
+                studies_dir
+                    path to studies ('./studies')
+
+            Return
+            -------
+            List of remaining studies
+    """
+
     study_list = []
-    current_studies = os.listdir(study_dir)
+    current_studies = os.listdir(studies_dir)
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
 

@@ -4,6 +4,13 @@ import os
 
 
 def get_current_studies_div(study_dir):
+    """Returns the current studies div
+
+            Return
+            -------
+            Current studies div
+    """
+
     study_list = []
     current_studies = os.listdir(study_dir)
     current_studies.remove('.DS_Store')
@@ -16,6 +23,18 @@ def get_current_studies_div(study_dir):
 
 
 def get_study_info_div(selected_study_dir):
+    """Returns information of specified study as a div
+
+            Parameters
+            ----------
+                selected_study_dir
+                    path to selected study ('./studies/study_name')
+
+            Return
+            -------
+            Study information div
+    """
+
     n_subj = get_number_enrolled_subjects(selected_study_dir)
     return html.Div([
         html.H2(children=str(selected_study_dir).split('/')[-1]),
@@ -29,6 +48,18 @@ def get_study_info_div(selected_study_dir):
 
 
 def get_number_enrolled_subjects(selected_study_dir):
+    """Returns the create study div
+
+            Parameters
+            ----------
+                selected_study_dir
+                    path to selected study ('./studies/study_name')
+
+            Return
+            -------
+            Number of enrolled subjects in given study
+
+    """
     enrolled_subjects = os.listdir(selected_study_dir)
     n_subj = str(len(enrolled_subjects)-2)
     return n_subj

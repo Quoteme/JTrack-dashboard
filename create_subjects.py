@@ -1,4 +1,3 @@
-
 import dash_core_components as dcc
 import dash_html_components as html
 from random import randint
@@ -8,6 +7,23 @@ from fpdf import FPDF
 
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):
+	"""
+	TODO: more information
+	Function to generate a pdf based on QR-Code and other information.
+
+			Parameters
+			----------
+				qr_code_path
+					path to QR-code referring to given new subject (.png)
+				study_dir
+					path to the directory of the study ('./studies/study_name').
+				new_subj_name
+					name of subject (Subject00000).
+			Return
+			-------
+
+	"""
+
 	sheets_dir = study_dir + '/subject-sheets'
 	os.makedirs(sheets_dir, exist_ok=True)
 	pdf_path = sheets_dir + '/' + new_subj_name + '.pdf'
@@ -16,11 +32,26 @@ def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 	pdf.add_page()
 	pdf.set_font("Arial", size=12)
 	pdf.cell(200, 10, txt=new_subj_name, ln=1, align="C")
-	pdf.image(qr_code_path, x=10, y=8, w=100)
+	pdf.image(qr_code_path, x=100, y=50, w=100)
 	pdf.output(pdf_path)
 
 
 def create_qr_code_for_new_user(study_dir, new_subj_dir):
+	"""
+	Function to create a QR-code which corresponds to the new subject given. The Code will be stored in a .png as well
+	as in a pdf which contains additional information. (png: ./study_dir/QR-Codes; pdf: ./study-dir/subject-sheets)
+
+			Parameters
+			----------
+				study_dir
+					path to the directory of the study ('./studies/study_name').
+				new_subj_dir
+					path to the directory of the new subject containing particularly its name ('./studies/study-name/Subject00000').
+			Return
+			-------
+
+	"""
+
 	os.makedirs(study_dir + '/QR-Codes', exist_ok=True)
 
 	study_name = str(study_dir).split('/')[-1]
@@ -48,10 +79,26 @@ def create_qr_code_for_new_user(study_dir, new_subj_dir):
 	write_to_pdf(qr_code_path, study_dir, new_subj_name)
 
 
-def create_users(study_dir, number_users):
+def create_subjects(study_dir, number_users):
+	"""
+	Function that is executed if the create new subjects button is clicked. It creates new subject directories and
+	corresponding QR-codes.
+
+			Parameters
+			----------
+				study_dir
+					path to the directory of the study where new subjects should be dropped. ('./studies/study_name')
+				number_users
+					number of new subjects that should be enrolled
+			Return
+			-------
+
+	"""
+
 	for subj_number in range(number_users):
 		rand_subj_number = str(randint(1, 10000)).zfill(5)
 		new_subj_dir = study_dir + '/Subject' + rand_subj_number
+
 		if os.path.isdir(new_subj_dir):
 			print(new_subj_dir + ' already exists')
 			number_users += 1

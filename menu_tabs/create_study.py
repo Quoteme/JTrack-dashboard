@@ -4,6 +4,13 @@ import os
 
 
 def get_create_study_div():
+    """Returns the create study div
+
+            Return
+            -------
+            Create study div
+    """
+
     return html.Div([
         html.H2(children='Create new study', id='create-study-title'),
         dcc.Input(id='create-study-input', placeholder='Your study', type='text'),
