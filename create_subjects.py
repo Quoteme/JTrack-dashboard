@@ -5,6 +5,8 @@ import qrcode
 import os
 from fpdf import FPDF
 
+from SubjectPDF import SubjectPDF
+
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 	"""
@@ -23,16 +25,16 @@ def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 			-------
 
 	"""
-
+	study_name = study_dir.split('/')[-1]
 	sheets_dir = study_dir + '/subject-sheets'
 	os.makedirs(sheets_dir, exist_ok=True)
 	pdf_path = sheets_dir + '/' + new_subj_name + '.pdf'
 
-	pdf = FPDF()
+	pdf = SubjectPDF(new_subj_name)
 	pdf.add_page()
 	pdf.set_font("Arial", size=12)
-	pdf.cell(200, 10, txt=new_subj_name, ln=5, align="C")
-	pdf.image(qr_code_path, x=100, y=50, w=100)
+	
+	pdf.image(qr_code_path, x=100, y=50, w=50)
 	pdf.output(pdf_path)
 
 
@@ -107,3 +109,12 @@ def create_subjects(study_dir, number_users):
 			os.makedirs(study_dir + '/Subject' + rand_subj_number)
 			create_qr_code_for_new_user(study_dir, new_subj_dir)
 	return
+
+
+if __name__ == '__main__':
+	name = 'Subject06754'
+	study = 'new'
+	studies_dir = './studies'
+	sdir = studies_dir + '/' + study
+	qr = sdir + '/QR-Codes/' + name + '.png'
+	write_to_pdf(qr, sdir, name)
