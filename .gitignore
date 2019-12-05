@@ -7,3 +7,6 @@ __pycache__
 
 # Study folder
 studies/
+
+# .DS-Store
+.DS_Store

@@ -30,11 +30,20 @@ def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 	os.makedirs(sheets_dir, exist_ok=True)
 	pdf_path = sheets_dir + '/' + new_subj_name + '.pdf'
 
-	pdf = SubjectPDF(new_subj_name)
+	pdf = SubjectPDF(study_name)
 	pdf.add_page()
-	pdf.set_font("Arial", size=12)
-	
-	pdf.image(qr_code_path, x=100, y=50, w=50)
+
+	pdf.draw_input_line('Name')
+	pdf.draw_input_line_filled('Subject-ID', new_subj_name)
+	pdf.ln(10)
+
+	pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
+	pdf.ln(15)
+
+	pdf.text_field('Activation 1')
+	pdf.draw_input_line('Date of activation')
+	pdf.image(qr_code_path, x=140, y=70, w=40)
+
 	pdf.output(pdf_path)
 
 
@@ -112,7 +121,7 @@ def create_subjects(study_dir, number_users):
 
 
 if __name__ == '__main__':
-	name = 'Subject06754'
+	name = 'Subject00090'
 	study = 'new'
 	studies_dir = './studies'
 	sdir = studies_dir + '/' + study
