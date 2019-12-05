@@ -26,9 +26,7 @@ def get_current_studies_div(study_dir):
                                                                            dcc.Dropdown(id='current-study-list',
                                                                                         options=study_list),
                                                                            html.Div(id='current-selected-study')
-                                                                           ]),
-        html.Div(id='enrolled-subjects', style={'float': 'right'}, className='column',
-                 )
+                                                                           ])
     ])
 
 
@@ -73,32 +71,3 @@ def get_number_enrolled_subjects(selected_study_dir):
     n_subj = str(max(0, len(enrolled_subjects) - 2))
     return n_subj
 
-
-def get_list_enrolled_subjects(study_dir):
-    enrolled_subject_list = os.listdir(study_dir)
-    try:
-        enrolled_subject_list.remove('subject-sheets')
-    except ValueError:
-        pass
-    try:
-        enrolled_subject_list.remove('QR-Codes')
-    except ValueError:
-        pass
-    try:
-        enrolled_subject_list.remove('.DS_Store')
-    except ValueError:
-        pass
-    return enrolled_subject_list
-
-
-def get_enrolled_subjects_div(study_dir):
-    subjects = []
-    subject_sheets = study_dir + '/subject-sheets'
-    enrolled_subjects_list = get_list_enrolled_subjects(study_dir)
-
-    for subj in enrolled_subjects_list:
-        subjects.append({'label': subj, 'value': subj})
-
-    dropdown = dcc.Dropdown(id='checklist', options=subjects)
-
-    return html.Div(id='enrolled-subjects-div', children=[html.H3('Enrolled Subjects'), dropdown])

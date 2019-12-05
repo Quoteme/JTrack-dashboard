@@ -1,11 +1,7 @@
-import dash_core_components as dcc
-import dash_html_components as html
 from random import randint
 import qrcode
 import os
-from fpdf import FPDF
-
-from SubjectPDF import SubjectPDF
+from subject_configuration.SubjectPDF import SubjectPDF
 
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):

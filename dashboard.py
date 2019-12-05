@@ -7,9 +7,9 @@ import os
 import shutil
 from menu_tabs.about import get_about_div
 from menu_tabs.create_study import get_create_study_div
-from menu_tabs.current_studies import get_current_studies_div, get_study_info_div, get_number_enrolled_subjects, get_enrolled_subjects_div
+from menu_tabs.current_studies import get_current_studies_div, get_study_info_div, get_number_enrolled_subjects
 from menu_tabs.delete_study import get_delete_study_div, refresh_drop_down
-from create_subjects import create_subjects
+from subject_configuration.create_subjects import create_subjects
 
 
 # Generate dash app
@@ -154,8 +154,7 @@ def delete_study_callback(n_clicks, study_name):
         PreventUpdate
 
 
-@app.callback([Output('current-selected-study', 'children'),
-               Output('enrolled-subjects', 'children')],
+@app.callback(Output('current-selected-study', 'children'),
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_name):
     """
@@ -183,7 +182,7 @@ def display_study_info_callback(study_name):
 
     if study_name:
         selected_study_dir = study_dir + '/' + study_name
-        return get_study_info_div(selected_study_dir), get_enrolled_subjects_div(selected_study_dir)
+        return get_study_info_div(selected_study_dir)
     else:
         PreventUpdate
 
