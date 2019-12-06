@@ -6,7 +6,7 @@ from dash.exceptions import PreventUpdate
 import os
 import shutil
 from menu_tabs.about import get_about_div
-from menu_tabs.create_study import get_create_study_div
+from menu_tabs.create_study import get_create_study_div, create_study
 from menu_tabs.current_studies import get_current_studies_div, get_study_info_div, get_number_enrolled_subjects
 from menu_tabs.delete_study import get_delete_study_div, refresh_drop_down
 from subject_configuration.create_subjects import create_subjects
@@ -77,10 +77,16 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
 
 
 @app.callback([Output('create-study-output-state', 'children'),
-               Output('create-study-input', 'value')],
+               Output('create-study-name-input', 'value'),
+               Output('create-study-duration-input', 'value'),
+               Output('create-study-subject-number', 'value'),
+               Output('create-study-sensors-checklist', 'value')],
               [Input('create-study-button', 'n_clicks')],
-              [State('create-study-input', 'value')])
-def create_new_study_callback(n_clicks, study_name):
+              [State('create-study-name-input', 'value'),
+               State('create-study-duration-input', 'value'),
+               State('create-study-subject-number', 'value'),
+               State('create-study-sensors-checklist', 'value')])
+def update_output(n_clicks, study_name, study_duration, number_subjects, sensors):
     """
     TODO:   Give a certain pattern for study names
     Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
@@ -105,13 +111,23 @@ def create_new_study_callback(n_clicks, study_name):
                     create-study-input. Returned by Output('create-study-output-state', 'children') and
                     Output('create-study-input', 'value')
        """
+    if n_clicks:
+        output_state = ''
+        if not study_name or not study_duration or not sensors:
+            if not study_name:
+                output_state = 'Please enter a study name!'
+            elif not study_duration:
+                output_state = 'Please enter a study duration!'
+            elif not sensors:
+                output_state = 'Please select sensors!'
+            return output_state, study_name, study_duration, number_subjects, sensors
 
-    if n_clicks and study_name:
-        if os.path.isdir(study_dir + '/' + study_name):
-            return study_name + ' already exists', ''
         else:
-            os.makedirs(study_dir + '/' + study_name)
-            return 'You created the study:\t' + study_name, ''
+            if os.path.isdir(study_dir + '/' + study_name):
+                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
+            else:
+                create_study(study_dir + '/' + study_name, number_subjects)
+                return 'You created the study:\t' + study_name, '', '', '', []
     else:
         raise PreventUpdate
 

@@ -68,6 +68,6 @@ def get_number_enrolled_subjects(selected_study_dir):
 
     """
     enrolled_subjects = os.listdir(selected_study_dir)
-    n_subj = str(max(0, len(enrolled_subjects) - 2))
+    n_subj = str(max(0, len(enrolled_subjects) - 3))
     return n_subj
 

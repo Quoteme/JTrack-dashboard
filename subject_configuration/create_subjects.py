@@ -1,7 +1,7 @@
-from random import randint
 import qrcode
 import os
 from subject_configuration.SubjectPDF import SubjectPDF
+import xml.etree.ElementTree as ET
 
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):
@@ -86,7 +86,7 @@ def create_qr_code_for_new_user(study_dir, new_subj_dir):
 	write_to_pdf(qr_code_path, study_dir, new_subj_name)
 
 
-def create_subjects(study_dir, number_users):
+def create_subjects(study_dir, number_new_subjects):
 	"""
 	Function that is executed if the create new subjects button is clicked. It creates new subject directories and
 	corresponding QR-codes.
@@ -95,24 +95,30 @@ def create_subjects(study_dir, number_users):
 			----------
 				study_dir
 					path to the directory of the study where new subjects should be dropped. ('./studies/study_name')
-				number_users
+				number_new_subjects
 					number of new subjects that should be enrolled
 			Return
 			-------
 
 	"""
 
-	for subj_number in range(number_users):
-		rand_subj_number = str(randint(1, 10000)).zfill(5)
-		new_subj_dir = study_dir + '/Subject' + rand_subj_number
+	study_name = str(study_dir).split('/')[-1]
+	study_xml_path = study_dir + '/' + study_name + '-info.xml'
+	study_xml = ET.parse(study_xml_path)
+	root = study_xml.getroot()
 
-		if os.path.isdir(new_subj_dir):
-			print(new_subj_dir + ' already exists')
-			number_users += 1
-			continue
-		else:
-			os.makedirs(study_dir + '/Subject' + rand_subj_number)
-			create_qr_code_for_new_user(study_dir, new_subj_dir)
+	number_subjects_element = next(root.iter('number-subjects'))
+	current_number_subjects = int(number_subjects_element.text)
+
+	for subj_number in range(current_number_subjects+1, current_number_subjects+number_new_subjects+1):
+		new_subj_dir = study_dir + '/' + study_name + '_' + str(subj_number).zfill(5)
+
+		os.makedirs(new_subj_dir)
+		create_qr_code_for_new_user(study_dir, new_subj_dir)
+		print(new_subj_dir + ' created')
+
+	number_subjects_element.text = str(current_number_subjects + number_new_subjects)
+	study_xml.write(study_xml_path)
 	return
 
 

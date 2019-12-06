@@ -1,6 +1,28 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import os
+from subject_configuration.create_subjects import create_subjects
+import xml.etree.cElementTree as ET
+
+
+def generate_study_meta_xml(study_path):
+    study_name = str(study_path).split('/')[-1]
+    filename = study_name + '-info.xml'
+
+    root = ET.Element("root")
+    doc = ET.SubElement(root, "doc")
+
+    ET.SubElement(root, "study-name", name="study-name").text = study_name
+    ET.SubElement(root, "number-subjects", name="number-subjects").text = '0'
+
+    tree = ET.ElementTree(root)
+    tree.write(study_path + '/' + filename)
+
+
+def create_study(study_path, number_subjects):
+    os.makedirs(study_path)
+    generate_study_meta_xml(study_path)
+    create_subjects(study_path, number_subjects)
 
 
 def get_sensor_list():
@@ -33,14 +55,13 @@ def get_create_study_div():
         html.Div(children=[html.Span(children='Study name: ', style={'padding-right': '49px'}),
                            dcc.Input(id='create-study-name-input', placeholder='Your study', type='text')]),
         html.Div(children=[html.Span(children='Study duration: ', style={'padding-right': '31px'}),
-                           dcc.Input(id='create-study-duration-input', placeholder='Days', type='number', min='0')]),
+                           dcc.Input(id='create-study-duration-input', placeholder='Days', type='number', min='1')]),
         html.Div(children=[html.Span(children='Number of subjects: '),
                            dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number', min='0')]),
         html.Br(),
         html.Div(children=[html.Span(children='Sensors: '),
-                           dcc.Checklist(id='create-study-sensors', options=sensor_checkboxes,
+                           dcc.Checklist(id='create-study-sensors-checklist', options=sensor_checkboxes,
                                          labelStyle={'display': 'block'}, style={'margin-left': '132px', 'margin-top': '-18px'})]),
-
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
-        html.Div(id='create-study-output-state', style={'padding-top': '24px'}),
+        html.P(id='create-study-output-state', style={'padding-top': '24px'}),
         ])
