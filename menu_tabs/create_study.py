@@ -6,6 +6,18 @@ import xml.etree.cElementTree as ET
 
 
 def generate_study_meta_xml(study_path, sensors):
+    """
+    Generates xml file on study creation containing information like name, initial number of subjects and a list
+    of selected sensors. Number of subjects is set to 0 in the beginning.
+
+        Parameters
+        ----------
+            study_path
+                Path to study. Also containing the study name in the end.
+            sensors
+                String list of sensors.
+    """
+
     study_name = str(study_path).split('/')[-1]
     filename = study_name + '-info.xml'
 
@@ -23,6 +35,17 @@ def generate_study_meta_xml(study_path, sensors):
 
 
 def create_study(study_path, number_subjects, sensors):
+    """Function that controls the essential steps of study creation: Generate directory, xml and subjects
+
+        Parameters
+        ----------
+            study_path
+                Path to study.
+            number_subjects
+                Number of subjects that are enrolled at study start.
+            sensors
+                String list of selected sensors.
+    """
     os.makedirs(study_path)
     generate_study_meta_xml(study_path, sensors)
     create_subjects(study_path, number_subjects)

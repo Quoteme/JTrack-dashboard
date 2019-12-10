@@ -115,7 +115,6 @@ def create_subjects(study_dir, number_new_subjects):
 
 		os.makedirs(new_subj_dir)
 		create_qr_code_for_new_user(study_dir, new_subj_dir)
-		print(new_subj_dir + ' created')
 
 	number_subjects_element.text = str(current_number_subjects + number_new_subjects)
 	study_xml.write(study_xml_path)
