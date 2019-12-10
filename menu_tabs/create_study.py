@@ -5,23 +5,26 @@ from subject_configuration.create_subjects import create_subjects
 import xml.etree.cElementTree as ET
 
 
-def generate_study_meta_xml(study_path):
+def generate_study_meta_xml(study_path, sensors):
     study_name = str(study_path).split('/')[-1]
     filename = study_name + '-info.xml'
 
-    root = ET.Element("root")
-    doc = ET.SubElement(root, "doc")
+    root = ET.Element('root')
 
-    ET.SubElement(root, "study-name", name="study-name").text = study_name
-    ET.SubElement(root, "number-subjects", name="number-subjects").text = '0'
+    ET.SubElement(root, 'study-name', name='study-name').text = study_name
+    ET.SubElement(root, 'number-subjects', name='number-subjects').text = '0'
+    sensor_list = ET.SubElement(root, 'sensor-list', name='sensor-list')
+
+    for sensor in sensors:
+        ET.SubElement(sensor_list, 'Sensor', name=sensor).text = sensor
 
     tree = ET.ElementTree(root)
     tree.write(study_path + '/' + filename)
 
 
-def create_study(study_path, number_subjects):
+def create_study(study_path, number_subjects, sensors):
     os.makedirs(study_path)
-    generate_study_meta_xml(study_path)
+    generate_study_meta_xml(study_path, sensors)
     create_subjects(study_path, number_subjects)
 
 
@@ -33,9 +36,9 @@ def get_sensor_list():
             List of sensors
     """
 
-    sensors = ['Acceleration Sensor', 'App Usage Statistic', 'Barometer',
-               'Detected Activity Sensor', 'Gravity', 'Gyroscope', 'Linear Acceleration',
-               'Location Sensor', 'Magnetic Sensor', 'Rotation Vector Sensor']
+    sensors = ['acceleration-sensor', 'app-usage-statistic', 'barometer',
+               'detected-activity-sensor', 'gravity', 'gyroscope', 'linear-acceleration',
+               'location-sensor', 'magnetic-sensor', 'rotation-vector-sensor']
     return sensors
 
 

@@ -126,7 +126,7 @@ def update_output(n_clicks, study_name, study_duration, number_subjects, sensors
             if os.path.isdir(study_dir + '/' + study_name):
                 return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
             else:
-                create_study(study_dir + '/' + study_name, number_subjects)
+                create_study(study_dir + '/' + study_name, number_subjects, sensors)
                 return 'You created the study:\t' + study_name, '', '', '', []
     else:
         raise PreventUpdate
