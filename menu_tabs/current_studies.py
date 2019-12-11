@@ -1,5 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table as dt
 import os
 
 
@@ -18,7 +19,10 @@ def get_current_studies_div(study_dir):
 
     study_list = []
     current_studies = os.listdir(study_dir)
-    current_studies.remove('.DS_Store')
+    try:
+        current_studies.remove('.DS_Store')
+    except ValueError:
+        pass
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
     return html.Div(id='current-studies-div', children=[
@@ -28,6 +32,28 @@ def get_current_studies_div(study_dir):
                                                                            html.Div(id='current-selected-study')
                                                                            ])
     ])
+
+
+def get_user_data_table(selected_study_dir):
+    """This function returns a div displaying subjects' information which is stored in the data set for the study
+
+        Parameters
+        ----------
+            selected_study_dir
+                Path to study directory.
+
+        Returns
+        -------
+            Dcc-Table containing all the subjects information.
+    """
+
+    columns = ['SubjectID', 'Date enrolled', 'Days in study', 'Sensors']
+
+    return dt.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in columns],
+        style_cell={'textAlign': 'center'},
+    )
 
 
 def get_study_info_div(selected_study_dir):
@@ -48,9 +74,12 @@ def get_study_info_div(selected_study_dir):
         html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + n_subj),
         html.Div(id='create-users-div', children=[
             dcc.Input(id='create_users_input', placeholder='Enter number of new participants', type='number'),
-            html.Button(id='create-users-button', children='Create users'),
+            html.Button(id='create-users-button', children='Create new subjects'),
             html.Br(),
-            html.Span(id='create-users-output-state')])
+            html.Div(children=html.Span(id='create-users-output-state')),
+            html.Br(),
+            get_user_data_table(selected_study_dir)
+        ])
     ])
 
 

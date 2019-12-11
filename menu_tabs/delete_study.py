@@ -18,17 +18,22 @@ def get_delete_study_div(study_dir):
 
     study_list = []
     current_studies = os.listdir(study_dir)
-    current_studies.remove('.DS_Store')
+    try:
+        current_studies.remove('.DS_Store')
+    except ValueError:
+        pass
+
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
-
-    return html.Div([
-        html.H2(children='Delete study', id='delete-study-title'),
-        dcc.Dropdown(id='delete-study-list', options=study_list),
-        html.Button(id='delete-study-button', children='Delete'),
-        html.Br(),
-        html.Div(id='delete-study-output-state'),
-        html.Br(),
+    return html.Div(id='delete-study-div', children=[
+        html.Div(id='delete-study-sub-div', className='column-big',
+                 children=[html.H2(children='Delete study', id='delete-study-title'),
+                           dcc.Dropdown(id='delete-study-list', options=study_list),
+                           html.Button(id='delete-study-button', children='Delete'),
+                           html.Br(),
+                           html.Div(id='delete-study-output-state'),
+                           html.Br(),
+                           ])
     ])
 
 

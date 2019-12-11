@@ -16,7 +16,7 @@ from subject_configuration.create_subjects import create_subjects
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 logo = app.get_asset_url('jutrack.png')
-study_dir = './studies'
+study_dir = './jutrack_data'
 os.makedirs(study_dir, exist_ok=True)
 
 
