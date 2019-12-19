@@ -29,16 +29,13 @@ def write_to_pdf(qr_code_path, study_dir, new_subj_name):
 	pdf = SubjectPDF(study_name)
 	pdf.add_page()
 
-	pdf.draw_input_line('Name')
 	pdf.draw_input_line_filled('Subject-ID', new_subj_name)
 	pdf.ln(10)
 
 	pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
 	pdf.ln(15)
 
-	pdf.text_field('Activation 1')
-	pdf.draw_input_line('Date of activation')
-	pdf.image(qr_code_path, x=140, y=70, w=40)
+	pdf.qr_code(qr_code_path, 5)
 
 	pdf.output(pdf_path)
 
@@ -60,29 +57,31 @@ def create_qr_code_for_new_user(study_dir, new_subj_dir):
 	"""
 
 	os.makedirs(study_dir + '/QR-Codes', exist_ok=True)
-
 	study_name = str(study_dir).split('/')[-1]
 	new_subj_name = str(new_subj_dir).split('/')[-1]
-	qr_code_path = study_dir + '/QR-Codes/' + new_subj_name + '.png'
+	qr_code_path = study_dir + '/QR-Codes/' + new_subj_name
+	for i in range(1, 5):
+		activation_number = '_' + str(i)
+		current_qr_code = qr_code_path + activation_number +'.png'
 
-	qr = qrcode.QRCode(
-		version=1,
-		error_correction=qrcode.constants.ERROR_CORRECT_H,
-		box_size=10,
-		border=4,
-	)
+		qr = qrcode.QRCode(
+			version=1,
+			error_correction=qrcode.constants.ERROR_CORRECT_H,
+			box_size=10,
+			border=4,
+		)
 
-	data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (new_subj_name, study_name)
+		data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (new_subj_name + activation_number, study_name)
 
-	# Add data
-	qr.add_data(data)
-	qr.make(fit=True)
+		# Add data
+		qr.add_data(data)
+		qr.make(fit=True)
 
-	# Create an image from the QR Code instance
-	img = qr.make_image()
+		# Create an image from the QR Code instance
+		img = qr.make_image()
 
-	# Save it somewhere, change the extension as needed:
-	img.save(qr_code_path)
+		# Save it somewhere, change the extension as needed:
+		img.save(current_qr_code)
 	write_to_pdf(qr_code_path, study_dir, new_subj_name)
 
 
@@ -126,5 +125,5 @@ if __name__ == '__main__':
 	study = 'new'
 	studies_dir = './studies'
 	sdir = studies_dir + '/' + study
-	qr = sdir + '/QR-Codes/' + name + '.png'
-	write_to_pdf(qr, sdir, name)
+	qr_path = sdir + '/QR-Codes/' + name + '.png'
+	write_to_pdf(qr_path, sdir, name)

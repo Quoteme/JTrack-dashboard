@@ -52,6 +52,10 @@ def refresh_drop_down(studies_dir):
 
     study_list = []
     current_studies = os.listdir(studies_dir)
+    try:
+        current_studies.remove('.DS_Store')
+    except ValueError:
+        pass
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
 

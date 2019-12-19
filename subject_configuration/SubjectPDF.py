@@ -68,3 +68,10 @@ class SubjectPDF(FPDF):
 
 		self.cell(40, 10, txt=text, ln=0, align='L')
 		self.ln(10)
+
+	def qr_code(self, qr_code_path, number_codes):
+		for i in range(1, number_codes):
+			self.text_field('Activation ' + str(i))
+			self.draw_input_line('Date of activation')
+			self.image(qr_code_path + '_' + str(i) + '.png', x=140, y=60 + (i-1) * 40, w=40)
+			self.ln(20)
