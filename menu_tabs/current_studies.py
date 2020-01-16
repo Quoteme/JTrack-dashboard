@@ -23,6 +23,10 @@ def get_current_studies_div(study_dir):
         current_studies.remove('.DS_Store')
     except ValueError:
         pass
+    try:
+        current_studies.remove('AI_1subject_sheets.zip')
+    except ValueError:
+        pass
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
     return html.Div(id='current-studies-div', children=[
@@ -77,6 +81,10 @@ def get_study_info_div(selected_study_dir):
             html.Button(id='create-users-button', children='Create new subjects'),
             html.Br(),
             html.Div(children=html.Span(id='create-users-output-state')),
+            html.Br(),
+            html.Div(
+                children=html.A(id='download-pdfs-button', children='Download subject sheets', href='/download_pdfs/'),
+                style={'padding-top': '8px'}),
             html.Br(),
             get_user_data_table(selected_study_dir)
         ])

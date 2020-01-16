@@ -10,3 +10,6 @@ jutrack_data/
 
 # .DS-Store
 .DS_Store
+
+# archives
+*.zip

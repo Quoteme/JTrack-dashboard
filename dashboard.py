@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from flask import send_file
 import os
 import shutil
 from menu_tabs.about import get_about_div
@@ -254,6 +255,33 @@ def create_subjects_callback(n_clicks, number_users, study_name):
         return output_state, '', 'Number of enrolled subjects:\t' + n_subj
     else:
         raise PreventUpdate
+
+
+@app.callback([],
+              [Input('download-pdfs-button', 'n_clicks')],
+              [State('current-study-list', 'value')])
+def download_pdfs(n_clicks, study_name):
+    pass
+
+
+@app.server.route('/download_pdfs/')
+def download_excel():
+    print("Im here")
+    return send_file('jutrack_data/AI_1/subject_sheets.zip',
+                     mimetype='application/zip',
+                     as_attachment=True)
+    #Convert DF
+    """strIO = io.BytesIO()
+    excel_writer = pd.ExcelWriter(strIO, engine="xlsxwriter")
+    df.to_excel(excel_writer, sheet_name="sheet1")
+    excel_writer.save()
+    excel_data = strIO.getvalue()
+    strIO.seek(0)
+
+    return send_file(strIO,
+                     attachment_filename='test.xlsx',
+                     as_attachment=True)
+"""
 
 
 # General dash app layout
