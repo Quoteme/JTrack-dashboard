@@ -2,7 +2,7 @@ import os
 import json
 from study_info import get_study_info_div
 
-storage_folder = './mnt/jutrack_data'
+storage_folder = '/mnt/jutrack_data'
 studies_folder = storage_folder + '/studies'
 users_folder = storage_folder + '/users'
 
