@@ -4,54 +4,47 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
-import os
-import shutil
-from menu_tabs.about import get_about_div
-from menu_tabs.create_study import get_create_study_div, create_study
-from menu_tabs.current_studies import get_current_studies_div, get_study_info_div, get_number_enrolled_subjects
-from menu_tabs.delete_study import get_delete_study_div, refresh_drop_down
+from jutrack_dashboard_worker import create_study, get_study_information
+from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 from subject_configuration.create_subjects import create_subjects
-
+import json
 
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 logo = app.get_asset_url('jutrack.png')
-study_dir = './jutrack_data'
-os.makedirs(study_dir, exist_ok=True)
 
-
-def create_menu():
-    """Create the menu list on the left site of the page
-
-            Returns
-            -------
-            Div containing buttons for navigation
-    """
-
-    return html.Div(id='menu-items', style={'padding': '12px'}, children=[
-        html.Button(id='create-button', children='Create Study'),
-        html.Br(),
-        html.Button(id='delete-button', children='Delete Study'),
-        html.Br(),
-        html.Button(id='current-studies', children='Current Studies'),
-        html.Br(),
-        html.Button(id='about-button', children='About')
-    ])
+# General dash app layout
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='top-bar', className='row', style={'border-radius': '10px', 'background-color': '#004176'}, children=[
+        html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
+                                                                             style={'padding': '12px', 'width': '192px',
+                                                                                    'height': '128px'})),
+        html.H1(id='header', className='column-big', children='JuTrack Dashboard',
+                style={'color': 'white', 'text-align': 'center',
+                       'line-height': '102px', 'vertical-align': 'middle'})
+    ]),
+    html.Div(id='menu-and-content', className='row', children=[
+        html.Div(id='menu', className='column', style={'margin': '6px', 'border-radius': '3px', 'background-color': '#004176'}, children=[
+            html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'),
+            create_menu()]),
+        html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')
+    ]),
+])
 
 
 @app.callback(Output('page-content', 'children'),
               [Input('create-button', 'n_clicks'),
-               Input('delete-button', 'n_clicks'),
                Input('current-studies', 'n_clicks'),
                Input('about-button', 'n_clicks'),
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
+def display_menu_tab_content_callback(btn1, btn2, btn3):
     """Callback reacting if a menu button is clicked. Returns clicked button content
 
                Parameters
                ----------
-                btn1, btn2, btn3, btn4
+                btn1, btn2, btn3
                     Click counter of buttons. Not used due to dash.callback_context syntax. Given by
                     Inputs('button', 'n_clicks').
 
@@ -67,10 +60,8 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if button_id == 'create-button':
             return get_create_study_div()
-        if button_id == 'delete-button':
-            return get_delete_study_div(study_dir)
         if button_id == 'current-studies':
-            return get_current_studies_div(study_dir)
+            return get_current_studies_div()
         if button_id == 'about-button':
             return get_about_div()
     else:
@@ -133,51 +124,18 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             return output_state, study_name, study_duration, number_subjects, sensors
 
         else:
-            if os.path.isdir(study_dir + '/' + study_name):
-                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
-            else:
-                create_study(study_dir + '/' + study_name, number_subjects, sensors)
+            new_study_json_str = json.dumps({"name": study_name,
+                                         "duration": study_duration,
+                                         "number-of-subjects": number_subjects,
+                                         "sensor-list": sensors})
+            new_study_json = json.loads(new_study_json_str)
+            if create_study(new_study_json):
                 return 'You created the study:\t' + study_name, '', '', '', []
+            else:
+                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
+
     else:
         raise PreventUpdate
-
-
-@app.callback([Output('delete-study-output-state', 'children'),
-               Output('delete-study-list', 'options')],
-              [Input('delete-study-button', 'n_clicks')],
-              [State('delete-study-list', 'value')])
-def delete_study_callback(n_clicks, study_name):
-    """
-    TODO:   Confirmation dialog
-    Callback to delete a chosen study on button click. Input is a value of a drop down menu specifying the study which
-    will be deleted on button click. Refreshes the drop down list after deletion.
-
-               Parameters
-               ----------
-                n_clicks
-                    Click counter of delete-study-button. Used to determine if button has ever been clicked. Given by
-                    Input('delete-study-button', 'n_clicks').
-                study_name
-                    Name of the study to delete provided by a drop down menu. Given by State('delete-study-list', 'value').
-
-               Raises
-               ------
-                PreventUpdate
-                    Raise if button was not clicked yet or if the value of the drop down menu is empty when button
-                    is clicked.
-
-               Return
-               -------
-                    Message that deletion was successful. Furthermore, refresh options in drop down menu. Returned by
-                     Output('delete-study-output-state', 'children') and Output('delete-study-list', 'options')
-       """
-
-    if n_clicks and study_name:
-        study_path = study_dir + '/' + study_name
-        shutil.rmtree(study_path)
-        return 'You removed:\t' + study_name, refresh_drop_down(study_dir)
-    else:
-        PreventUpdate
 
 
 @app.callback(Output('current-selected-study', 'children'),
@@ -206,62 +164,9 @@ def display_study_info_callback(study_name):
        """
 
     if study_name:
-        selected_study_dir = study_dir + '/' + study_name
-        return get_study_info_div(selected_study_dir)
+        get_study_information(study_name)
     else:
         PreventUpdate
-
-
-@app.callback([Output('create-users-output-state', 'children'),
-               Output('create_users_input', 'value'),
-               Output('number-enrolled-subjects', 'children')],
-              [Input('create-users-button', 'n_clicks')],
-              [State('create_users_input', 'value'),
-               State('current-study-list', 'value')])
-def create_subjects_callback(n_clicks, number_users, study_name):
-    """Callback to create new subjects on click. Depends on input number and the current study displayed.
-
-               Parameters
-               ----------
-                n_clicks
-                    Click counter of create-users-button. Used to determine if button has ever been clicked. Given by
-                    Input('create-users-button', 'n_clicks').
-                number_users
-                    Number of new subjects to create. Given by State('create_users_input', 'value').
-                study_name
-                    Name of current study selected. Specifies where to drop the new subjects. Given by
-                    State('current-study-list', 'value').
-
-               Raises
-               ------
-                PreventUpdate
-                    Raise if the value of the input field is empty or if the button was not clicked yet.
-
-               Return
-               -------
-                    Output-state of the procedure. Furthermore, the input field is cleaned and the displayed number of
-                    enrolled subjects is refreshed. Returned by Output('create-users-output-state', 'children') and
-                    Output('create_users_input', 'value') and Output('number-enrolled-subjects', 'children')
-       """
-
-    selected_study_dir = study_dir + '/' + study_name
-    if n_clicks and number_users:
-        if number_users < 1 or number_users > 500:
-            output_state = 'You did not enter a valid number'
-        else:
-            create_subjects(selected_study_dir, number_users)
-            output_state = 'You created ' + str(number_users) + ' new users and QR-Codes'
-        n_subj = get_number_enrolled_subjects(selected_study_dir)
-        return output_state, '', 'Number of enrolled subjects:\t' + n_subj
-    else:
-        raise PreventUpdate
-
-
-@app.callback([],
-              [Input('download-pdfs-button', 'n_clicks')],
-              [State('current-study-list', 'value')])
-def download_pdfs(n_clicks, study_name):
-    pass
 
 
 @app.server.route('/download_pdfs/')
@@ -270,38 +175,6 @@ def download_excel():
     return send_file('jutrack_data/AI_1/subject_sheets.zip',
                      mimetype='application/zip',
                      as_attachment=True)
-    #Convert DF
-    """strIO = io.BytesIO()
-    excel_writer = pd.ExcelWriter(strIO, engine="xlsxwriter")
-    df.to_excel(excel_writer, sheet_name="sheet1")
-    excel_writer.save()
-    excel_data = strIO.getvalue()
-    strIO.seek(0)
-
-    return send_file(strIO,
-                     attachment_filename='test.xlsx',
-                     as_attachment=True)
-"""
-
-
-# General dash app layout
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='top-bar', className='row', style={'border-radius': '10px', 'background-color': '#004176'}, children=[
-        html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
-                                                                             style={'padding': '12px', 'width': '192px',
-                                                                                    'height': '128px'})),
-        html.H1(id='header', className='column-big', children='JuTrack Dashboard',
-                style={'color': 'white', 'text-align': 'center',
-                       'line-height': '102px', 'vertical-align': 'middle'})
-    ]),
-    html.Div(id='menu-and-content', className='row', children=[
-        html.Div(id='menu', className='column', style={'margin': '6px', 'border-radius': '3px', 'background-color': '#004176'}, children=[
-            html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'),
-            create_menu()]),
-        html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')
-    ]),
-])
 
 
 if __name__ == '__main__':

@@ -4,40 +4,6 @@ import dash_table as dt
 import os
 
 
-def get_current_studies_div(study_dir):
-    """Returns the current studies div
-
-            Parameters
-            ----------
-                study_dir
-                    path to chosen study directory
-
-            Return
-            -------
-            Current studies div
-    """
-
-    study_list = []
-    current_studies = os.listdir(study_dir)
-    try:
-        current_studies.remove('.DS_Store')
-    except ValueError:
-        pass
-    try:
-        current_studies.remove('AI_1subject_sheets.zip')
-    except ValueError:
-        pass
-    for study in current_studies:
-        study_list.append({'label': study, 'value': study})
-    return html.Div(id='current-studies-div', children=[
-        html.Div(id='current-study-div', className='column-big', children=[html.H2('Current Studies'),
-                                                                           dcc.Dropdown(id='current-study-list',
-                                                                                        options=study_list),
-                                                                           html.Div(id='current-selected-study')
-                                                                           ])
-    ])
-
-
 def get_user_data_table(selected_study_dir):
     """This function returns a div displaying subjects' information which is stored in the data set for the study
 

@@ -1,6 +1,3 @@
-import tarfile
-import zipfile
-
 import qrcode
 import os
 from subject_configuration.SubjectPDF import SubjectPDF
@@ -89,7 +86,6 @@ def create_qr_code_for_new_user(study_dir, new_subj_dir):
 
 
 def zip_subject_sheet_folder(study_dir):
-	print("Ich zippe")
 	os.system('zip ' + study_dir + '/subject_sheets.zip ' + study_dir + '/subject-sheets/*')
 
 
@@ -127,12 +123,3 @@ def create_subjects(study_dir, number_new_subjects):
 	number_subjects_element.text = str(current_number_subjects + number_new_subjects)
 	study_xml.write(study_xml_path)
 	return
-
-
-if __name__ == '__main__':
-	name = 'Subject00090'
-	study = 'new'
-	studies_dir = './studies'
-	sdir = studies_dir + '/' + study
-	qr_path = sdir + '/QR-Codes/' + name + '.png'
-	write_to_pdf(qr_path, sdir, name)
