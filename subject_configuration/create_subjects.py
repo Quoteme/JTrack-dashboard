@@ -1,7 +1,6 @@
 import qrcode
 import os
 from subject_configuration.SubjectPDF import SubjectPDF
-import xml.etree.ElementTree as ET
 
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):
@@ -106,20 +105,12 @@ def create_subjects(study_dir, number_new_subjects):
 	"""
 
 	study_name = str(study_dir).split('/')[-1]
-	study_xml_path = study_dir + '/' + study_name + '-info.xml'
-	study_xml = ET.parse(study_xml_path)
-	root = study_xml.getroot()
 
-	number_subjects_element = next(root.iter('number-subjects'))
-	current_number_subjects = int(number_subjects_element.text)
-
-	for subj_number in range(current_number_subjects+1, current_number_subjects+number_new_subjects+1):
+	for subj_number in range(15):
 		new_subj_dir = study_dir + '/' + study_name + '_' + str(subj_number).zfill(5)
 
 		os.makedirs(new_subj_dir)
 		create_qr_code_for_new_user(study_dir, new_subj_dir)
 
 	zip_subject_sheet_folder(study_dir)
-	number_subjects_element.text = str(current_number_subjects + number_new_subjects)
-	study_xml.write(study_xml_path)
 	return
