@@ -1,8 +1,17 @@
 import os
 import json
 from study_info import get_study_info_div
+from datalad.api import Dataset
+import getpass
 
-storage_folder = '~/mnt/jutrack_data'
+
+storage_folder = '/mnt/jutrack_data'
+if getpass.getuser() == 'msfz':
+    print('Ich bin es.')
+    home = os.environ['HOME']
+    storage_folder = home + '/mnt/jutrack_data'
+    os.makedirs(storage_folder + '/studies', exist_ok=True)
+
 studies_folder = storage_folder + '/studies'
 users_folder = storage_folder + '/users'
 

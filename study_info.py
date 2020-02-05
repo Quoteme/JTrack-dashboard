@@ -39,7 +39,7 @@ def get_study_info_div(selected_study_dir):
             Study information div
     """
 
-    n_subj = get_number_enrolled_subjects(selected_study_dir)
+    n_subj = '4'
     return html.Div([
         html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + n_subj),
         html.Div(id='create-users-div', children=[
@@ -57,20 +57,4 @@ def get_study_info_div(selected_study_dir):
     ])
 
 
-def get_number_enrolled_subjects(selected_study_dir):
-    """Returns the create study div
-
-            Parameters
-            ----------
-                selected_study_dir
-                    path to selected study ('./studies/study_name')
-
-            Return
-            -------
-            Number of enrolled subjects in given study
-
-    """
-    enrolled_subjects = os.listdir(selected_study_dir)
-    n_subj = str(max(0, len(enrolled_subjects) - 3))
-    return n_subj
 
