@@ -1,0 +1,16 @@
+# Pycharm
+.idea/
+
+# pycache
+menu_tabs/__pycache__
+__pycache__
+
+# Study folder
+jutrack_data/
+mnt/
+
+# .DS-Store
+.DS_Store
+
+# archives
+*.zip

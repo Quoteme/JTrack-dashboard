@@ -1,0 +1,18 @@
+/* Create three equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 15%;
+}
+
+.column-big {
+  float: left;
+  width: 60%;
+}
+
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
