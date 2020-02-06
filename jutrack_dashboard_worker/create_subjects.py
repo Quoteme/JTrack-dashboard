@@ -1,5 +1,5 @@
 from jutrack_dashboard_worker import studies_folder, qr_path, sheets_path
-from jutrack_dashboard_worker import SubjectPDF
+from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 import os
 import json
 import qrcode
