@@ -1,5 +1,8 @@
 #!/usr/bin/python
-from . import app
+import sys
+sys.path.insert(0, "/var/www/jutrack-dashboard")
+
+from dashboard import app
 
 server = app.server
-application = app
+application = server
