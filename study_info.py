@@ -1,7 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as dt
-import os
 
 
 def get_user_data_table(selected_study_dir):
@@ -48,9 +47,8 @@ def get_study_info_div(selected_study_dir):
             html.Br(),
             html.Div(children=html.Span(id='create-users-output-state')),
             html.Br(),
-            #html.Div(
-            #    children=html.A(id='download-pdfs-button', children='Download subject sheets', href='/download_pdfs/'),
-           #     style={'padding-top': '8px'}),
+            #html.Div(children=[html.Button(id='download-sheet-zip', children='Download study sheets'),
+            #                   html.Div(id='download-state')]),
             html.Br(),
             get_user_data_table(selected_study_dir)
         ])

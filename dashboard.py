@@ -168,13 +168,5 @@ def display_study_info_callback(study_name):
         PreventUpdate
 
 
-@app.server.route('/download_pdfs/')
-def download_excel():
-    print("Im here")
-    return send_file('jutrack_data/studys/AI/subject_sheets.zip',
-                     mimetype='application/zip',
-                     as_attachment=True)
-
-
 if __name__ == '__main__':
     app.run_server(debug=True)
