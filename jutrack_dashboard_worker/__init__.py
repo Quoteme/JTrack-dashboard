@@ -1,6 +1,7 @@
 import os
 import getpass
 
+# Paths to storage directory and for the qrcodes + subject sheets
 qr_path = 'QR-Codes'
 sheets_path = 'Subject-Sheets'
 storage_folder = '/mnt/jutrack_data'

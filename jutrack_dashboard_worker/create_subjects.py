@@ -12,13 +12,10 @@ def create_subjects(study_id, number_new_subjects):
 
             Parameters
             ----------
-                study_id
-                    path to the directory of the study where new subjects should be dropped. ('./studies/study_name')
-                number_new_subjects
-                    number of new subjects that should be enrolled
-            Return
-            -------
-
+             study_id
+                 id of the study where new subjects should be dropped (within storage folder)
+             number_new_subjects
+                 number of new subjects that should be enrolled
     """
 
     current_number_subjects = 0
@@ -36,7 +33,6 @@ def create_subjects(study_id, number_new_subjects):
         create_qr_code_for_new_user(study_id, subj_name)
 
     zip_subject_sheet_folder(study_id)
-    return
 
 
 def create_qr_code_for_new_user(study_id, subj_name):
@@ -46,17 +42,15 @@ def create_qr_code_for_new_user(study_id, subj_name):
 
             Parameters
             ----------
-                study_id
-                    path to the directory of the study ('./studies/study_name').
-                subj_name
-                    path to the directory of the new subject containing particularly its name ('./studies/study-name/Subject00000').
-            Return
-            -------
-
+             study_id
+                 id of the study (within storage folder)
+             subj_name
+                 id of new subject whose qrcode will be generated
     """
 
+    number_of_activations = 4
     qr_code_path = qr_path + '/' + study_id
-    for i in range(1, 5):
+    for i in range(1, number_of_activations+1):
         activation_number = '_' + str(i)
         current_qr_code = qr_code_path + '/' + subj_name + activation_number + '.png'
         print(current_qr_code)
@@ -83,6 +77,13 @@ def create_qr_code_for_new_user(study_id, subj_name):
 
 
 def zip_subject_sheet_folder(study_id):
+    """Zips the subjects sheets into a zip file which can be downloaded
+
+            Parameters
+            ----------
+             study_id
+                 id of selected study
+    """
     study_sheets_path = sheets_path + '/' + study_id
     os.system('zip ' + study_sheets_path + '_subject_sheets.zip ' + study_sheets_path + '/*.pdf')
 
@@ -94,16 +95,14 @@ def write_to_pdf(qr_code_path, study_id, new_subj_name):
 
             Parameters
             ----------
-                qr_code_path
-                    path to QR-code referring to given new subject (.png)
-                study_id
-                    path to the directory of the study ('./studies/study_name').
-                new_subj_name
-                    name of subject (Subject00000).
-            Return
-            -------
-
+             qr_code_path
+                 path to QR-code referring to new subject (.png)
+             study_id
+                 id the study (within storage folder)
+             new_subj_name
+                 id of subject
     """
+
     qr_codes = qr_code_path + '/' + new_subj_name
     pdf_path = sheets_path + '/' + study_id + '/' + new_subj_name + '.pdf'
 

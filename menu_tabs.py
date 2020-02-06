@@ -51,13 +51,8 @@ def get_create_study_div():
 def get_current_studies_div():
     """Returns the current studies div
 
-            Parameters
-            ----------
-                storage_folder
-                    path to chosen study directory
-
             Return
-            -------
+            ------
             Current studies div
     """
 
@@ -78,7 +73,7 @@ def get_about_div():
     """Returns the about div
 
             Return
-            -------
+            ------
             About Div
     """
 

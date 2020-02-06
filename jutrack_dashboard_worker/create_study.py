@@ -6,6 +6,22 @@ import json
 
 
 def create_study(json_data):
+    """
+    Create study using underlying json data which contains study_name, initial number of subjects, study duration and a list
+    of sensors to be used. The new study is created in the storage folder and deposited as a Datalad data set. Further,
+    folders for qrcodes and subjects sheets will be create within the dashboard project and filled with corresponding qrcodes
+    and pdfs. Lastly, a json file containing meta data of the study is stored within the Datalad data set.
+
+            Parameters
+            ----------
+             json_data
+                 JSON file containing information w.r.t. the study (name, initial number of subjects, duration, sensor list)
+
+            Return
+            ------
+                 True or False depending if creation succeeded. False if and only if study already exists.
+    """
+
     study_id = json_data["name"]
     initial_subject_number = json_data["number-of-subjects"]
 

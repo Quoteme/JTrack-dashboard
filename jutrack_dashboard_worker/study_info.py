@@ -5,17 +5,17 @@ import dash_html_components as html
 import dash_table as dt
 
 
-def get_user_data_table(studys_folder, study_id):
+def get_user_data_table(study_id):
     """This function returns a div displaying subjects' information which is stored in the data set for the study
 
         Parameters
         ----------
-            selected_study_dir
-                Path to study directory.
+         study_id
+             id of selected study
 
         Returns
         -------
-            Dcc-Table containing all the subjects information.
+             Dcc-Table containing all the subjects information.
     """
 
     columns = ['SubjectID', 'Date enrolled', 'Days in study', 'Sensors']
@@ -32,12 +32,12 @@ def get_study_info_div(study_id):
 
             Parameters
             ----------
-                study_id
-                    path to selected study ('./studies/study_name')
+             study_id
+                 id of selected study (within storage folder)
 
             Return
             -------
-            Study information div
+                 Study information div
     """
 
     study_json_file_path = studies_folder + '/' + study_id + "/" + study_id + ".json"
