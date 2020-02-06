@@ -55,7 +55,7 @@ def get_study_info_div(study_id):
             html.Br(),
             html.Div(children=html.A(id='download-sheet-zip', children='Download study sheets'), style={'padding-top': '8px'}),
             html.Br(),
-            get_user_data_table(studies_folder, study_id)
+            get_user_data_table(study_id)
         ])
     ])
 
