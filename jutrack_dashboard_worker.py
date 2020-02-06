@@ -6,8 +6,8 @@ import getpass
 
 
 storage_folder = '/mnt/jutrack_data'
+
 if getpass.getuser() == 'msfz':
-    print('Ich bin es.')
     home = os.environ['HOME']
     storage_folder = home + '/mnt/jutrack_data'
     os.makedirs(storage_folder + '/studies', exist_ok=True)
@@ -19,18 +19,17 @@ users_folder = storage_folder + '/users'
 def create_study(json_data):
     study_id = json_data["name"]
     folder_name = studies_folder + "/" + study_id
-
     if not os.path.isdir(folder_name):
         os.makedirs(folder_name)
-        #datalad_dataset = Dataset(folder_name)
+        datalad_dataset = Dataset(folder_name)
+        datalad_dataset.create(folder_name)
         file_name = studies_folder + "/" + study_id + "/" + study_id + ".json"
         with open(file_name, 'w') as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
-        #datalad_dataset.save(file_name, message="new file " + file_name + " for study")
+        datalad_dataset.save(folder_name, message="new file " + file_name + " for study")
         return True
     else:
         return False
-
 
 def get_sensor_list():
     """Retrieves a list of possible used sensors

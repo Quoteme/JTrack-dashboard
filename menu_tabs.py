@@ -62,7 +62,6 @@ def get_current_studies_div():
     """
 
     current_studies = list_studies()
-    print(current_studies)
     study_list = []
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
