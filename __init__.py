@@ -3,7 +3,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from flask import send_file
 from jutrack_dashboard_worker import create_study, get_study_information
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
