@@ -163,7 +163,7 @@ def display_study_info_callback(study_name):
        """
 
     if study_name:
-        get_study_information(study_name)
+        return get_study_information(study_name)
     else:
         PreventUpdate
 
@@ -171,7 +171,7 @@ def display_study_info_callback(study_name):
 @app.server.route('/download_pdfs/')
 def download_excel():
     print("Im here")
-    return send_file('jutrack_data/AI_1/subject_sheets.zip',
+    return send_file('jutrack_data/studys/AI/subject_sheets.zip',
                      mimetype='application/zip',
                      as_attachment=True)
 

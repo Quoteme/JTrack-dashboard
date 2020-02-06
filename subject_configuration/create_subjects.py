@@ -1,6 +1,7 @@
 import qrcode
 import os
 from subject_configuration.SubjectPDF import SubjectPDF
+import json
 
 
 def write_to_pdf(qr_code_path, study_dir, new_subj_name):
@@ -88,7 +89,7 @@ def zip_subject_sheet_folder(study_dir):
 	os.system('zip ' + study_dir + '/subject_sheets.zip ' + study_dir + '/subject-sheets/*')
 
 
-def create_subjects(study_dir, number_new_subjects):
+def create_subjects(folder_name, number_new_subjects):
 	"""
 	Function that is executed if the create new subjects button is clicked. It creates new subject directories and
 	corresponding QR-codes.
@@ -104,13 +105,22 @@ def create_subjects(study_dir, number_new_subjects):
 
 	"""
 
-	study_name = str(study_dir).split('/')[-1]
+	study_id = str(folder_name).split('/')[-1]
+	current_number_subjects = 0
+	study_json_file_path = folder_name + "/" + study_id + ".json"
 
-	for subj_number in range(15):
-		new_subj_dir = study_dir + '/' + study_name + '_' + str(subj_number).zfill(5)
+	if os.path.isfile(study_json_file_path):
+		with open(study_json_file_path, 'r') as f:
+			json_file = json.load(f)
+			current_number_subjects = json_file['number-of-subjects']
+
+	for subj_number in range(current_number_subjects+1, current_number_subjects+number_new_subjects+1):
+		new_subj_dir = folder_name + '/' + study_id + '_' + str(subj_number).zfill(4)
 
 		os.makedirs(new_subj_dir)
-		create_qr_code_for_new_user(study_dir, new_subj_dir)
+		create_qr_code_for_new_user(folder_name, new_subj_dir)
 
-	zip_subject_sheet_folder(study_dir)
+	zip_subject_sheet_folder(folder_name)
 	return
+
+

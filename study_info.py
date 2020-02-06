@@ -48,9 +48,9 @@ def get_study_info_div(selected_study_dir):
             html.Br(),
             html.Div(children=html.Span(id='create-users-output-state')),
             html.Br(),
-            html.Div(
-                children=html.A(id='download-pdfs-button', children='Download subject sheets', href='/download_pdfs/'),
-                style={'padding-top': '8px'}),
+            #html.Div(
+            #    children=html.A(id='download-pdfs-button', children='Download subject sheets', href='/download_pdfs/'),
+           #     style={'padding-top': '8px'}),
             html.Br(),
             get_user_data_table(selected_study_dir)
         ])
