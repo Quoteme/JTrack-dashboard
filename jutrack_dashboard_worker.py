@@ -69,9 +69,8 @@ def list_studys():
     return study_list
 
 
-def get_study_information(study_name):
-    selected_study_dir = studys_folder + '/' + study_name
-    return get_study_info_div(selected_study_dir)
+def get_study_information(study_id):
+    return get_study_info_div(studys_folder, study_id)
 
 
 def create_subjects(study_id, number_new_subjects):

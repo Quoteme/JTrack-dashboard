@@ -3,6 +3,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from flask import send_file
+
 from jutrack_dashboard_worker import create_study, get_study_information
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
@@ -136,7 +138,8 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback(Output('current-selected-study', 'children'),
+@app.callback([Output('current-selected-study', 'children'),
+              Output('download-sheet-zip', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_name):
     """
@@ -162,9 +165,16 @@ def display_study_info_callback(study_name):
        """
 
     if study_name:
-        return get_study_information(study_name)
+        return get_study_information(study_name), '/download-sheets-' + study_name
     else:
         PreventUpdate
+
+
+@app.server.route('/download-sheets-<string:study_name>')
+def download_sheets(study_name):
+    return send_file('Subject-Sheets/' + study_name + '_subject_sheets.zip',
+                     mimetype='application/zip',
+                     as_attachment=True)
 
 
 if __name__ == '__main__':

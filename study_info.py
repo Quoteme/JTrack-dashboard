@@ -1,9 +1,12 @@
+import json
+import os
+
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as dt
 
 
-def get_user_data_table(selected_study_dir):
+def get_user_data_table(studys_folder, study_id):
     """This function returns a div displaying subjects' information which is stored in the data set for the study
 
         Parameters
@@ -25,7 +28,7 @@ def get_user_data_table(selected_study_dir):
     )
 
 
-def get_study_info_div(selected_study_dir):
+def get_study_info_div(studys_folder, study_id):
     """Returns information of specified study as a div
 
             Parameters
@@ -38,19 +41,22 @@ def get_study_info_div(selected_study_dir):
             Study information div
     """
 
-    n_subj = '4'
+    study_json_file_path = studys_folder + '/' + study_id + "/" + study_id + ".json"
+
+    with open(study_json_file_path, 'r') as f:
+        data = json.load(f)
+        n_subj = data['number-of-subjects']
     return html.Div([
-        html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + n_subj),
+        html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + str(n_subj)),
         html.Div(id='create-users-div', children=[
             dcc.Input(id='create_users_input', placeholder='Enter number of new participants', type='number'),
             html.Button(id='create-users-button', children='Create new subjects'),
             html.Br(),
             html.Div(children=html.Span(id='create-users-output-state')),
             html.Br(),
-            #html.Div(children=[html.Button(id='download-sheet-zip', children='Download study sheets'),
-            #                   html.Div(id='download-state')]),
+            html.Div(children=html.A(id='download-sheet-zip', children='Download study sheets'), style={'padding-top': '8px'}),
             html.Br(),
-            get_user_data_table(selected_study_dir)
+            get_user_data_table(studys_folder, study_id)
         ])
     ])
 
