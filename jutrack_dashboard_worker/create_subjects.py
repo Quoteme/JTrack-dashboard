@@ -1,76 +1,8 @@
+from jutrack_dashboard_worker import studies_folder, qr_path, sheets_path
+from jutrack_dashboard_worker import SubjectPDF
 import os
 import json
 import qrcode
-
-from SubjectPDF import SubjectPDF
-from study_info import get_study_info_div
-from datalad.api import Dataset
-import getpass
-
-qr_path = 'QR-Codes'
-sheets_path = 'Subject-Sheets'
-storage_folder = '/mnt/jutrack_data'
-
-os.makedirs(qr_path, exist_ok=True)
-os.makedirs(sheets_path, exist_ok=True)
-if getpass.getuser() == 'msfz':
-    home = os.environ['HOME']
-    storage_folder = home + '/mnt/jutrack_data'
-    os.makedirs(storage_folder + '/studys', exist_ok=True)
-
-studys_folder = storage_folder + '/studys'
-users_folder = storage_folder + '/users'
-
-
-def create_study(json_data):
-    study_id = json_data["name"]
-    initial_subject_number = json_data["number-of-subjects"]
-
-    folder_name = studys_folder + "/" + study_id
-    if os.path.isdir(folder_name):
-        return False
-
-    os.makedirs(folder_name)
-    datalad_dataset = Dataset(folder_name)
-    datalad_dataset.create(folder_name)
-
-    os.makedirs(qr_path + '/' + study_id)
-    os.makedirs(sheets_path + '/' + study_id)
-    create_subjects(study_id, initial_subject_number)
-
-    json_file_name = folder_name + "/" + study_id + ".json"
-    with open(json_file_name, 'w') as f:
-        json.dump(json_data, f, ensure_ascii=False, indent=4)
-    datalad_dataset.save(folder_name, message="new file " + json_file_name + " for study")
-
-    return True
-
-
-def get_sensor_list():
-    """Retrieves a list of possible used sensors
-
-        Return
-        ------
-            List of sensors
-    """
-
-    sensors = ['acceleration-sensor', 'app-usage-statistic', 'barometer',
-               'detected-activity-sensor', 'gravity', 'gyroscope', 'linear-acceleration',
-               'location-sensor', 'magnetic-sensor', 'rotation-vector-sensor']
-    return sensors
-
-
-def list_studys():
-    study_list = []
-    for study in os.listdir(studys_folder):
-        if study != "users" and study != "lost+found" and os.path.isdir(studys_folder + '/' + study):
-            study_list.append(study)
-
-    return study_list
-
-
-def get_study_information(study_id):
-    return get_study_info_div(studys_folder, study_id)
 
 
 def create_subjects(study_id, number_new_subjects):
@@ -90,7 +22,7 @@ def create_subjects(study_id, number_new_subjects):
     """
 
     current_number_subjects = 0
-    study_json_file_path = studys_folder + '/' + study_id + "/" + study_id + ".json"
+    study_json_file_path = studies_folder + '/' + study_id + "/" + study_id + ".json"
 
     if os.path.isfile(study_json_file_path):
         with open(study_json_file_path, 'r') as f:
@@ -187,5 +119,3 @@ def write_to_pdf(qr_code_path, study_id, new_subj_name):
     pdf.qr_code(qr_codes, 5)
 
     pdf.output(pdf_path)
-
-

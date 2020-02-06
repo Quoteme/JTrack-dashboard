@@ -4,8 +4,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
-
-from jutrack_dashboard_worker import create_study, get_study_information
+from jutrack_dashboard_worker.create_study import create_study
+from jutrack_dashboard_worker.study_info import get_study_info_div
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
 
@@ -165,7 +165,7 @@ def display_study_info_callback(study_name):
        """
 
     if study_name:
-        return get_study_information(study_name), '/download-sheets-' + study_name
+        return get_study_info_div(study_name), '/download-sheets-' + study_name
     else:
         PreventUpdate
 

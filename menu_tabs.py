@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from jutrack_dashboard_worker import list_studys, get_sensor_list
+from jutrack_dashboard_worker import list_studies, get_sensor_list
 
 
 def create_menu():
@@ -61,7 +61,7 @@ def get_current_studies_div():
             Current studies div
     """
 
-    current_studies = list_studys()
+    current_studies = list_studies()
     study_list = []
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
