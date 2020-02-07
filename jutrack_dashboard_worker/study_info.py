@@ -1,20 +1,21 @@
+from jutrack_dashboard_worker import studies_folder
+import json
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as dt
-import os
 
 
-def get_user_data_table(selected_study_dir):
+def get_user_data_table(study_id):
     """This function returns a div displaying subjects' information which is stored in the data set for the study
 
         Parameters
         ----------
-            selected_study_dir
-                Path to study directory.
+         study_id
+             id of selected study
 
         Returns
         -------
-            Dcc-Table containing all the subjects information.
+             Dcc-Table containing all the subjects information.
     """
 
     columns = ['SubjectID', 'Date enrolled', 'Days in study', 'Sensors']
@@ -26,33 +27,35 @@ def get_user_data_table(selected_study_dir):
     )
 
 
-def get_study_info_div(selected_study_dir):
+def get_study_info_div(study_id):
     """Returns information of specified study as a div
 
             Parameters
             ----------
-                selected_study_dir
-                    path to selected study ('./studies/study_name')
+             study_id
+                 id of selected study (within storage folder)
 
             Return
             -------
-            Study information div
+                 Study information div
     """
 
-    n_subj = '4'
+    study_json_file_path = studies_folder + '/' + study_id + "/" + study_id + ".json"
+
+    with open(study_json_file_path, 'r') as f:
+        data = json.load(f)
+        n_subj = data['number-of-subjects']
     return html.Div([
-        html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + n_subj),
+        html.P(id='number-enrolled-subjects', children='Number of enrolled subjects:\t' + str(n_subj)),
         html.Div(id='create-users-div', children=[
-            dcc.Input(id='create_users_input', placeholder='Enter number of new participants', type='number'),
+            dcc.Input(id='create_users_input', placeholder='Not working yet', type='number'),
             html.Button(id='create-users-button', children='Create new subjects'),
             html.Br(),
             html.Div(children=html.Span(id='create-users-output-state')),
             html.Br(),
-            html.Div(
-                children=html.A(id='download-pdfs-button', children='Download subject sheets', href='/download_pdfs/'),
-                style={'padding-top': '8px'}),
+            html.Div(children=html.A(id='download-sheet-zip', children='Download study sheets'), style={'padding-top': '8px'}),
             html.Br(),
-            get_user_data_table(selected_study_dir)
+            get_user_data_table(study_id)
         ])
     ])
 

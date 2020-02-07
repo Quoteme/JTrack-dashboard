@@ -51,18 +51,12 @@ def get_create_study_div():
 def get_current_studies_div():
     """Returns the current studies div
 
-            Parameters
-            ----------
-                storage_folder
-                    path to chosen study directory
-
             Return
-            -------
+            ------
             Current studies div
     """
 
     current_studies = list_studies()
-    print(current_studies)
     study_list = []
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
@@ -79,7 +73,7 @@ def get_about_div():
     """Returns the about div
 
             Return
-            -------
+            ------
             About Div
     """
 

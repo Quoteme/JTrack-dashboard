@@ -4,7 +4,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
-from jutrack_dashboard_worker import create_study, get_study_information
+from jutrack_dashboard_worker.create_study import create_study
+from jutrack_dashboard_worker.study_info import get_study_info_div
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
 
@@ -41,17 +42,17 @@ app.layout = html.Div([
 def display_menu_tab_content_callback(btn1, btn2, btn3):
     """Callback reacting if a menu button is clicked. Returns clicked button content
 
-               Parameters
-               ----------
-                btn1, btn2, btn3
-                    Click counter of buttons. Not used due to dash.callback_context syntax. Given by
-                    Inputs('button', 'n_clicks').
+            Parameters
+           ----------
+            btn1, btn2, btn3
+                Click counter of buttons. Not used due to dash.callback_context syntax. Given by
+                Inputs('button', 'n_clicks').
 
-               Returns
-               -------
-                Several possible divs depending which button was clicked. The div is displayed on the page right next
-                to the menu. Returned by Output('page-content', 'children').
-       """
+           Returns
+           -------
+            Several possible divs depending which button was clicked. The div is displayed on the page right next
+            to the menu. Returned by Output('page-content', 'children').
+    """
 
     ctx = dash.callback_context
 
@@ -83,34 +84,35 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
     Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
     if input field contains a valid input und the study does not exist yet.
 
-               Parameters
-               ----------
-                n_clicks
-                    Click counter of create-study-button. Used to determine if button has ever been clicked. Given by
-                    Input('create-study-button', 'n_clicks').
-                study_name
-                    Name of the new study. Given by State('create-study-input', 'value').
-                study_duration
-                    Duration of study in days. Given by State('create-study-duration-input', 'value').
-                number_subjects
-                    Initial number of subjects enrolled. Subjects are stored with consecutive numbers in name. Given
-                    by State('create-study-subject-number', 'value').
-                sensors
-                    List of selected sensors. Given by State('create-study-sensors-checklist', 'value').
+           Parameters
+           ----------
+            n_clicks
+                Click counter of create-study-button. Used to determine if button has ever been clicked. Given by
+                Input('create-study-button', 'n_clicks').
+            study_name
+                Name of the new study. Given by State('create-study-input', 'value').
+            study_duration
+                Duration of study in days. Given by State('create-study-duration-input', 'value').
+            number_subjects
+                Initial number of subjects enrolled. Subjects are stored with consecutive numbers in name. Given
+                by State('create-study-subject-number', 'value').
+            sensors
+                List of selected sensors. Given by State('create-study-sensors-checklist', 'value').
 
-               Raises
-               ------
-                PreventUpdate
-                    Raise if button was not clicked yet or if the input field is empty when create button is clicked.
+           Raises
+           ------
+            PreventUpdate
+                Raise if button was not clicked yet or if the input field is empty when create button is clicked.
 
-               Return
-               -------
-                    Output-state if creation was successful or if study already exists. Furthermore, clean input field of
-                    create-study-input and other fields. Input remains if creation is not successful.
-                    Returned by Output('create-study-output-state', 'children'), Output('create-study-input', 'value'),
-                    Output('create-study-duration-input', 'value'), Output('create-study-subject-number', 'value') and
-                    Output('create-study-sensors-checklist', 'value').
-       """
+           Return
+           -------
+                Output-state if creation was successful or if study already exists. Furthermore, clean input field of
+                create-study-input and other fields. Input remains if creation is not successful.
+                Returned by Output('create-study-output-state', 'children'), Output('create-study-input', 'value'),
+                Output('create-study-duration-input', 'value'), Output('create-study-subject-number', 'value') and
+                Output('create-study-sensors-checklist', 'value').
+    """
+
     if n_clicks:
         output_state = ''
         if not study_name or not study_duration or not sensors:
@@ -124,9 +126,9 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
         else:
             new_study_json_str = json.dumps({"name": study_name,
-                                         "duration": study_duration,
-                                         "number-of-subjects": number_subjects,
-                                         "sensor-list": sensors})
+                                             "duration": study_duration,
+                                             "number-of-subjects": number_subjects,
+                                             "sensor-list": sensors})
             new_study_json = json.loads(new_study_json_str)
             if create_study(new_study_json):
                 return 'You created the study:\t' + study_name, '', '', '', []
@@ -137,7 +139,8 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback(Output('current-selected-study', 'children'),
+@app.callback([Output('current-selected-study', 'children'),
+              Output('download-sheet-zip', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_name):
     """
@@ -145,33 +148,45 @@ def display_study_info_callback(study_name):
     Callback to display study info of chosen study on drop down selection. Provides information as well as the
     opportunity to create new users.
 
-               Parameters
-               ----------
-                study_name
-                    Name of the study which information should be displayed. The value is transferred by a drop down menu.
-                    Given by Input('current-study-list', 'value').
+           Parameters
+           ----------
+            study_name
+                Name of the study which information should be displayed. The value is transferred by a drop down menu.
+                Given by Input('current-study-list', 'value').
 
-               Raises
-               ------
-                PreventUpdate
-                    Raise if the value of the drop down menu is empty
+           Raises
+           ------
+            PreventUpdate
+                Raise if the value of the drop down menu is empty
 
-               Return
-               -------
-                    Html-Div containing the information of the study. Displayed beneath the drop down list. Returned
-                    by Output('current-selected-study', 'children').
-       """
+           Return
+           -------
+                Html-Div containing the information of the study. Displayed beneath the drop down list. Returned
+                by Output('current-selected-study', 'children'). Also returning a href containing the link to
+                download subject sheets in Output('download-sheet-zip', 'href')
+    """
 
     if study_name:
-        get_study_information(study_name)
+        return get_study_info_div(study_name), '/download-sheets-' + study_name
     else:
         PreventUpdate
 
 
-@app.server.route('/download_pdfs/')
-def download_excel():
-    print("Im here")
-    return send_file('jutrack_data/AI_1/subject_sheets.zip',
+@app.server.route('/download-sheets-<string:study_name>')
+def download_sheets(study_name):
+    """Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
+
+            Parameters
+            ----------
+             study_name
+                specified study of which the sheets should be downloaded
+
+            Return
+            ------
+                Flask send_file which delivers the zip belonging to the study
+    """
+
+    return send_file('Subject-Sheets/' + study_name + '_subject_sheets.zip',
                      mimetype='application/zip',
                      as_attachment=True)
 
