@@ -78,7 +78,14 @@ def get_about_div():
     """
 
     return html.Div(id='about1-div', children=html.P(id='about1-p', children=[
-        html.A('Michael Stolz', href='https://www.fz-juelich.de/inm/inm-7/EN/UeberUns/Mitarbeiter/mitarbeiter_node.html?cms_notFirst=true&cms_docId=2552232'),
+        html.H2(children='About'),
+        html.P('This application serves as a interface between Jutrack Service and researchers or study leaders. '
+               'It provides different methods like creating new studies or displaying currently available information to studies.'),
+        html.Div(children=[
+            html.Span('Responsible: '),
+            html.A('Michael Stolz', href='https://www.fz-juelich.de/inm/inm-7/EN/UeberUns/Mitarbeiter/mitarbeiter_node.html?cms_notFirst=true&cms_docId=2552232')]),
         html.Br(),
-        html.A('m.stolz@fz-juelich.de', href='mailto:m.stolz@fz-juelich.de')
+        html.Div(children=[
+            html.Span('Mail to: '),
+            html.A('m.stolz@fz-juelich.de', href='mailto:m.stolz@fz-juelich.de')])
     ]))
