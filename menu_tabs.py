@@ -38,14 +38,16 @@ def get_create_study_div():
         html.Div(children=[html.Span(children='Study duration: ', style={'padding-right': '31px'}),
                            dcc.Input(id='create-study-duration-input', placeholder='Days', type='number', min='1')]),
         html.Div(children=[html.Span(children='Number of subjects: '),
-                           dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number', min='0')]),
+                           dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number',
+                                     min='0')]),
         html.Br(),
         html.Div(children=[html.Span(children='Sensors: '),
                            dcc.Checklist(id='create-study-sensors-checklist', options=sensor_checkboxes,
-                                         labelStyle={'display': 'block'}, style={'margin-left': '132px', 'margin-top': '-18px'})]),
+                                         labelStyle={'display': 'block'},
+                                         style={'margin-left': '132px', 'margin-top': '-18px'})]),
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
         html.P(id='create-study-output-state', style={'padding-top': '24px'}),
-        ])
+    ])
 
 
 def get_current_studies_div():
@@ -61,11 +63,12 @@ def get_current_studies_div():
     for study in current_studies:
         study_list.append({'label': study, 'value': study})
     return html.Div(id='current-studies-div', children=[
-        html.Div(id='current-study-div', className='column-big', children=[html.H2('Current Studies'),
-                                                                           dcc.Dropdown(id='current-study-list',
-                                                                                        options=study_list),
-                                                                           html.Div(id='current-selected-study')
-                                                                           ])
+        html.Div(id='current-study-div', className='column-big', children=[
+            html.H2('Current Studies'),
+            html.Div(id='dropdown-container', className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
+            html.Br(),
+            html.Div(id='current-selected-study', className='row', style={'padding-top': '16px'})
+        ])
     ])
 
 
@@ -83,7 +86,8 @@ def get_about_div():
                'It provides different methods like creating new studies or displaying currently available information to studies.'),
         html.Div(children=[
             html.Span('Responsible: '),
-            html.A('Michael Stolz', href='https://www.fz-juelich.de/inm/inm-7/EN/UeberUns/Mitarbeiter/mitarbeiter_node.html?cms_notFirst=true&cms_docId=2552232')]),
+            html.A('Michael Stolz',
+                   href='https://www.fz-juelich.de/inm/inm-7/EN/UeberUns/Mitarbeiter/mitarbeiter_node.html?cms_notFirst=true&cms_docId=2552232')]),
         html.Br(),
         html.Div(children=[
             html.Span('Mail to: '),

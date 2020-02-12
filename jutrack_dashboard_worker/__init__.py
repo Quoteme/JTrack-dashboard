@@ -5,6 +5,7 @@ import getpass
 qr_path = 'QR-Codes'
 sheets_path = 'Subject-Sheets'
 storage_folder = '/mnt/jutrack_data'
+csv_prefix = 'jutrack_dashboard_'
 
 os.makedirs(qr_path, exist_ok=True)
 os.makedirs(sheets_path, exist_ok=True)
