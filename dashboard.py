@@ -17,18 +17,15 @@ logo = app.get_asset_url('jutrack.png')
 # General dash app layout
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='top-bar', className='row', style={'border-radius': '10px', 'background-color': '#004176'}, children=[
-        html.Div(id='image-container', className='column', children=html.Img(id='image', src=logo,
-                                                                             style={'padding': '12px', 'width': '192px',
-                                                                                    'height': '128px'})),
+    html.Div(id='top-bar', className='row jutrack-background', children=[
+        html.Div(id='image-container', className='column-small', children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
         html.H1(id='header', className='column-big', children='JuTrack Dashboard',
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'})
     ]),
     html.Div(id='menu-and-content', className='row', children=[
-        html.Div(id='menu', className='column', style={'margin': '6px', 'border-radius': '3px', 'background-color': '#004176'}, children=[
-            html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'),
-            create_menu()]),
+        html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'}, children=
+                 [html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
         html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')
     ]),
 ])
@@ -140,7 +137,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 
 @app.callback([Output('current-selected-study', 'children'),
-              Output('download-sheet-zip', 'href')],
+               Output('download-sheet-zip', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_name):
     """
