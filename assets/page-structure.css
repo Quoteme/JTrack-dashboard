@@ -1,14 +1,20 @@
-/* Create three equal columns that floats next to each other */
-.column {
+/* small column for menu, etc..*/
+.column-small {
   float: left;
   width: 15%;
 }
 
-.column-big {
+/* mdeium column for content */
+.column-medium {
   float: left;
   width: 60%;
 }
 
+/* big column for content */
+.column-big {
+  float: left;
+  width: 80%;
+}
 
 /* Clear floats after the columns */
 .row:after {
@@ -16,3 +22,23 @@
   display: table;
   clear: both;
 }
+
+table {
+  border-collapse: collapse;
+  overflow:auto;
+  display: inline-block;
+  overflow: scroll;
+  width:300;
+  border=1;
+}
+th:not(.CalendarDay),
+td:not(.CalendarDay) {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #E1E1E1; }
+th:first-child:not(.CalendarDay),
+td:first-child:not(.CalendarDay) {
+  padding-left: 0; }
+th:last-child:not(.CalendarDay),
+td:last-child:not(.CalendarDay) {
+  padding-right: 0; }
