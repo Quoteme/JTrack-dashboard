@@ -5,6 +5,7 @@ import json
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
+import numpy as np
 
 
 def get_user_data_table(study_id):
@@ -23,6 +24,8 @@ def get_user_data_table(study_id):
     study_df = get_study_csv_as_dataframe(study_id)
     if study_df is not None:
 
+        study_df = pd.DataFrame.dropna(study_df.replace(to_replace='none', value=np.nan), axis=1, how='all')
+
         # Header
         columns = [html.Tr([html.Th(col) for col in study_df.columns])]
 
@@ -32,7 +35,7 @@ def get_user_data_table(study_id):
             columns + rows, style={'width': '90%', 'height': '480px'}
         )
     else:
-        return html.P('No data available (.csv file not available)!')
+        return html.P('No data available (.csv file not available or empty)!')
 
 
 def get_study_info_div(study_id):
@@ -87,9 +90,8 @@ def get_study_csv_as_dataframe(study_id):
 
     csv_file = storage_folder + '/' + csv_prefix + study_id + '.csv'
     if os.path.isfile(csv_file):
-        return pd.read_csv(csv_file)
-    else:
-        return None
-
-
-
+        df = pd.read_csv(csv_file)
+        if df.empty:
+            return None
+        else:
+            return df
