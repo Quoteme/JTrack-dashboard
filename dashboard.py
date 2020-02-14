@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 from jutrack_dashboard_worker.create_study import create_study
+from jutrack_dashboard_worker.create_subjects import create_subjects
 from jutrack_dashboard_worker.study_info import get_study_info_div
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
@@ -111,7 +112,6 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
     """
 
     if n_clicks:
-        output_state = ''
         if not study_name or not study_duration or not sensors:
             if not study_name:
                 output_state = 'Please enter a study name!'

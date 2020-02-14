@@ -1,0 +1,9 @@
+table {
+  border-collapse: collapse;
+  overflow:auto;
+  display: inline-block;
+  overflow: scroll;
+  width:90%;
+  height:480480px;
+  border=1;
+}

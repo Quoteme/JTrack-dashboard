@@ -29,14 +29,19 @@ def create_study(json_data):
     if os.path.isdir(study_path):
         return False
 
+    # creates study folder in storage folder and stores it as datalad data set
     os.makedirs(study_path)
     study_date_set = Dataset(study_path)
     study_date_set.create(study_path)
 
+    # generate folders for qr codes and subject sheets in dashboard folder
     os.makedirs(qr_path + '/' + study_id)
     os.makedirs(sheets_path + '/' + study_id)
+
+    # create subjects depending on initial subject number
     create_subjects(study_id, initial_subject_number)
 
+    # store json file with meta data
     json_file_name = study_path + "/" + study_id + ".json"
     with open(json_file_name, 'w') as f:
         json.dump(json_data, f, ensure_ascii=False, indent=4)
