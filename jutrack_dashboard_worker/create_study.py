@@ -1,4 +1,4 @@
-from jutrack_dashboard_worker import studies_folder, sheets_path, qr_path
+from jutrack_dashboard_worker import studies_folder, qr_path, unused_sheets_path, used_sheets_path
 from jutrack_dashboard_worker.create_subjects import create_subjects
 from datalad.api import Dataset
 import os
@@ -36,7 +36,8 @@ def create_study(json_data):
 
     # generate folders for qr codes and subject sheets in dashboard folder
     os.makedirs(qr_path + '/' + study_id)
-    os.makedirs(sheets_path + '/' + study_id)
+    os.makedirs(unused_sheets_path + '/' + study_id)
+    os.makedirs(used_sheets_path + '/' + study_id)
 
     # create subjects depending on initial subject number
     create_subjects(study_id, initial_subject_number)

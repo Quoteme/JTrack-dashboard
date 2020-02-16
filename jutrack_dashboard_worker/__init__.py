@@ -3,12 +3,15 @@ import getpass
 
 # Paths to storage directory and for the qrcodes + subject sheets
 qr_path = 'QR-Codes'
-sheets_path = 'Subject-Sheets'
+used_sheets_path = 'Subject-Sheets/used'
+unused_sheets_path = 'Subject-Sheets/unused'
 storage_folder = '/mnt/jutrack_data'
 csv_prefix = 'jutrack_dashboard_'
 
 os.makedirs(qr_path, exist_ok=True)
-os.makedirs(sheets_path, exist_ok=True)
+os.makedirs(used_sheets_path, exist_ok=True)
+os.makedirs(unused_sheets_path, exist_ok=True)
+
 if getpass.getuser() == 'msfz':
     home = os.environ['HOME']
     storage_folder = home + '/mnt/jutrack_data'

@@ -1,4 +1,4 @@
-from jutrack_dashboard_worker import studies_folder, qr_path, sheets_path
+from jutrack_dashboard_worker import studies_folder, qr_path, unused_sheets_path
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 import os
 import json
@@ -84,7 +84,7 @@ def zip_subject_sheet_folder(study_id):
              study_id
                  id of selected study
     """
-    study_sheets_path = sheets_path + '/' + study_id
+    study_sheets_path = unused_sheets_path + '/' + study_id
     os.system('zip ' + study_sheets_path + '_subject_sheets.zip ' + study_sheets_path + '/*.pdf')
 
 
@@ -104,7 +104,7 @@ def write_to_pdf(qr_code_path, study_id, new_subj_name):
     """
 
     qr_codes = qr_code_path + '/' + new_subj_name
-    pdf_path = sheets_path + '/' + study_id + '/' + new_subj_name + '.pdf'
+    pdf_path = unused_sheets_path + '/' + study_id + '/' + new_subj_name + '.pdf'
 
     pdf = SubjectPDF(study_id)
     pdf.add_page()

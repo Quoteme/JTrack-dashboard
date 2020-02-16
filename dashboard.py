@@ -4,9 +4,10 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
+
+from jutrack_dashboard_worker import unused_sheets_path
+from jutrack_dashboard_worker.Study import Study
 from jutrack_dashboard_worker.create_study import create_study
-from jutrack_dashboard_worker.create_subjects import create_subjects
-from jutrack_dashboard_worker.study_info import get_study_info_div
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
 import json
 
@@ -70,13 +71,15 @@ def display_menu_tab_content_callback(btn1, btn2, btn3):
                Output('create-study-name-input', 'value'),
                Output('create-study-duration-input', 'value'),
                Output('create-study-subject-number', 'value'),
+               Output('create-study-description', 'value'),
                Output('create-study-sensors-checklist', 'value')],
               [Input('create-study-button', 'n_clicks')],
               [State('create-study-name-input', 'value'),
                State('create-study-duration-input', 'value'),
                State('create-study-subject-number', 'value'),
+               State('create-study-description', 'value'),
                State('create-study-sensors-checklist', 'value')])
-def create_study_callback(n_clicks, study_name, study_duration, number_subjects, sensors):
+def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors):
     """
     TODO:   Give a certain pattern for study names
     Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
@@ -94,6 +97,8 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             number_subjects
                 Initial number of subjects enrolled. Subjects are stored with consecutive numbers in name. Given
                 by State('create-study-subject-number', 'value').
+            description
+                Study description
             sensors
                 List of selected sensors. Given by State('create-study-sensors-checklist', 'value').
 
@@ -119,18 +124,19 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                 output_state = 'Please enter a study duration!'
             elif not sensors:
                 output_state = 'Please select sensors!'
-            return output_state, study_name, study_duration, number_subjects, sensors
+            return output_state, study_name, study_duration, number_subjects, description, sensors
 
         else:
             new_study_json_str = json.dumps({"name": study_name,
                                              "duration": study_duration,
                                              "number-of-subjects": number_subjects,
+                                             "description": description,
                                              "sensor-list": sensors})
             new_study_json = json.loads(new_study_json_str)
             if create_study(new_study_json):
-                return 'You created the study:\t' + study_name, '', '', '', []
+                return 'You created the study:\t' + study_name, '', '', '', '', []
             else:
-                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
+                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors
 
     else:
         raise PreventUpdate
@@ -139,7 +145,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 @app.callback([Output('current-selected-study', 'children'),
                Output('download-sheet-zip', 'href')],
               [Input('current-study-list', 'value')])
-def display_study_info_callback(study_name):
+def display_study_info_callback(study_id):
     """
     TODO:   Display subject information as a table below.
     Callback to display study info of chosen study on drop down selection. Provides information as well as the
@@ -163,8 +169,9 @@ def display_study_info_callback(study_name):
                 download subject sheets in Output('download-sheet-zip', 'href')
     """
 
-    if study_name:
-        return get_study_info_div(study_name), '/download-sheets-' + study_name
+    if study_id:
+        study = Study(study_id)
+        return study.get_study_info_div(), '/download-sheets-' + study_id
     else:
         PreventUpdate
 
@@ -183,7 +190,7 @@ def download_sheets(study_name):
                 Flask send_file which delivers the zip belonging to the study
     """
 
-    return send_file('Subject-Sheets/' + study_name + '_subject_sheets.zip',
+    return send_file(unused_sheets_path + '/' + study_name + '_subject_sheets.zip',
                      mimetype='application/zip',
                      as_attachment=True)
 
