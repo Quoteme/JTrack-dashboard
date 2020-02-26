@@ -16,7 +16,9 @@ def create_menu():
         html.Br(),
         html.Button(id='current-studies', children='Current Studies'),
         html.Br(),
-        html.Button(id='about-button', children='About')
+        html.Button(id='about-button', children='About'),
+        html.Br(),
+        html.Button(id='home-button', children='Home')
     ])
 
 

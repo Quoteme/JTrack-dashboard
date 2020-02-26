@@ -37,8 +37,9 @@ app.layout = html.Div([
               [Input('create-button', 'n_clicks'),
                Input('current-studies', 'n_clicks'),
                Input('about-button', 'n_clicks'),
+               Input('home-button', 'n_clicks')
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3):
+def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
     """Callback reacting if a menu button is clicked. Returns clicked button content
 
             Parameters
@@ -63,6 +64,8 @@ def display_menu_tab_content_callback(btn1, btn2, btn3):
             return get_current_studies_div()
         if button_id == 'about-button':
             return get_about_div()
+        if button_id == 'home-button':
+            return html.Div()
     else:
         return
 
