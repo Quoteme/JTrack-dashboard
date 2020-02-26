@@ -1,3 +1,5 @@
+import time
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -5,11 +7,9 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
-from jutrack_dashboard_worker import unused_sheets_path
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
 from jutrack_dashboard_worker.Study import Study
-from jutrack_dashboard_worker.create_study import create_study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
-import json
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -127,17 +127,18 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             return output_state, study_name, study_duration, number_subjects, description, sensors
 
         else:
-            new_study_json_str = json.dumps({"name": study_name,
-                                             "duration": study_duration,
-                                             "number-of-subjects": number_subjects,
-                                             "description": description,
-                                             "sensor-list": sensors})
-            new_study_json = json.loads(new_study_json_str)
-            if create_study(new_study_json):
+            json_dict = {"name": study_name,
+                         "duration": str(study_duration),
+                         "number-of-subjects": str(number_subjects),
+                         "description": description,
+                         "sensor-list": sensors,
+                         "enrolled-subjects": []}
+            new_study = Study.from_json_dict(json_dict)
+            try:
+                new_study.create()
                 return 'You created the study:\t' + study_name, '', '', '', '', []
-            else:
+            except StudyAlreadyExistsException:
                 return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors
-
     else:
         raise PreventUpdate
 
@@ -153,7 +154,7 @@ def display_study_info_callback(study_id):
 
            Parameters
            ----------
-            study_name
+            study_id
                 Name of the study which information should be displayed. The value is transferred by a drop down menu.
                 Given by Input('current-study-list', 'value').
 
@@ -170,10 +171,24 @@ def display_study_info_callback(study_id):
     """
 
     if study_id:
-        study = Study(study_id)
+        study = Study.from_study_id(study_id)
         return study.get_study_info_div(), '/download-sheets-' + study_id
     else:
         PreventUpdate
+
+
+@app.callback([Output('total-subjects', 'children'),
+               Output('create-additional-subjects-input', 'value')],
+              [Input('create-additional-subjects-button', 'n_clicks')],
+              [State('current-study-list', 'value'),
+               State('create-additional-subjects-input', 'value')])
+def create_additional_subjects(btn, study_id, number_of_subjects):
+    study_to_extend = Study.from_study_id(study_id)
+    if btn and number_of_subjects:
+        study_to_extend.create_additional_subjects(number_of_subjects)
+    else:
+        PreventUpdate
+    return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
 
 
 @app.server.route('/download-sheets-<string:study_name>')
@@ -190,7 +205,7 @@ def download_sheets(study_name):
                 Flask send_file which delivers the zip belonging to the study
     """
 
-    return send_file(unused_sheets_path + '/' + study_name + '_subject_sheets.zip',
+    return send_file(sheets_path + '/' + study_name + '_subject_sheets.zip',
                      mimetype='application/zip',
                      as_attachment=True)
 

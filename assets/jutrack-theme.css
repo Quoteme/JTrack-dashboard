@@ -1,6 +1,6 @@
 /* main theme background (menu and header) */
 .jutrack-background {
-    border-radius: 5px;
+     border-radius: 5px;
      background-color: #004176;
 }
 
@@ -9,4 +9,11 @@
     width: 192px;
     height: 128px;
     padding: 12px;
+}
+
+.div-border {
+    border-radius: 10px;
+    border-width:2px;
+    border-style:solid;
+    border-color:#004176;
 }

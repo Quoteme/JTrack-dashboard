@@ -50,7 +50,7 @@ def get_create_study_div():
                                          style={'margin-left': '132px', 'margin-top': '-18px'})]),
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
         # is filled if user tries to create study, reset also other input fields
-        html.P(id='create-study-output-state', style={'padding-top': '24px'}),
+        dcc.Loading(id='loading-create-study', children=[html.P(id='create-study-output-state', style={'padding-top': '30px'})], type='circle')
     ])
 
 
@@ -72,7 +72,8 @@ def get_current_studies_div():
             html.Div(className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
             html.Br(),
             # is filled when study is selected
-            html.Div(id='current-selected-study', className='row', style={'padding-top': '16px'})
+            dcc.Loading(id='loading-current-study', children=[html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'})],
+                        type='circle')
         ])
     ])
 
