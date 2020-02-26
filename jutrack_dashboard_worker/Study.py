@@ -127,7 +127,9 @@ class Study:
 		try:
 			self.refresh_json_with_active_users()
 			active_user_table = self.get_active_user_data_table()
-		except FileNotFoundError:
+		except FileNotFoundError or KeyError:
+			active_user_table = html.Div("No data available.")
+		except KeyError:
 			active_user_table = html.Div("No data available.")
 		return html.Div([
 			html.Br(),
