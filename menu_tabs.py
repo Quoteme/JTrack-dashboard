@@ -74,8 +74,7 @@ def get_current_studies_div():
             html.Div(className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
             html.Br(),
             # is filled when study is selected
-            dcc.Loading(id='loading-current-study', children=[html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'})],
-                        type='circle')
+            html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'}),
         ])
     ])
 

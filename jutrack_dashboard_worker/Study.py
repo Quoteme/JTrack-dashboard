@@ -84,23 +84,24 @@ class Study:
 		"""
 		df = pd.read_csv(self.study_csv)
 		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
+		study_df = study_df.rename(columns={"subject_name": "id"})
 
 		conditional_list = self.get_overdue_users(study_df)
 
-		return dash_table.DataTable(
-			id='table',
-			columns=[{"name": i, "id": i} for i in study_df.columns],
-			fixed_columns={'headers': True, 'data': 1},
-			style_table={'maxWidth': '1000px'},
-			data=study_df.to_dict('records'),
-			style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
-			style_header={
-				'backgroundColor': 'rgb(230, 230, 230)',
-				'fontWeight': 'bold'
-			},
-			style_data_conditional=conditional_list,
-			row_selectable='multi'
-		)
+		return html.Div(children=[dash_table.DataTable(
+				id='table',
+				columns=[{"name": i, "id": i} for i in study_df.columns],
+				fixed_columns={'headers': True, 'data': 1},
+				style_table={'maxWidth': '1000px'},
+				data=study_df.to_dict('records'),
+				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
+				style_header={
+					'backgroundColor': 'rgb(230, 230, 230)',
+					'fontWeight': 'bold'
+				},
+				style_data_conditional=conditional_list,
+				row_selectable='multi'),
+			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
 
 	def get_study_details(self):
 		duration = self.study_json["duration"]
@@ -134,7 +135,7 @@ class Study:
 			active_user_table = html.Div("No data available.")
 		return html.Div([
 			html.Br(),
-			self.get_study_details(),
+			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
 			html.Br(),
 			html.Div(children=[
 				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
@@ -142,7 +143,7 @@ class Study:
 			html.Br(),
 			active_user_table,
 			html.Br(),
-			html.Div(children=html.A(id='download-sheet-zip', children='Download study sheets'), style={'padding-top': '8px'}),
+			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
 		])
 
 	def get_overdue_users(self, study_df):
@@ -251,9 +252,16 @@ class Study:
 
 	def zip_unused_sheets(self):
 		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
-		if os.path.isfile(zip_file):
+		if os.path.isfile(zip_path):
 			os.remove(zip_path)
 		all_subject_list = np.array(os.listdir(self.sheets_path))
 		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
 		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
 		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
+
+	def zip_marked_sheets(self, marked_sheets):
+		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
+		if os.path.isfile(zip_path):
+			os.remove(zip_path)
+		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
+		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))

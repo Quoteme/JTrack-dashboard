@@ -17,3 +17,9 @@
     border-style:solid;
     border-color:#004176;
 }
+
+a.button {
+    -moz-appearance: button;
+    text-decoration: none;
+    color: #004176;
+}

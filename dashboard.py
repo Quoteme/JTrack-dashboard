@@ -148,7 +148,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 
 @app.callback([Output('current-selected-study', 'children'),
-               Output('download-sheet-zip', 'href')],
+               Output('download-unused-sheets-zip', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -176,7 +176,7 @@ def display_study_info_callback(study_id):
 
     if study_id:
         study = Study.from_study_id(study_id)
-        return study.get_study_info_div(), '/download-sheets-' + study_id
+        return study.get_study_info_div(), '/download-unused-sheets-zip-' + study_id
     else:
         PreventUpdate
 
@@ -195,7 +195,30 @@ def create_additional_subjects(btn, study_id, number_of_subjects):
     return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
 
 
-@app.server.route('/download-sheets-<string:study_id>')
+@app.callback(Output('download-marked-sheets-zip', 'href'),
+              [Input('table', 'selected_row_ids')],
+              [State('current-study-list', 'value')])
+def update_marked_sheets_download_link(selected_rows, study_id):
+    if len(selected_rows) and study_id:
+        return '/download-marked-sheets-zip-' + (study_id + '-' + '-'.join(selected_rows))
+
+    else:
+        PreventUpdate
+
+
+@app.server.route('/download-marked-sheets-zip-<string:study_id_and_row_ids>')
+def download_marked_sheets(study_id_and_row_ids):
+    study_id = str(study_id_and_row_ids).split('-')[0]
+    marked_sheets = str(study_id_and_row_ids).split('-')[1:]
+
+    selected_study = Study.from_study_id(study_id)
+    selected_study.zip_marked_sheets(marked_sheets)
+    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
+                     mimetype='application/zip',
+                     as_attachment=True)
+
+
+@app.server.route('/download-unused-sheets-zip-<string:study_id>')
 def download_sheets(study_id):
     """Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
 
