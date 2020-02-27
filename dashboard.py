@@ -182,6 +182,7 @@ def display_study_info_callback(study_id):
         return study.get_study_info_div(), '/download-unused-sheets-zip-' + study_id
     else:
         PreventUpdate
+    return html.Div(''), ''
 
 
 @app.callback(Output('close-selected-study-output-state', 'children'),
@@ -197,6 +198,7 @@ def close_study_callback(btn, study_id):
         return html.Div('Study already closed!')
     else:
         PreventUpdate
+    return html.Div('')
 
 
 @app.callback([Output('total-subjects', 'children'),
