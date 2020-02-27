@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
+from jutrack_dashboard_worker import zip_file, dash_study_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
@@ -194,13 +195,13 @@ def create_additional_subjects(btn, study_id, number_of_subjects):
     return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
 
 
-@app.server.route('/download-sheets-<string:study_name>')
-def download_sheets(study_name):
+@app.server.route('/download-sheets-<string:study_id>')
+def download_sheets(study_id):
     """Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
 
             Parameters
             ----------
-             study_name
+             study_id
                 specified study of which the sheets should be downloaded
 
             Return
@@ -208,7 +209,9 @@ def download_sheets(study_name):
                 Flask send_file which delivers the zip belonging to the study
     """
 
-    return send_file(sheets_path + '/' + study_name + '_subject_sheets.zip',
+    selected_study = Study.from_study_id(study_id)
+    selected_study.zip_unused_sheets()
+    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
                      mimetype='application/zip',
                      as_attachment=True)
 

@@ -10,7 +10,7 @@ import qrcode
 from datalad.api import Dataset
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
-	qr_folder, sheets_folder
+	qr_folder, sheets_folder, zip_file
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, StudyCsvMissingException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
@@ -98,7 +98,8 @@ class Study:
 				'backgroundColor': 'rgb(230, 230, 230)',
 				'fontWeight': 'bold'
 			},
-			style_data_conditional=conditional_list
+			style_data_conditional=conditional_list,
+			row_selectable='multi'
 		)
 
 	def get_study_details(self):
@@ -247,3 +248,12 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 		study_date_set.save(self.study_json, message=msg, recursive=True)
+
+	def zip_unused_sheets(self):
+		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
+		if os.path.isfile(zip_file):
+			os.remove(zip_path)
+		all_subject_list = np.array(os.listdir(self.sheets_path))
+		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
+		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
+		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))

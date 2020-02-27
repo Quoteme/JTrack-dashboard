@@ -2,7 +2,6 @@ table {
   border-collapse: collapse;
   overflow:auto;
   display: inline-block;
-  width:60%;
-  height:480px;
+  height:320px;
   border=1;
 }

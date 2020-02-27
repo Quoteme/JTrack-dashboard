@@ -6,6 +6,7 @@ dash_study_folder = 'Studies'
 os.makedirs(dash_study_folder, exist_ok=True)
 sheets_folder = 'Subject-Sheets'
 qr_folder = 'QR-Codes'
+zip_file = 'sheets.zip'
 
 storage_folder = '/mnt/jutrack_data'
 csv_prefix = 'jutrack_dashboard_'
