@@ -10,7 +10,7 @@ from flask import send_file
 from jutrack_dashboard_worker import zip_file, dash_study_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
 from jutrack_dashboard_worker.Study import Study
-from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
+from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu, get_close_study_div
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -38,14 +38,15 @@ app.layout = html.Div([
               [Input('create-button', 'n_clicks'),
                Input('current-studies', 'n_clicks'),
                Input('about-button', 'n_clicks'),
-               Input('home-button', 'n_clicks')
+               Input('home-button', 'n_clicks'),
+               Input('close-button', 'n_clicks')
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
+def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     """Callback reacting if a menu button is clicked. Returns clicked button content
 
             Parameters
            ----------
-            btn1, btn2, btn3
+            btn1, btn2, btn3, btn4, btn5
                 Click counter of buttons. Not used due to dash.callback_context syntax. Given by
                 Inputs('button', 'n_clicks').
 
@@ -63,6 +64,8 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
             return get_create_study_div()
         if button_id == 'current-studies':
             return get_current_studies_div()
+        if button_id == 'close-button':
+            return get_close_study_div()
         if button_id == 'about-button':
             return get_about_div()
         if button_id == 'home-button':
@@ -181,12 +184,27 @@ def display_study_info_callback(study_id):
         PreventUpdate
 
 
+@app.callback(Output('close-selected-study-output-state', 'children'),
+              [Input('close-study-button', 'n_clicks')],
+              [State('close-study-list', 'value')])
+def close_study_callback(btn, study_id):
+    try:
+        if study_id:
+            study_to_close = Study.from_study_id(study_id)
+            study_to_close.close()
+            return html.Div('Study closed.')
+    except FileNotFoundError:
+        return html.Div('Study already closed!')
+    else:
+        PreventUpdate
+
+
 @app.callback([Output('total-subjects', 'children'),
                Output('create-additional-subjects-input', 'value')],
               [Input('create-additional-subjects-button', 'n_clicks')],
               [State('current-study-list', 'value'),
                State('create-additional-subjects-input', 'value')])
-def create_additional_subjects(btn, study_id, number_of_subjects):
+def create_additional_subjects_callback(btn, study_id, number_of_subjects):
     study_to_extend = Study.from_study_id(study_id)
     if btn and number_of_subjects:
         study_to_extend.create_additional_subjects(number_of_subjects)
@@ -198,10 +216,9 @@ def create_additional_subjects(btn, study_id, number_of_subjects):
 @app.callback(Output('download-marked-sheets-zip', 'href'),
               [Input('table', 'selected_row_ids')],
               [State('current-study-list', 'value')])
-def update_marked_sheets_download_link(selected_rows, study_id):
+def update_marked_sheets_download_link_callback(selected_rows, study_id):
     if len(selected_rows) and study_id:
         return '/download-marked-sheets-zip-' + (study_id + '-' + '-'.join(selected_rows))
-
     else:
         PreventUpdate
 

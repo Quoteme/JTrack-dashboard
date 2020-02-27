@@ -1,8 +1,8 @@
 import json
 import os
 
-import dash_html_components as html
 import dash_core_components as dcc
+import dash_html_components as html
 import dash_table
 import numpy as np
 import pandas as pd
@@ -10,8 +10,8 @@ import qrcode
 from datalad.api import Dataset
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
-	qr_folder, sheets_folder, zip_file
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, StudyCsvMissingException
+	qr_folder, sheets_folder, zip_file, archive_folder
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
 
@@ -265,3 +265,10 @@ class Study:
 			os.remove(zip_path)
 		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
 		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
+
+	def close(self):
+		archived_study_path = archive_folder + '/' + self.study_id
+		os.makedirs(archived_study_path, exist_ok=True)
+		os.rename(studies_folder + '/' + self.study_id, archived_study_path + '/' + self.study_id)
+		if os.path.isfile(self.study_csv):
+			os.rename(self.study_csv, archived_study_path + '/' + csv_prefix + self.study_id + '.csv')

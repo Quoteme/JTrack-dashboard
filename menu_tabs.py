@@ -16,6 +16,8 @@ def create_menu():
         html.Br(),
         html.Button(id='current-studies', children='Current Studies'),
         html.Br(),
+        html.Button(id='close-button', children='Close Study'),
+        html.Br(),
         html.Button(id='about-button', children='About'),
         html.Br(),
         html.Button(id='home-button', children='Home')
@@ -75,6 +77,31 @@ def get_current_studies_div():
             html.Br(),
             # is filled when study is selected
             html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'}),
+        ])
+    ])
+
+
+def get_close_study_div():
+    """Returns the current studies div
+
+            Return
+            ------
+            Current studies div
+    """
+
+    current_studies = list_studies()
+    study_list = []
+    for study in current_studies:
+        study_list.append({'label': study, 'value': study})
+    return html.Div(id='close-studies-div', children=[
+        html.Div(id='close-study-div', className='column-big', children=[
+            html.H2('Close Studies'),
+            html.Div(className='column-medium', children=dcc.Dropdown(id='close-study-list', options=study_list)),
+            html.Br(),
+            html.Br(),
+            html.Button(id='close-study-button', children='Close study'),
+            html.Br(),
+            html.Div(id='close-selected-study-output-state', className='row', style={'padding-top': '24px'}),
         ])
     ])
 

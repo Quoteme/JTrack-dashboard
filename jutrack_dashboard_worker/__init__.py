@@ -14,7 +14,10 @@ if getpass.getuser() == 'msfz':
     home = os.environ['HOME']
     storage_folder = home + '/mnt/jutrack_data'
     os.makedirs(storage_folder + '/studys', exist_ok=True)
+    os.makedirs(storage_folder + '/archive', exist_ok=True)
+
 studies_folder = storage_folder + '/studys'
+archive_folder = storage_folder + '/archive'
 users_folder = storage_folder + '/users'
 
 
