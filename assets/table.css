@@ -1,0 +1,7 @@
+table {
+  border-collapse: collapse;
+  overflow:auto;
+  display: inline-block;
+  height:320px;
+  border=1;
+}

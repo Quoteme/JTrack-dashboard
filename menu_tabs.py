@@ -16,7 +16,11 @@ def create_menu():
         html.Br(),
         html.Button(id='current-studies', children='Current Studies'),
         html.Br(),
-        html.Button(id='about-button', children='About')
+        html.Button(id='close-button', children='Close Study'),
+        html.Br(),
+        html.Button(id='about-button', children='About'),
+        html.Br(),
+        html.Button(id='home-button', children='Home')
     ])
 
 
@@ -35,18 +39,22 @@ def get_create_study_div():
         html.H2(children='Create new study'),
         html.Div(children=[html.Span(children='Study name: ', style={'padding-right': '49px'}),
                            dcc.Input(id='create-study-name-input', placeholder='Your study', type='text')]),
-        html.Div(children=[html.Span(children='Study duration: ', style={'padding-right': '31px'}),
+        html.Div(children=[html.Span(children='Study duration: ', style={'padding-right': '30px'}),
                            dcc.Input(id='create-study-duration-input', placeholder='Days', type='number', min='1')]),
         html.Div(children=[html.Span(children='Number of subjects: '),
                            dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number',
                                      min='0')]),
+        html.Div(children=[html.Span(children='Study description:', style={'padding-right': '16px'}),
+                           dcc.Textarea(id='create-study-description', placeholder="Enter study description", maxLength='128',
+                                        style={'height': '48px', 'widht': '96px', 'margin-top': '12px'})]),
         html.Br(),
         html.Div(children=[html.Span(children='Sensors: '),
                            dcc.Checklist(id='create-study-sensors-checklist', options=sensor_checkboxes,
                                          labelStyle={'display': 'block'},
                                          style={'margin-left': '132px', 'margin-top': '-18px'})]),
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
-        html.P(id='create-study-output-state', style={'padding-top': '24px'}),
+        # is filled if user tries to create study, reset also other input fields
+        dcc.Loading(id='loading-create-study', children=[html.P(id='create-study-output-state', style={'padding-top': '30px'})], type='circle')
     ])
 
 
@@ -65,9 +73,35 @@ def get_current_studies_div():
     return html.Div(id='current-studies-div', children=[
         html.Div(id='current-study-div', className='column-big', children=[
             html.H2('Current Studies'),
-            html.Div(id='dropdown-container', className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
+            html.Div(className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
             html.Br(),
-            html.Div(id='current-selected-study', className='row', style={'padding-top': '16px'})
+            # is filled when study is selected
+            html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'}),
+        ])
+    ])
+
+
+def get_close_study_div():
+    """Returns the current studies div
+
+            Return
+            ------
+            Current studies div
+    """
+
+    current_studies = list_studies()
+    study_list = []
+    for study in current_studies:
+        study_list.append({'label': study, 'value': study})
+    return html.Div(id='close-studies-div', children=[
+        html.Div(id='close-study-div', className='column-big', children=[
+            html.H2('Close Studies'),
+            html.Div(className='column-medium', children=dcc.Dropdown(id='close-study-list', options=study_list)),
+            html.Br(),
+            html.Br(),
+            html.Button(id='close-study-button', children='Close study'),
+            html.Br(),
+            html.Div(id='close-selected-study-output-state', className='row', style={'padding-top': '24px'}),
         ])
     ])
 

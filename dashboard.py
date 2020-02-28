@@ -1,13 +1,16 @@
+import time
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
-from jutrack_dashboard_worker.create_study import create_study
-from jutrack_dashboard_worker.study_info import get_study_info_div
-from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu
-import json
+
+from jutrack_dashboard_worker import zip_file, dash_study_folder
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
+from jutrack_dashboard_worker.Study import Study
+from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu, get_close_study_div
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -35,13 +38,15 @@ app.layout = html.Div([
               [Input('create-button', 'n_clicks'),
                Input('current-studies', 'n_clicks'),
                Input('about-button', 'n_clicks'),
+               Input('home-button', 'n_clicks'),
+               Input('close-button', 'n_clicks')
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3):
+def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     """Callback reacting if a menu button is clicked. Returns clicked button content
 
             Parameters
            ----------
-            btn1, btn2, btn3
+            btn1, btn2, btn3, btn4, btn5
                 Click counter of buttons. Not used due to dash.callback_context syntax. Given by
                 Inputs('button', 'n_clicks').
 
@@ -59,8 +64,12 @@ def display_menu_tab_content_callback(btn1, btn2, btn3):
             return get_create_study_div()
         if button_id == 'current-studies':
             return get_current_studies_div()
+        if button_id == 'close-button':
+            return get_close_study_div()
         if button_id == 'about-button':
             return get_about_div()
+        if button_id == 'home-button':
+            return html.Div()
     else:
         return
 
@@ -69,13 +78,15 @@ def display_menu_tab_content_callback(btn1, btn2, btn3):
                Output('create-study-name-input', 'value'),
                Output('create-study-duration-input', 'value'),
                Output('create-study-subject-number', 'value'),
+               Output('create-study-description', 'value'),
                Output('create-study-sensors-checklist', 'value')],
               [Input('create-study-button', 'n_clicks')],
               [State('create-study-name-input', 'value'),
                State('create-study-duration-input', 'value'),
                State('create-study-subject-number', 'value'),
+               State('create-study-description', 'value'),
                State('create-study-sensors-checklist', 'value')])
-def create_study_callback(n_clicks, study_name, study_duration, number_subjects, sensors):
+def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors):
     """
     TODO:   Give a certain pattern for study names
     Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
@@ -93,6 +104,8 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             number_subjects
                 Initial number of subjects enrolled. Subjects are stored with consecutive numbers in name. Given
                 by State('create-study-subject-number', 'value').
+            description
+                Study description
             sensors
                 List of selected sensors. Given by State('create-study-sensors-checklist', 'value').
 
@@ -111,7 +124,6 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
     """
 
     if n_clicks:
-        output_state = ''
         if not study_name or not study_duration or not sensors:
             if not study_name:
                 output_state = 'Please enter a study name!'
@@ -119,27 +131,29 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                 output_state = 'Please enter a study duration!'
             elif not sensors:
                 output_state = 'Please select sensors!'
-            return output_state, study_name, study_duration, number_subjects, sensors
+            return output_state, study_name, study_duration, number_subjects, description, sensors
 
         else:
-            new_study_json_str = json.dumps({"name": study_name,
-                                             "duration": study_duration,
-                                             "number-of-subjects": number_subjects,
-                                             "sensor-list": sensors})
-            new_study_json = json.loads(new_study_json_str)
-            if create_study(new_study_json):
-                return 'You created the study:\t' + study_name, '', '', '', []
-            else:
-                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, sensors
-
+            json_dict = {"name": study_name,
+                         "duration": str(study_duration),
+                         "number-of-subjects": str(number_subjects),
+                         "description": description,
+                         "sensor-list": sensors,
+                         "enrolled-subjects": []}
+            new_study = Study.from_json_dict(json_dict)
+            try:
+                new_study.create()
+                return 'You created the study:\t' + study_name, '', '', '', '', []
+            except StudyAlreadyExistsException:
+                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors
     else:
         raise PreventUpdate
 
 
 @app.callback([Output('current-selected-study', 'children'),
-               Output('download-sheet-zip', 'href')],
+               Output('download-unused-sheets-zip', 'href')],
               [Input('current-study-list', 'value')])
-def display_study_info_callback(study_name):
+def display_study_info_callback(study_id):
     """
     TODO:   Display subject information as a table below.
     Callback to display study info of chosen study on drop down selection. Provides information as well as the
@@ -147,7 +161,7 @@ def display_study_info_callback(study_name):
 
            Parameters
            ----------
-            study_name
+            study_id
                 Name of the study which information should be displayed. The value is transferred by a drop down menu.
                 Given by Input('current-study-list', 'value').
 
@@ -163,19 +177,73 @@ def display_study_info_callback(study_name):
                 download subject sheets in Output('download-sheet-zip', 'href')
     """
 
-    if study_name:
-        return get_study_info_div(study_name), '/download-sheets-' + study_name
+    if study_id:
+        study = Study.from_study_id(study_id)
+        return study.get_study_info_div(), '/download-unused-sheets-zip-' + study_id
+    else:
+        PreventUpdate
+    return html.Div(''), ''
+
+
+@app.callback(Output('close-selected-study-output-state', 'children'),
+              [Input('close-study-button', 'n_clicks')],
+              [State('close-study-list', 'value')])
+def close_study_callback(btn, study_id):
+    try:
+        if study_id:
+            study_to_close = Study.from_study_id(study_id)
+            study_to_close.close()
+            return html.Div('Study closed.')
+    except FileNotFoundError:
+        return html.Div('Study already closed!')
+    else:
+        PreventUpdate
+    return html.Div('')
+
+
+@app.callback([Output('total-subjects', 'children'),
+               Output('create-additional-subjects-input', 'value')],
+              [Input('create-additional-subjects-button', 'n_clicks')],
+              [State('current-study-list', 'value'),
+               State('create-additional-subjects-input', 'value')])
+def create_additional_subjects_callback(btn, study_id, number_of_subjects):
+    study_to_extend = Study.from_study_id(study_id)
+    if btn and number_of_subjects:
+        study_to_extend.create_additional_subjects(number_of_subjects)
+    else:
+        PreventUpdate
+    return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
+
+
+@app.callback(Output('download-marked-sheets-zip', 'href'),
+              [Input('table', 'selected_row_ids')],
+              [State('current-study-list', 'value')])
+def update_marked_sheets_download_link_callback(selected_rows, study_id):
+    if len(selected_rows) and study_id:
+        return '/download-marked-sheets-zip-' + (study_id + '-' + '-'.join(selected_rows))
     else:
         PreventUpdate
 
 
-@app.server.route('/download-sheets-<string:study_name>')
-def download_sheets(study_name):
+@app.server.route('/download-marked-sheets-zip-<string:study_id_and_row_ids>')
+def download_marked_sheets(study_id_and_row_ids):
+    study_id = str(study_id_and_row_ids).split('-')[0]
+    marked_sheets = str(study_id_and_row_ids).split('-')[1:]
+
+    selected_study = Study.from_study_id(study_id)
+    selected_study.zip_marked_sheets(marked_sheets)
+    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
+                     mimetype='application/zip',
+                     as_attachment=True)
+
+
+@app.server.route('/download-unused-sheets-zip-<string:study_id>')
+def download_sheets(study_id):
     """Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
 
             Parameters
             ----------
-             study_name
+             study_id
                 specified study of which the sheets should be downloaded
 
             Return
@@ -183,7 +251,9 @@ def download_sheets(study_name):
                 Flask send_file which delivers the zip belonging to the study
     """
 
-    return send_file('Subject-Sheets/' + study_name + '_subject_sheets.zip',
+    selected_study = Study.from_study_id(study_id)
+    selected_study.zip_unused_sheets()
+    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
                      mimetype='application/zip',
                      as_attachment=True)
 
