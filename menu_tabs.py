@@ -4,11 +4,11 @@ from jutrack_dashboard_worker import list_studies, get_sensor_list
 
 
 def create_menu():
-    """Create the menu list on the left site of the page
+    """
+    Create the menu list on the left site of the page
 
-            Returns
-            -------
-            Div containing buttons for navigation
+    :return: Div containing buttons for navigation
+
     """
 
     return html.Div(id='menu-items', style={'padding': '12px'}, children=[
@@ -25,11 +25,10 @@ def create_menu():
 
 
 def get_create_study_div():
-    """Returns the create study div
+    """
+    Returns the create study div
 
-            Return
-            -------
-            Create study div containing: title, input fields for study name, study duration and number of subjects and
+    :return: Create study div containing: title, input fields for study name, study duration and number of subjects and
             a list containing sensor + checkboxes
     """
 
@@ -59,11 +58,11 @@ def get_create_study_div():
 
 
 def get_current_studies_div():
-    """Returns the current studies div
+    """
+    Returns the current studies div
 
-            Return
-            ------
-            Current studies div
+    :return: Current studies div
+
     """
 
     current_studies = list_studies()
@@ -82,11 +81,10 @@ def get_current_studies_div():
 
 
 def get_close_study_div():
-    """Returns the current studies div
+    """
+    Returns the current studies div
 
-            Return
-            ------
-            Current studies div
+    :return: Current studies div
     """
 
     current_studies = list_studies()
@@ -107,11 +105,10 @@ def get_close_study_div():
 
 
 def get_about_div():
-    """Returns the about div
+    """
+    Returns the about div
 
-            Return
-            ------
-            About Div
+    :return: About Div
     """
 
     return html.Div(id='about1-div', children=html.P(id='about1-p', children=[

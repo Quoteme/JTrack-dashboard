@@ -3,8 +3,8 @@ from fpdf import FPDF
 
 class SubjectPDF(FPDF):
     """
-        This class specifies the pdf output format of subject study sheets. Several information like study name, the QR-Code
-        to enroll and subject name are stored.
+    This class specifies the pdf output format of subject study sheets. Several information like study name, the QR-Code
+    to enroll and subject name are stored.
     """
     subject_name = 'Subject'
 
@@ -13,8 +13,8 @@ class SubjectPDF(FPDF):
         self.subject_name = subj_name
 
     def header(self):
-        """prints a header of a new page (executed if pdf.add_page())
-
+        """
+        prints a header of a new page (executed if pdf.add_page())
         """
 
         # Arial bold 15
@@ -27,12 +27,11 @@ class SubjectPDF(FPDF):
         self.set_font("Arial", size=12)
 
     def draw_input_line(self, input_name):
-        """Draws a line which serves as a input field where you can write several information
+        """
+        Draws a line which serves as a input field where you can write several information
 
-            Parameters
-            ----------
-             input_name
-                 Corresponding name of the input.
+        :param input_name: Corresponding name of the input
+        :return:
         """
 
         self.cell(40, 10, txt=input_name, ln=0, align='L')
@@ -41,14 +40,12 @@ class SubjectPDF(FPDF):
         self.ln(10)
 
     def draw_input_line_filled(self, input_name, write_on_line_text):
-        """Draws a line which serves as a input field where you can write several information. Input field will be written already.
+        """
+        Draws a line which serves as a input field where you can write several information. Input field will be written already
 
-            Parameters
-            ----------
-             input_name
-                 Corresponding name of the input.
-             write_on_line_text
-                 Text which should be written on the line.
+        :param input_name: Corresponding name of the input
+        :param write_on_line_text: Text which should be written on the line
+        :return:
         """
 
         self.cell(40, 10, txt=input_name, ln=0, align='L')
@@ -58,18 +55,24 @@ class SubjectPDF(FPDF):
         self.ln(10)
 
     def text_field(self, text):
-        """Draws text field.
+        """
+        Draws text field
 
-            Parameters
-            ----------
-             text
-                 text to display
+        :param text: text to display
+        :return:
         """
 
         self.cell(40, 10, txt=text, ln=0, align='L')
         self.ln(10)
 
     def qr_code(self, qr_code_path, number_codes):
+        """
+        Draws all 4 qr codes for different activations
+
+        :param qr_code_path: path to qr_code to img file. Only needs the activation number to be completed
+        :param number_codes: number of activation codes (4)
+        :return:
+        """
         for i in range(1, number_codes):
             self.text_field('Activation ' + str(i))
             self.draw_input_line('Date of activation')
