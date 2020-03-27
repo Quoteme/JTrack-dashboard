@@ -44,7 +44,8 @@ def get_create_study_div():
                            dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number',
                                      min='0')]),
         html.Div(children=[html.Span(children='Study description:', style={'padding-right': '16px'}),
-                           dcc.Textarea(id='create-study-description', placeholder="Enter study description", maxLength='128',
+                           dcc.Textarea(id='create-study-description', placeholder="Enter study description",
+                                        maxLength='128',
                                         style={'height': '48px', 'widht': '96px', 'margin-top': '12px'})]),
         html.Br(),
         html.Div(children=[html.Span(children='Sensors: '),
@@ -53,7 +54,8 @@ def get_create_study_div():
                                          style={'margin-left': '132px', 'margin-top': '-18px'})]),
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
         # is filled if user tries to create study, reset also other input fields
-        dcc.Loading(id='loading-create-study', children=[html.P(id='create-study-output-state', style={'padding-top': '30px'})], type='circle')
+        dcc.Loading(id='loading-create-study',
+                    children=[html.P(id='create-study-output-state', style={'padding-top': '30px'})], type='circle')
     ])
 
 

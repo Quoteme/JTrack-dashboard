@@ -19,14 +19,15 @@ logo = app.get_asset_url('jutrack.png')
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='top-bar', className='row jutrack-background', children=[
-        html.Div(id='image-container', className='column-small', children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
+        html.Div(id='image-container', className='column-small',
+                 children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
         html.H1(id='header', className='column-big', children='JuTrack Dashboard',
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'})
     ]),
     html.Div(id='menu-and-content', className='row', children=[
         html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'}, children=
-                 [html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
+        [html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
         html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')
     ]),
 ])

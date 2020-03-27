@@ -87,7 +87,8 @@ class Study:
 		os.makedirs(self.sheets_path, exist_ok=True)
 
 		# store json file with meta data
-		self.save_study_json("new file " + self.json_file_path + " for study, " + str(initial_subject_number) + ' subjects created')
+		self.save_study_json(
+			"new file " + self.json_file_path + " for study, " + str(initial_subject_number) + ' subjects created')
 
 		# create subjects depending on initial subject number
 		self.create_sheets_wrt_total_subject_number()
@@ -103,9 +104,9 @@ class Study:
 		if os.path.isfile(self.study_csv):
 			os.rename(self.study_csv, archived_study_path + '/' + csv_prefix + self.study_id + '.csv')
 
-####################################################################
-# ----------------------- Sheets zipping ------------------------- #
-####################################################################
+	####################################################################
+	# ----------------------- Sheets zipping ------------------------- #
+	####################################################################
 
 	def zip_unused_sheets(self):
 		"""
@@ -116,8 +117,10 @@ class Study:
 		if os.path.isfile(zip_path):
 			os.remove(zip_path)
 		all_subject_list = np.array(os.listdir(self.sheets_path))
-		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
-		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
+		enrolled_subject_list = np.array(
+			[enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
+		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in
+								 np.setdiff1d(all_subject_list, enrolled_subject_list)]
 		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
 
 	def zip_marked_sheets(self, marked_sheets):
@@ -132,9 +135,9 @@ class Study:
 		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
 		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
 
-####################################################################
-# ----------------------- Subject creation ----------------------- #
-####################################################################
+	####################################################################
+	# ----------------------- Subject creation ----------------------- #
+	####################################################################
 
 	def create_additional_subjects(self, number_of_subjects):
 		"""
@@ -221,9 +224,9 @@ class Study:
 
 		pdf.output(pdf_path)
 
-####################################################################
-# ------------------------- JSON control ------------------------- #
-####################################################################
+	####################################################################
+	# ------------------------- JSON control ------------------------- #
+	####################################################################
 
 	def save_study_json(self, msg):
 		"""
@@ -247,9 +250,35 @@ class Study:
 		self.study_json["enrolled-subjects"] = active_subjects
 		self.save_study_json(msg='active subjects list adjusted. Now ' + str(len(active_subjects)) + ' active subjects')
 
-####################################################################
-# ----------------------------- Divs ----------------------------- #
-####################################################################
+	####################################################################
+	# ----------------------------- Divs ----------------------------- #
+	####################################################################
+
+	def get_study_info_div(self):
+		"""
+		Returns information of specified study as a div
+
+		:return: Study information div
+		"""
+
+		try:
+			self.refresh_json_with_active_subjects()
+			active_subjects_table = self.get_active_subjects_data_table_div()
+		except FileNotFoundError or KeyError:
+			active_subjects_table = html.Div("No data available.")
+		return html.Div([
+			html.Br(),
+			dcc.Loading(id='loading-study-details', children=[self.get_study_details_div()], type='circle'),
+			html.Br(),
+			html.Div(children=[
+				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number',
+						  min='0'),
+				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
+			html.Br(),
+			active_subjects_table,
+			html.Br(),
+			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
+		])
 
 	def get_active_subjects_data_table_div(self):
 		"""
@@ -265,18 +294,18 @@ class Study:
 		conditional_list = self.get_overdue_subjects(study_df)
 
 		return html.Div(children=[dash_table.DataTable(
-				id='table',
-				columns=[{"name": i, "id": i} for i in study_df.columns],
-				fixed_columns={'headers': True, 'data': 1},
-				style_table={'maxWidth': '1000px'},
-				data=study_df.to_dict('records'),
-				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
-				style_header={
-					'backgroundColor': 'rgb(230, 230, 230)',
-					'fontWeight': 'bold'
-				},
-				style_data_conditional=conditional_list,
-				row_selectable='multi'),
+			id='table',
+			columns=[{"name": i, "id": i} for i in study_df.columns],
+			fixed_columns={'headers': True, 'data': 1},
+			style_table={'maxWidth': '1000px'},
+			data=study_df.to_dict('records'),
+			style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
+			style_header={
+				'backgroundColor': 'rgb(230, 230, 230)',
+				'fontWeight': 'bold'
+			},
+			style_data_conditional=conditional_list,
+			row_selectable='multi'),
 			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
 
 	def get_study_details_div(self):
@@ -295,37 +324,11 @@ class Study:
 		return html.Div(children=[
 			html.P(description, style={'padding-left': '12px'}),
 			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
+			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects,
+				   style={'padding-left': '24px'}),
 			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
 			html.P("Sensors: " + ", ".join(sensor_list), style={'padding-left': '24px'})
 		], className='div-border', style={'width': '320px'})
-
-	def get_study_info_div(self):
-		"""
-		Returns information of specified study as a div
-
-		:return: Study information div
-		"""
-
-		try:
-			self.refresh_json_with_active_subjects()
-			active_subjects_table = self.get_active_subjects_data_table_div()
-		except FileNotFoundError or KeyError:
-			active_subjects_table = html.Div("No data available.")
-		except KeyError:
-			active_subjects_table = html.Div("No data available.")
-		return html.Div([
-			html.Br(),
-			dcc.Loading(id='loading-study-details', children=[self.get_study_details_div()], type='circle'),
-			html.Br(),
-			html.Div(children=[
-				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
-				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-			html.Br(),
-			active_subjects_table,
-			html.Br(),
-			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
-		])
 
 	def get_overdue_subjects(self, study_df):
 		"""
