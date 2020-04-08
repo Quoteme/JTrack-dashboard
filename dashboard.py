@@ -1,4 +1,5 @@
 import dash
+import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -13,6 +14,14 @@ from menu_tabs import get_about_div, get_create_study_div, get_current_studies_d
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'admin': 'ju7r4K!'
+}
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
+
 logo = app.get_asset_url('jutrack.png')
 
 # General dash app layout
