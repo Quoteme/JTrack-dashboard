@@ -7,7 +7,6 @@ import dash_table
 import numpy as np
 import pandas as pd
 import qrcode
-from datalad.api import Dataset
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder
@@ -66,9 +65,9 @@ class Study:
 	def create(self):
 		"""
 		Create study using underlying json data which contains study_name, initial number of subjects, study duration and a list
-		of sensors to be used. The new study is created in the storage folder and deposited as a Datalad data set. Further,
+		of sensors to be used. The new study is created in the storage folder. Further,
 		folders for qr codes and subjects sheets will be create within the dashboard project and filled with corresponding qr codes
-		and pdfs. Lastly, a json file containing meta data of the study is stored within the Datalad data set.
+		and pdfs. Lastly, a json file containing meta data of the study is stored.
 
 		:return: True or False depending if creation succeeded. False if and only if study already exists.
 		"""
@@ -77,18 +76,15 @@ class Study:
 		if os.path.isdir(self.study_path):
 			raise StudyAlreadyExistsException
 
-		# creates study folder in storage folder and stores it as datalad data set
+		# creates study folder in storage folder
 		os.makedirs(self.study_path)
-		study_date_set = Dataset(self.study_path)
-		study_date_set.create(self.study_path)
 
 		# generate folders for qr codes and subject sheets in dashboard folder of study
 		os.makedirs(self.qr_path, exist_ok=True)
 		os.makedirs(self.sheets_path, exist_ok=True)
 
 		# store json file with meta data
-		self.save_study_json(
-			"new file " + self.json_file_path + " for study, " + str(initial_subject_number) + ' subjects created')
+		self.save_study_json()
 
 		# create subjects depending on initial subject number
 		self.set_sheets_to_subject_number()
@@ -197,7 +193,7 @@ class Study:
 		df = pd.read_csv(self.study_csv)
 		active_subjects = np.array(df['subject_name'].unique()).tolist()
 		self.study_json["enrolled-subjects"] = active_subjects
-		self.save_study_json(msg='active subjects list adjusted. Now ' + str(len(active_subjects)) + ' active subjects')
+		self.save_study_json()
 
 	def create_additional_subjects(self, number_of_subjects):
 		"""
@@ -206,7 +202,7 @@ class Study:
 		:return:
 		"""
 		self.study_json["number-of-subjects"] = str(int(self.study_json["number-of-subjects"]) + number_of_subjects)
-		self.save_study_json(msg='number of current subjects set to ' + self.study_json["number-of-subjects"])
+		self.save_study_json()
 		self.set_sheets_to_subject_number()
 
 	def set_sheets_to_subject_number(self):
@@ -284,17 +280,13 @@ class Study:
 
 		pdf.output(pdf_path)
 
-	def save_study_json(self, msg):
+	def save_study_json(self):
 		"""
-		saves the study json file and saves it within Datalad
-		:param msg: message for Datalad save operation
+		saves the study json file
 		:return:
 		"""
-
-		study_date_set = Dataset(self.study_path)
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
-		study_date_set.save(self.study_json, message=msg, recursive=True)
 
 	def zip_unused_sheets(self):
 		"""
