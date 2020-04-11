@@ -8,7 +8,9 @@ from flask import send_file
 from jutrack_dashboard_worker import zip_file, dash_study_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
 from jutrack_dashboard_worker.Study import Study
-from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, create_menu, get_close_study_div
+from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
+from websites import page_not_found, general_page, login_page
+
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -28,21 +30,16 @@ app.layout = html.Div([
     html.Div(id='menu-and-content', className='row')
 ])
 
-general_page = [html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'},
-                            children=[html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
-                   html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')]
-
-login_page = [html.Div(id='login', children=[html.Div("asdf")])]
 
 @app.callback(dash.dependencies.Output('menu-and-content', 'children'),
               [dash.dependencies.Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/':
-        return general_page
+        return general_page()
     elif pathname == '/login':
-        return login_page
+        return login_page()
     else:
-        return general_page
+        return page_not_found()
 
 
 @app.callback(Output('page-content', 'children'),
