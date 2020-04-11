@@ -1,5 +1,4 @@
 import dash
-import dash_auth
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -14,14 +13,6 @@ from menu_tabs import get_about_div, get_create_study_div, get_current_studies_d
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
-VALID_USERNAME_PASSWORD_PAIRS = {
-    'admin': 'ju7r4K!'
-}
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
-
 logo = app.get_asset_url('jutrack.png')
 
 # General dash app layout
@@ -34,12 +25,24 @@ app.layout = html.Div([
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'})
     ]),
-    html.Div(id='menu-and-content', className='row', children=[
-        html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'}, children=
-        [html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
-        html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')
-    ]),
+    html.Div(id='menu-and-content', className='row')
 ])
+
+general_page = [html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'},
+                            children=[html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
+                   html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')]
+
+login_page = [html.Div(id='login', children=[html.Div("asdf")])]
+
+@app.callback(dash.dependencies.Output('menu-and-content', 'children'),
+              [dash.dependencies.Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/':
+        return general_page
+    elif pathname == '/login':
+        return login_page
+    else:
+        return general_page
 
 
 @app.callback(Output('page-content', 'children'),
@@ -63,21 +66,20 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     """
 
     ctx = dash.callback_context
-
-    if ctx.triggered[0]['value']:
-        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        if button_id == 'create-button':
-            return get_create_study_div()
-        if button_id == 'current-studies':
-            return get_current_studies_div()
-        if button_id == 'close-button':
-            return get_close_study_div()
-        if button_id == 'about-button':
-            return get_about_div()
-        if button_id == 'home-button':
-            return html.Div()
-    else:
-        return
+    if len(ctx.triggered) > 0:
+        if ctx.triggered[0]['value']:
+            button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+            if button_id == 'create-button':
+                return get_create_study_div()
+            if button_id == 'current-studies':
+                return get_current_studies_div()
+            if button_id == 'close-button':
+                return get_close_study_div()
+            if button_id == 'about-button':
+                return get_about_div()
+            if button_id == 'home-button':
+                return html.Div()
+    return html.Div()
 
 
 @app.callback([Output('create-study-output-state', 'children'),
