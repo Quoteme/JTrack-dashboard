@@ -11,7 +11,6 @@ from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import page_not_found, general_page, login_page
 
-
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
@@ -27,19 +26,16 @@ app.layout = html.Div([
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'})
     ]),
-    html.Div(id='menu-and-content', className='row')
+    html.Div(id='menu-and-content', className='row', children=login_page())
 ])
 
 
-@app.callback(dash.dependencies.Output('menu-and-content', 'children'),
-              [dash.dependencies.Input('url', 'pathname')])
-def display_page(pathname):
-    if pathname == '/':
-        return general_page()
-    elif pathname == '/login':
-        return login_page()
-    else:
-        return page_not_found()
+@app.callback(Output('menu-and-content', 'children'),
+              [Input('login-button', 'n_clicks')],
+              [State('username', 'value'),
+               State('passwd', 'value')])
+def display_page(login_button, username, passwd):
+    raise PreventUpdate
 
 
 @app.callback(Output('page-content', 'children'),

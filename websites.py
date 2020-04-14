@@ -19,5 +19,5 @@ def login_page():
 	return [html.Div(id='login', className='center', children=[
 		html.Div(children=[html.Span("Username:"), dcc.Input(id='username', placeholder='Username', type='text', style={'margin-left': '9px'})], style={'padding': '12px'}),
 		html.Div(children=[html.Span("Password:"), dcc.Input(id='passwd', placeholder='Password', type='password', style={'margin-left': '12px'})], style={'padding': '12px'}),
-		html.Button(id='login-button', children='Login', style={'margin': '16px'}),
+		html.Button(id='login-button', children='Login', style={'margin': '16px'})
 	])]
