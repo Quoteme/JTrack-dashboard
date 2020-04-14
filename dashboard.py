@@ -5,8 +5,9 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
+from User import User
 from jutrack_dashboard_worker import zip_file, dash_study_folder
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import page_not_found, general_page, login_page
@@ -14,6 +15,7 @@ from websites import page_not_found, general_page, login_page
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
+user = User()
 logo = app.get_asset_url('jutrack.png')
 
 # General dash app layout
@@ -24,18 +26,32 @@ app.layout = html.Div([
                  children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
         html.H1(id='header', className='column-big', children='JuTrack Dashboard',
                 style={'color': 'white', 'text-align': 'center',
-                       'line-height': '102px', 'vertical-align': 'middle'})
+                       'line-height': '102px', 'vertical-align': 'middle'}),
+        html.Span(id='logged-in-as')
     ]),
     html.Div(id='menu-and-content', className='row', children=login_page())
 ])
 
 
-@app.callback(Output('menu-and-content', 'children'),
+@app.callback([Output('menu-and-content', 'children'),
+               Output('login-output-state', 'children'),
+               Output('username', 'value'),
+               Output('passwd', 'value'),
+               Output('logged-in-as', 'children')],
               [Input('login-button', 'n_clicks')],
               [State('username', 'value'),
                State('passwd', 'value')])
-def display_page(login_button, username, passwd):
-    raise PreventUpdate
+def display_page(n_clicks, username, passwd):
+    if n_clicks:
+        try:
+            user.login(username, passwd)
+            return general_page(), 'Logged in successfully!', username, '', 'Logged in as: ' + username
+        except NoSuchUserException:
+            return login_page(), 'No such user!', username, '', ''
+        except WrongPasswordException:
+            return login_page(), 'Wrong Password!', username, '', ''
+    else:
+        raise PreventUpdate
 
 
 @app.callback(Output('page-content', 'children'),
