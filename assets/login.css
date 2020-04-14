@@ -1,6 +1,5 @@
 /* Login div */
 .center {
-  margin: auto;
   width: 20%;
   border-radius: 10px;
   border-width: 3px;
@@ -8,4 +7,5 @@
   border-color: #004176;
   margin-top: 24px;
   padding-left: 16px;
+  margin-left: 16px;
 }
