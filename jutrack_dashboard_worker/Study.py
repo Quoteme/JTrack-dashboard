@@ -87,113 +87,51 @@ class Study:
 		self.save_study_json()
 
 		# create subjects depending on initial subject number
-		self.set_sheets_to_subject_number()
+		self.create_sheets_wrt_total_subject_number()
 
-	def get_active_subjects_data_table(self):
+	def close(self):
 		"""
-		This function returns a div displaying subjects' information which is stored in the data set for the study
-
-		:return: Dcc-Table containing all the enrolled subjects information
-		"""
-
-		df = pd.read_csv(self.study_csv)
-		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
-		study_df = study_df.rename(columns={"subject_name": "id"})
-
-		conditional_list = self.get_overdue_subjects(study_df)
-
-		return html.Div(children=[dash_table.DataTable(
-				id='table',
-				columns=[{"name": i, "id": i} for i in study_df.columns],
-				fixed_columns={'headers': True, 'data': 1},
-				style_table={'maxWidth': '1000px'},
-				data=study_df.to_dict('records'),
-				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
-				style_header={
-					'backgroundColor': 'rgb(230, 230, 230)',
-					'fontWeight': 'bold'
-				},
-				style_data_conditional=conditional_list,
-				row_selectable='multi'),
-			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
-
-	def get_study_details(self):
-		"""
-		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
-
-		:return: div with information
-		"""
-
-		duration = self.study_json["duration"]
-		total_number_subjects = self.study_json["number-of-subjects"]
-		enrolled_subject_list = self.study_json["enrolled-subjects"]
-		sensor_list = self.study_json["sensor-list"]
-		description = self.study_json["description"]
-
-		return html.Div(children=[
-			html.P(description, style={'padding-left': '12px'}),
-			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
-			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
-			html.P("Sensors: " + ", ".join(sensor_list), style={'padding-left': '24px'})
-		], className='div-border', style={'width': '320px'})
-
-	def get_study_info_div(self):
-		"""
-		Returns information of specified study as a div
-
-		:return: Study information div
-		"""
-
-		try:
-			self.refresh_json_with_active_subjects()
-			active_subjects_table = self.get_active_subjects_data_table()
-		except FileNotFoundError or KeyError:
-			active_subjects_table = html.Div("No data available.")
-		except KeyError:
-			active_subjects_table = html.Div("No data available.")
-		return html.Div([
-			html.Br(),
-			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
-			html.Br(),
-			html.Div(children=[
-				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
-				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-			html.Br(),
-			active_subjects_table,
-			html.Br(),
-			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
-		])
-
-	def get_overdue_subjects(self, study_df):
-		"""
-		Creates a list containing all subjects that are longer in the study as allowed
-
-		:param study_df: dataframe containing information regarding enrolled subjects
+		close a study (moves it to archive folder)
 		:return:
 		"""
-		study_duration = int(self.study_json["duration"])
-		conditional_list = []
-		overdue_subjects = []
+		archived_study_path = archive_folder + '/' + self.study_id
+		os.makedirs(archived_study_path, exist_ok=True)
+		os.rename(studies_folder + '/' + self.study_id, archived_study_path + '/' + self.study_id)
+		if os.path.isfile(self.study_csv):
+			os.rename(self.study_csv, archived_study_path + '/' + csv_prefix + self.study_id + '.csv')
 
-		for i, time_in_study in enumerate(study_df['time_in_study']):
-			days_in_study = int(str(time_in_study).split(' ')[0])
-			if days_in_study > study_duration:
-				overdue_subjects.append(i)
-		for i in overdue_subjects:
-			conditional_list.append({'if': {'row_index': i}, 'backgroundColor': '#FFA18C'})
+	####################################################################
+	# ----------------------- Sheets zipping ------------------------- #
+	####################################################################
 
-		return conditional_list
-
-	def refresh_json_with_active_subjects(self):
+	def zip_unused_sheets(self):
 		"""
-		saves the list of enrolled subjetcs into the json file (refreshes it)
+		zip all unused study sheets in order to download it later
 		:return:
 		"""
-		df = pd.read_csv(self.study_csv)
-		active_subjects = np.array(df['subject_name'].unique()).tolist()
-		self.study_json["enrolled-subjects"] = active_subjects
-		self.save_study_json()
+		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
+		if os.path.isfile(zip_path):
+			os.remove(zip_path)
+		all_subject_list = np.array(os.listdir(self.sheets_path))
+		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
+		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
+		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
+
+	def zip_marked_sheets(self, marked_sheets):
+		"""
+		zip all marked study sheets of enrolled subjects
+		:param marked_sheets: list of marked subjects
+		:return:
+		"""
+		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
+		if os.path.isfile(zip_path):
+			os.remove(zip_path)
+		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
+		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
+
+	####################################################################
+	# ----------------------- Subject creation ----------------------- #
+	####################################################################
 
 	def create_additional_subjects(self, number_of_subjects):
 		"""
@@ -203,9 +141,9 @@ class Study:
 		"""
 		self.study_json["number-of-subjects"] = str(int(self.study_json["number-of-subjects"]) + number_of_subjects)
 		self.save_study_json()
-		self.set_sheets_to_subject_number()
+		self.create_sheets_wrt_total_subject_number()
 
-	def set_sheets_to_subject_number(self):
+	def create_sheets_wrt_total_subject_number(self):
 		"""
 		adjust the number of existing subject sheets according to the number of all subjects (creates for each subject a sheet)
 		:return:
@@ -280,6 +218,10 @@ class Study:
 
 		pdf.output(pdf_path)
 
+	####################################################################
+	# ------------------------- JSON control ------------------------- #
+	####################################################################
+
 	def save_study_json(self):
 		"""
 		saves the study json file
@@ -288,38 +230,112 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
-	def zip_unused_sheets(self):
+	def refresh_json_with_active_subjects(self):
 		"""
-		zip all unused study sheets in order to download it later
+		saves the list of enrolled subjetcs into the json file (refreshes it)
 		:return:
 		"""
-		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
-		if os.path.isfile(zip_path):
-			os.remove(zip_path)
-		all_subject_list = np.array(os.listdir(self.sheets_path))
-		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
-		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
-		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
+		df = pd.read_csv(self.study_csv)
+		active_subjects = np.array(df['subject_name'].unique()).tolist()
+		self.study_json["enrolled-subjects"] = active_subjects
+		self.save_study_json()
 
-	def zip_marked_sheets(self, marked_sheets):
-		"""
-		zip all marked study sheets of enrolled subjects
-		:param marked_sheets: list of marked subjects
-		:return:
-		"""
-		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
-		if os.path.isfile(zip_path):
-			os.remove(zip_path)
-		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
-		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
+	####################################################################
+	# ----------------------------- Divs ----------------------------- #
+	####################################################################
 
-	def close(self):
+	def get_study_info_div(self):
 		"""
-		close a study (moves it to archive folder)
+		Returns information of specified study as a div
+
+		:return: Study information div
+		"""
+
+		try:
+			self.refresh_json_with_active_subjects()
+			active_subjects_table = self.get_active_subjects_data_table()
+		except FileNotFoundError or KeyError:
+			active_subjects_table = html.Div("No data available.")
+		except KeyError:
+			active_subjects_table = html.Div("No data available.")
+		return html.Div([
+			html.Br(),
+			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
+			html.Br(),
+			html.Div(children=[
+				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
+				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
+			html.Br(),
+			active_subjects_table,
+			html.Br(),
+			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
+		])
+
+	def get_active_subjects_data_table(self):
+		"""
+		This function returns a div displaying subjects' information which is stored in the data set for the study
+
+		:return: Dcc-Table containing all the enrolled subjects information
+		"""
+
+		df = pd.read_csv(self.study_csv)
+		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
+		study_df = study_df.rename(columns={"subject_name": "id"})
+
+		conditional_list = self.get_overdue_subjects(study_df)
+
+		return html.Div(children=[dash_table.DataTable(
+				id='table',
+				columns=[{"name": i, "id": i} for i in study_df.columns],
+				fixed_columns={'headers': True, 'data': 1},
+				style_table={'maxWidth': '1000px'},
+				data=study_df.to_dict('records'),
+				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
+				style_header={
+					'backgroundColor': 'rgb(230, 230, 230)',
+					'fontWeight': 'bold'
+				},
+				style_data_conditional=conditional_list,
+				row_selectable='multi'),
+			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
+
+	def get_study_details(self):
+		"""
+		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
+
+		:return: div with information
+		"""
+
+		duration = self.study_json["duration"]
+		total_number_subjects = self.study_json["number-of-subjects"]
+		enrolled_subject_list = self.study_json["enrolled-subjects"]
+		sensor_list = self.study_json["sensor-list"]
+		description = self.study_json["description"]
+
+		return html.Div(children=[
+			html.P(description, style={'padding-left': '12px'}),
+			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
+			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
+			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
+			html.P("Sensors: " + ", ".join(sensor_list), style={'padding-left': '24px'})
+		], className='div-border', style={'width': '320px'})
+
+	def get_overdue_subjects(self, study_df):
+		"""
+		Creates a list containing all subjects that are longer in the study as allowed
+
+		:param study_df: dataframe containing information regarding enrolled subjects
 		:return:
 		"""
-		archived_study_path = archive_folder + '/' + self.study_id
-		os.makedirs(archived_study_path, exist_ok=True)
-		os.rename(studies_folder + '/' + self.study_id, archived_study_path + '/' + self.study_id)
-		if os.path.isfile(self.study_csv):
-			os.rename(self.study_csv, archived_study_path + '/' + csv_prefix + self.study_id + '.csv')
+		study_duration = int(self.study_json["duration"])
+		conditional_list = []
+		overdue_subjects = []
+
+		for i, time_in_study in enumerate(study_df['time_in_study']):
+			days_in_study = int(str(time_in_study).split(' ')[0])
+			if days_in_study > study_duration:
+				overdue_subjects.append(i)
+		for i in overdue_subjects:
+			conditional_list.append({'if': {'row_index': i}, 'backgroundColor': '#FFA18C'})
+
+		return conditional_list
