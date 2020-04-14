@@ -25,3 +25,7 @@ a.button {
     text-decoration: none;
     color: #004176;
 }
+
+.menu-button {
+    width: 70%;
+}
