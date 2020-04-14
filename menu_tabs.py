@@ -12,15 +12,15 @@ def create_menu():
     """
 
     return html.Div(id='menu-items', style={'padding': '12px'}, children=[
-        html.Button(id='create-button', children='Create Study'),
+        html.Button(id='create-button', children='Create Study', className='menu-button'),
         html.Br(),
-        html.Button(id='current-studies', children='Current Studies'),
+        html.Button(id='current-studies', children='Current Studies', className='menu-button'),
         html.Br(),
-        html.Button(id='close-button', children='Close Study'),
+        html.Button(id='close-button', children='Close Study', className='menu-button'),
         html.Br(),
-        html.Button(id='about-button', children='About'),
+        html.Button(id='about-button', children='About', className='menu-button'),
         html.Br(),
-        html.Button(id='home-button', children='Home')
+        html.Button(id='home-button', children='Home', className='menu-button')
     ])
 
 
