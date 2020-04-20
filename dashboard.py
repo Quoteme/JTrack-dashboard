@@ -96,14 +96,16 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
                Output('create-study-duration-input', 'value'),
                Output('create-study-subject-number', 'value'),
                Output('create-study-description', 'value'),
-               Output('create-study-sensors-checklist', 'value')],
+               Output('create-study-sensors-checklist', 'value'),
+               Output('frequency-list', 'value')],
               [Input('create-study-button', 'n_clicks')],
               [State('create-study-name-input', 'value'),
                State('create-study-duration-input', 'value'),
                State('create-study-subject-number', 'value'),
                State('create-study-description', 'value'),
-               State('create-study-sensors-checklist', 'value')])
-def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors):
+               State('create-study-sensors-checklist', 'value'),
+               State('frequency-list', 'value')])
+def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq):
     """
      Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
     if input field contains a valid input und the study does not exist yet.
@@ -116,6 +118,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                 by State('create-study-subject-number', 'value')
     :param description: Study description
     :param sensors: List of selected sensors. Given by State('create-study-sensors-checklist', 'value')
+    :param freq: Recording frequency
     :return: Output-state if creation was successful or if study already exists. Furthermore, clean input field of
                 create-study-input and other fields. Input remains if creation is not successful.
                 Returned by Output('create-study-output-state', 'children'), Output('create-study-input', 'value'),
@@ -124,14 +127,16 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
     """
 
     if n_clicks:
-        if not study_name or not study_duration or not sensors:
+        if not study_name or not study_duration or not sensors or not freq:
             if not study_name:
                 output_state = 'Please enter a study name!'
             elif not study_duration:
                 output_state = 'Please enter a study duration!'
             elif not sensors:
                 output_state = 'Please select sensors!'
-            return output_state, study_name, study_duration, number_subjects, description, sensors
+            elif not freq:
+                output_state = 'Please enter a recording frequency!'
+            return output_state, study_name, study_duration, number_subjects, description, sensors, freq
 
         else:
             json_dict = {"name": study_name,
@@ -139,13 +144,14 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                          "number-of-subjects": str(number_subjects),
                          "description": description,
                          "sensor-list": sensors,
-                         "enrolled-subjects": []}
+                         "enrolled-subjects": [],
+                         "frequency": str(freq)}
             new_study = Study.from_json_dict(json_dict)
             try:
                 new_study.create()
-                return 'You created the study:\t' + study_name, '', '', '', '', []
+                return 'You created the study:\t' + study_name, '', '', '', '', [], ''
             except StudyAlreadyExistsException:
-                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors
+                return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors, freq
     else:
         raise PreventUpdate
 
