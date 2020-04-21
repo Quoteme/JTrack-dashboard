@@ -33,6 +33,7 @@ def get_create_study_div():
     """
 
     sensor_checkboxes = [{'label': sensor, 'value': sensor} for sensor in get_sensor_list()]
+    frequencies = [{'label': str(freq) + 'Hz', 'value': freq} for freq in [50, 100, 150, 200]]
 
     return html.Div([
         html.H2(children='Create new study'),
@@ -43,15 +44,22 @@ def get_create_study_div():
         html.Div(children=[html.Span(children='Number of subjects: '),
                            dcc.Input(id='create-study-subject-number', placeholder='Number of subjects', type='number',
                                      min='0')]),
-        html.Div(children=[html.Span(children='Study description:', style={'padding-right': '16px'}),
+        html.Div(children=[html.P(children='Study description:'),
                            dcc.Textarea(id='create-study-description', placeholder="Enter study description",
-                                        maxLength='128',
-                                        style={'height': '48px', 'widht': '96px', 'margin-top': '12px'})]),
+                                        maxLength='256',
+                                        style={'height': '48px', 'width': '25%'})]),
         html.Br(),
-        html.Div(children=[html.Span(children='Sensors: '),
-                           dcc.Checklist(id='create-study-sensors-checklist', options=sensor_checkboxes,
-                                         labelStyle={'display': 'block'},
-                                         style={'margin-left': '132px', 'margin-top': '-18px'})]),
+        html.Div(children=[html.P(children='Recording frequency: ', style={'padding-top': '8px'}),
+                           dcc.Dropdown(className='column-medium', id='frequency-list', options=frequencies)],
+                 style={'margin-top': '8px'}),
+        html.Br(),
+        html.Br(),
+        html.Div(style={'margin-bottom': '96px'}, children=[html.P(children='Sensors: '),
+                                                            dcc.Dropdown(className='column-medium', id='create-study-sensors-checklist',
+                                                                         options=sensor_checkboxes, multi=True, style={'margin-top': '8px'})]),
+        html.Br(),
+        html.Br(),
+        html.Br(),
         html.Button(id='create-study-button', children='Create', style={'margin-top': '24px'}),
         # is filled if user tries to create study, reset also other input fields
         dcc.Loading(id='loading-create-study',
