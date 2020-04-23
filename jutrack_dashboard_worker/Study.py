@@ -230,16 +230,6 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
-	def refresh_json_with_active_subjects(self):
-		"""
-		saves the list of enrolled subjetcs into the json file (refreshes it)
-		:return:
-		"""
-		df = pd.read_csv(self.study_csv)
-		active_subjects = np.array(df['subject_name'].unique()).tolist()
-		self.study_json["enrolled-subjects"] = active_subjects
-		self.save_study_json()
-
 	####################################################################
 	# ----------------------------- Divs ----------------------------- #
 	####################################################################
@@ -252,7 +242,6 @@ class Study:
 		"""
 
 		try:
-			self.refresh_json_with_active_subjects()
 			active_subjects_table = self.get_active_subjects_data_table()
 		except FileNotFoundError or KeyError:
 			active_subjects_table = html.Div("No data available.")
@@ -317,7 +306,8 @@ class Study:
 			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
 			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
 			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
-			html.P("Sensors: " + ", ".join(sensor_list), style={'padding-left': '24px'})
+			html.P("Sensors: ", style={'padding-left': '24px'}),
+			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '48px'})
 		], className='div-border', style={'width': '320px'})
 
 	def get_overdue_subjects(self, study_df):
