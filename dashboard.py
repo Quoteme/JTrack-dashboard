@@ -6,7 +6,7 @@ from dash.exceptions import PreventUpdate
 from flask import send_file
 
 from User import User
-from jutrack_dashboard_worker import zip_file, dash_study_folder
+from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
@@ -179,25 +179,25 @@ def display_study_info_callback(study_id):
     return html.Div(''), ''
 
 
-@app.callback(Output('close-selected-study-output-state', 'children'),
+@app.callback([Output('close-selected-study-output-state', 'children'),
+               Output('close-study-list', 'options')],
               [Input('close-study-button', 'n_clicks')],
               [State('close-study-list', 'value')])
-def close_study_callback(btn, study_id):
+def close_study_callback(n_clicks, study_id):
     """
     Closes chosen study on button click and moves it to archive directory
 
-    :param btn: not used
+    :param n_clicks: not used
     :param study_id: name of study to be closed
     :return: cleans value of study list
     """
-    try:
-        if study_id:
-            study_to_close = Study.from_study_id(study_id)
-            study_to_close.close()
-            return html.Div('Study closed.')
-    except FileNotFoundError:
-        return html.Div('Study already closed!')
-    return html.Div('')
+    if n_clicks and study_id:
+        study_to_close = Study.from_study_id(study_id)
+        study_to_close.close()
+        remaining = get_study_list_as_dict()
+        return html.Div('Study closed.'), remaining
+    else:
+        PreventUpdate
 
 
 @app.callback([Output('total-subjects', 'children'),
