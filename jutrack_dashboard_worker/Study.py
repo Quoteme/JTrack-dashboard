@@ -62,6 +62,10 @@ class Study:
 			study_json = json.load(f)
 		return cls(study_json)
 
+	####################################################################
+	# --------------------- Create and Delete ------------------------ #
+	####################################################################
+
 	def create(self):
 		"""
 		Create study using underlying json data which contains study_name, initial number of subjects, study duration and a list
@@ -262,6 +266,28 @@ class Study:
 			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
 		])
 
+	def get_study_details(self):
+		"""
+		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
+
+		:return: div with information
+		"""
+
+		duration = self.study_json["duration"]
+		total_number_subjects = self.study_json["number-of-subjects"]
+		enrolled_subject_list = self.get_enrolled_subjects()
+		sensor_list = self.study_json["sensor-list"]
+		description = self.study_json["description"]
+
+		return html.Div(children=[
+			html.P(description, style={'padding-left': '12px'}),
+			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
+			html.P(id='total-subjects', children="Total number of subjects: " + total_number_subjects, style={'padding-left': '24px'}),
+			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
+			html.P("Sensors: ", style={'padding-left': '24px'}),
+			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '48px'})
+		], className='div-border', style={'width': '320px'})
+
 	def get_active_subjects_data_table(self):
 		"""
 		This function returns a div displaying subjects' information which is stored in the data set for the study
@@ -292,28 +318,6 @@ class Study:
 				row_selectable='multi'),
 			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
 
-	def get_study_details(self):
-		"""
-		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
-
-		:return: div with information
-		"""
-
-		duration = self.study_json["duration"]
-		total_number_subjects = self.study_json["number-of-subjects"]
-		enrolled_subject_list = self.study_json["enrolled-subjects"]
-		sensor_list = self.study_json["sensor-list"]
-		description = self.study_json["description"]
-
-		return html.Div(children=[
-			html.P(description, style={'padding-left': '12px'}),
-			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
-			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
-			html.P("Sensors: ", style={'padding-left': '24px'}),
-			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '48px'})
-		], className='div-border', style={'width': '320px'})
-
 	def get_overdue_subjects(self, study_df):
 		"""
 		Creates a list containing all subjects that are longer in the study as allowed
@@ -332,3 +336,8 @@ class Study:
 			conditional_list.append({'if': {'row_index': i}, 'backgroundColor': '#FFA18C'})
 
 		return conditional_list
+
+	def get_enrolled_subjects(self):
+		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
+		all_enrolled_subjects = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
+		return all_enrolled_subjects

@@ -10,7 +10,7 @@ from jutrack_dashboard_worker import zip_file, dash_study_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
-from websites import page_not_found, general_page, login_page
+from websites import general_page, login_page
 
 # Generate dash app
 app = dash.Dash(__name__)
