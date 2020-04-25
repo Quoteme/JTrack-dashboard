@@ -10,7 +10,7 @@ import qrcode
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
 
@@ -247,6 +247,8 @@ class Study:
 			active_subjects_table = html.Div("No data available.")
 		except KeyError:
 			active_subjects_table = html.Div("No data available.")
+		except EmptyStudyTableException:
+			active_subjects_table = html.Div("No data available.")
 		return html.Div([
 			html.Br(),
 			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
@@ -268,6 +270,8 @@ class Study:
 		"""
 
 		df = pd.read_csv(self.study_csv)
+		if len(df.index) == 0:
+			raise EmptyStudyTableException
 		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
 		study_df = study_df.rename(columns={"subject_name": "id"})
 
@@ -320,7 +324,6 @@ class Study:
 		study_duration = int(self.study_json["duration"])
 		conditional_list = []
 		overdue_subjects = []
-
 		for i, time_in_study in enumerate(study_df['time_in_study']):
 			days_in_study = int(str(time_in_study).split(' ')[0])
 			if days_in_study > study_duration:

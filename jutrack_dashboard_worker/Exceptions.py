@@ -15,5 +15,10 @@ class StudyCsvMissingException(Exception):
 class NoSuchUserException(Exception):
     pass
 
+
 class WrongPasswordException(Exception):
+    pass
+
+
+class EmptyStudyTableException(Exception):
     pass
