@@ -189,7 +189,7 @@ def close_study_callback(n_clicks, study_id):
 
     :param n_clicks: not used
     :param study_id: name of study to be closed
-    :return: cleans value of study list
+    :return: output state and cleans value of study list
     """
     if n_clicks and study_id:
         study_to_close = Study.from_study_id(study_id)
