@@ -212,7 +212,8 @@ class Study:
 		pdf = SubjectPDF(self.study_id)
 		pdf.add_page()
 
-		pdf.draw_input_line_filled('Subject-ID', subject_name)
+		pdf.draw_input_line_filled('Subject ID', subject_name)
+		pdf.draw_input_line('Clinical ID')
 		pdf.ln(10)
 
 		pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
