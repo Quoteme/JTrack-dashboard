@@ -42,3 +42,11 @@ def list_studies():
             study_list.append(study)
 
     return study_list
+
+
+def get_study_list_as_dict():
+    current_studies = list_studies()
+    study_list = []
+    for study in current_studies:
+        study_list.append({'label': study, 'value': study})
+    return study_list

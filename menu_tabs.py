@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from jutrack_dashboard_worker import list_studies, get_sensor_list
+from jutrack_dashboard_worker import list_studies, get_sensor_list, get_study_list_as_dict
 
 
 def create_menu():
@@ -75,10 +75,8 @@ def get_current_studies_div():
 
     """
 
-    current_studies = list_studies()
-    study_list = []
-    for study in current_studies:
-        study_list.append({'label': study, 'value': study})
+    study_list = get_study_list_as_dict()
+
     return html.Div(id='current-studies-div', children=[
         html.Div(id='current-study-div', className='column-big', children=[
             html.H2('Current Studies'),
@@ -97,10 +95,8 @@ def get_close_study_div():
     :return: Current studies div
     """
 
-    current_studies = list_studies()
-    study_list = []
-    for study in current_studies:
-        study_list.append({'label': study, 'value': study})
+    study_list = get_study_list_as_dict()
+
     return html.Div(id='close-studies-div', children=[
         html.Div(id='close-study-div', className='column-big', children=[
             html.H2('Close Studies'),

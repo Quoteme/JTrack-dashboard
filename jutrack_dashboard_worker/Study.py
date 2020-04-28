@@ -10,7 +10,7 @@ import qrcode
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException
+from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
 
@@ -61,6 +61,10 @@ class Study:
 		with open(study_json_file_path, 'r') as f:
 			study_json = json.load(f)
 		return cls(study_json)
+
+	####################################################################
+	# --------------------- Create and Delete ------------------------ #
+	####################################################################
 
 	def create(self):
 		"""
@@ -113,21 +117,9 @@ class Study:
 		if os.path.isfile(zip_path):
 			os.remove(zip_path)
 		all_subject_list = np.array(os.listdir(self.sheets_path))
-		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
+		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.get_enrolled_subjects()])
 		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
 		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
-
-	def zip_marked_sheets(self, marked_sheets):
-		"""
-		zip all marked study sheets of enrolled subjects
-		:param marked_sheets: list of marked subjects
-		:return:
-		"""
-		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
-		if os.path.isfile(zip_path):
-			os.remove(zip_path)
-		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
-		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
 
 	####################################################################
 	# ----------------------- Subject creation ----------------------- #
@@ -208,7 +200,8 @@ class Study:
 		pdf = SubjectPDF(self.study_id)
 		pdf.add_page()
 
-		pdf.draw_input_line_filled('Subject-ID', subject_name)
+		pdf.draw_input_line_filled('Subject ID', subject_name)
+		pdf.draw_input_line('Clinical ID')
 		pdf.ln(10)
 
 		pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
@@ -247,6 +240,8 @@ class Study:
 			active_subjects_table = html.Div("No data available.")
 		except KeyError:
 			active_subjects_table = html.Div("No data available.")
+		except EmptyStudyTableException:
+			active_subjects_table = html.Div("No data available.")
 		return html.Div([
 			html.Br(),
 			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
@@ -257,36 +252,8 @@ class Study:
 			html.Br(),
 			active_subjects_table,
 			html.Br(),
-			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
+			html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button'),
 		])
-
-	def get_active_subjects_data_table(self):
-		"""
-		This function returns a div displaying subjects' information which is stored in the data set for the study
-
-		:return: Dcc-Table containing all the enrolled subjects information
-		"""
-
-		df = pd.read_csv(self.study_csv)
-		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
-		study_df = study_df.rename(columns={"subject_name": "id"})
-
-		conditional_list = self.get_overdue_subjects(study_df)
-
-		return html.Div(children=[dash_table.DataTable(
-				id='table',
-				columns=[{"name": i, "id": i} for i in study_df.columns],
-				fixed_columns={'headers': True, 'data': 1},
-				style_table={'maxWidth': '1000px'},
-				data=study_df.to_dict('records'),
-				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
-				style_header={
-					'backgroundColor': 'rgb(230, 230, 230)',
-					'fontWeight': 'bold'
-				},
-				style_data_conditional=conditional_list,
-				row_selectable='multi'),
-			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
 
 	def get_study_details(self):
 		"""
@@ -297,35 +264,84 @@ class Study:
 
 		duration = self.study_json["duration"]
 		total_number_subjects = self.study_json["number-of-subjects"]
-		enrolled_subject_list = self.study_json["enrolled-subjects"]
+		enrolled_subject_list = self.get_enrolled_subjects()
 		sensor_list = self.study_json["sensor-list"]
 		description = self.study_json["description"]
 
 		return html.Div(children=[
 			html.P(description, style={'padding-left': '12px'}),
 			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subject: " + total_number_subjects, style={'padding-left': '24px'}),
+			html.P(id='total-subjects', children="Total number of subjects: " + total_number_subjects, style={'padding-left': '24px'}),
 			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
 			html.P("Sensors: ", style={'padding-left': '24px'}),
 			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '48px'})
 		], className='div-border', style={'width': '320px'})
 
-	def get_overdue_subjects(self, study_df):
+	def get_active_subjects_data_table(self):
 		"""
-		Creates a list containing all subjects that are longer in the study as allowed
+		This function returns a div displaying subjects' information which is stored in the data set for the study
 
-		:param study_df: dataframe containing information regarding enrolled subjects
-		:return:
+		:return: Dcc-Table containing all the enrolled subjects information
 		"""
-		study_duration = int(self.study_json["duration"])
-		conditional_list = []
-		overdue_subjects = []
 
-		for i, time_in_study in enumerate(study_df['time_in_study']):
-			days_in_study = int(str(time_in_study).split(' ')[0])
-			if days_in_study > study_duration:
-				overdue_subjects.append(i)
-		for i in overdue_subjects:
-			conditional_list.append({'if': {'row_index': i}, 'backgroundColor': '#FFA18C'})
+		df = pd.read_csv(self.study_csv)
+		if len(df.index) == 0:
+			raise EmptyStudyTableException
 
-		return conditional_list
+		study_df = df.rename(columns={"subject_name": "id"})
+		study_df = study_df.sort_values(by='id')
+		study_df = self.add_user_column(study_df)
+		study_df = pd.DataFrame.dropna(study_df.replace(to_replace='none', value=np.nan), axis=1, how='all')
+
+		return self.generate_html_table(study_df)
+
+	def generate_html_table(self, df):
+		header = html.Tr([html.Th(col) for col in df.columns])
+
+		body = []
+		for i in range(len(df)):
+			tr = []
+			for col in df.columns:
+				if col == 'user':
+					tr.append(self.create_download_link_for_user(df.iloc[i][col]))
+					continue
+				tr.append(html.Td(df.iloc[i][col]))
+			body.append(html.Tr(tr))
+
+		return html.Table([
+			html.Thead(header),
+			html.Tbody(body)
+		])
+
+	def add_user_column(self, df):
+		current_user = ''
+		user_column = []
+
+		for index, row in df.iterrows():
+			next_user = str(row['id'])[:-2]
+			if current_user != next_user:
+				user_column.append(next_user)
+				current_user = next_user
+			else:
+				user_column.append('none')
+
+		df.insert(loc=0, column='user', value=user_column)
+		return df
+
+	def create_download_link_for_user(self, user):
+		if pd.isnull(user):
+			return html.Td('')
+		else:
+			return html.Td(html.A(children=user, href='download-' + self.study_id + '-' + user))
+
+	####################################################################
+	# --------------------- Enrolled/Unenrolled ---------------------- #
+	####################################################################
+
+	def get_enrolled_subjects(self):
+		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
+		all_enrolled_subjects = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
+		return all_enrolled_subjects
+
+
+
