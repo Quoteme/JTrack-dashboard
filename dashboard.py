@@ -6,11 +6,11 @@ from dash.exceptions import PreventUpdate
 from flask import send_file
 
 from User import User
-from jutrack_dashboard_worker import zip_file, dash_study_folder
+from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
-from websites import page_not_found, general_page, login_page
+from websites import general_page, login_page
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -157,7 +157,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 
 @app.callback([Output('current-selected-study', 'children'),
-               Output('download-unused-sheets-zip', 'href')],
+               Output('download-unused-sheets-button', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -173,31 +173,31 @@ def display_study_info_callback(study_id):
 
     if study_id:
         study = Study.from_study_id(study_id)
-        return study.get_study_info_div(), '/download-unused-sheets-zip-' + study_id
+        return study.get_study_info_div(), '/download-' + study_id
     else:
         PreventUpdate
     return html.Div(''), ''
 
 
-@app.callback(Output('close-selected-study-output-state', 'children'),
+@app.callback([Output('close-selected-study-output-state', 'children'),
+               Output('close-study-list', 'options')],
               [Input('close-study-button', 'n_clicks')],
               [State('close-study-list', 'value')])
-def close_study_callback(btn, study_id):
+def close_study_callback(n_clicks, study_id):
     """
     Closes chosen study on button click and moves it to archive directory
 
-    :param btn: not used
+    :param n_clicks: not used
     :param study_id: name of study to be closed
-    :return: cleans value of study list
+    :return: output state and cleans value of study list
     """
-    try:
-        if study_id:
-            study_to_close = Study.from_study_id(study_id)
-            study_to_close.close()
-            return html.Div('Study closed.')
-    except FileNotFoundError:
-        return html.Div('Study already closed!')
-    return html.Div('')
+    if n_clicks and study_id:
+        study_to_close = Study.from_study_id(study_id)
+        study_to_close.close()
+        remaining = get_study_list_as_dict()
+        return html.Div('Study closed.'), remaining
+    else:
+        PreventUpdate
 
 
 @app.callback([Output('total-subjects', 'children'),
@@ -220,42 +220,22 @@ def create_additional_subjects_callback(btn, study_id, number_of_subjects):
     return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
 
 
-@app.callback(Output('download-marked-sheets-zip', 'href'),
-              [Input('table', 'selected_row_ids')],
-              [State('current-study-list', 'value')])
-def update_marked_sheets_download_link_callback(selected_rows, study_id):
-    """
-    On marking sheets in the information table, the download link will be updated containing the IDs of every marked subject
-
-    :param selected_rows: list of selected subjects
-    :param study_id: selected study
-    :return:
-    """
-    if len(selected_rows) and study_id:
-        return '/download-marked-sheets-zip-' + (study_id + '-' + '-'.join(selected_rows))
-    else:
-        PreventUpdate
-
-
-@app.server.route('/download-marked-sheets-zip-<string:study_id_and_row_ids>')
-def download_marked_sheets(study_id_and_row_ids):
+@app.server.route('/download-<string:study_id>-<string:user>')
+def download_marked_sheets(study_id, user):
     """
     Routing option to access and download subjects sheets. Just selected sheets from enrolled subjects are downloaded.
 
-    :param study_id_and_row_ids: link containing the study name and the list of selected sheets ("-" - separated)
+    :param study_id: study name
+    :param user: user name
     :return: Flask send_file delivering zip folder containing selected sheets
     """
-    study_id = str(study_id_and_row_ids).split('-')[0]
-    marked_sheets = str(study_id_and_row_ids).split('-')[1:]
 
-    selected_study = Study.from_study_id(study_id)
-    selected_study.zip_marked_sheets(marked_sheets)
-    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
-                     mimetype='application/zip',
+    return send_file(dash_study_folder + '/' + study_id + '/' + sheets_folder + '/' + user + '.pdf',
+                     mimetype='application/pdf',
                      as_attachment=True)
 
 
-@app.server.route('/download-unused-sheets-zip-<string:study_id>')
+@app.server.route('/download-<string:study_id>')
 def download_sheets(study_id):
     """
     Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
@@ -264,6 +244,7 @@ def download_sheets(study_id):
     :return: Flask send_file which delivers the zip belonging to the study
     """
 
+    print(study_id)
     selected_study = Study.from_study_id(study_id)
     selected_study.zip_unused_sheets()
     return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,

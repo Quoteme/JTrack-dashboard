@@ -76,5 +76,5 @@ class SubjectPDF(FPDF):
         for i in range(1, number_codes):
             self.text_field('Activation ' + str(i))
             self.draw_input_line('Date of activation')
-            self.image(qr_code_path + '_' + str(i) + '.png', x=140, y=60 + (i - 1) * 40, w=40)
+            self.image(qr_code_path + '_' + str(i) + '.png', x=140, y=75 + (i - 1) * 40, w=40)
             self.ln(20)
