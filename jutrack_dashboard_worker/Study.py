@@ -117,21 +117,9 @@ class Study:
 		if os.path.isfile(zip_path):
 			os.remove(zip_path)
 		all_subject_list = np.array(os.listdir(self.sheets_path))
-		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.study_json['enrolled-subjects']])
+		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.get_enrolled_subjects()])
 		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
 		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
-
-	def zip_marked_sheets(self, marked_sheets):
-		"""
-		zip all marked study sheets of enrolled subjects
-		:param marked_sheets: list of marked subjects
-		:return:
-		"""
-		zip_path = dash_study_folder + '/' + self.study_id + '/' + zip_file
-		if os.path.isfile(zip_path):
-			os.remove(zip_path)
-		marked_pdfs = [self.sheets_path + '/' + marked_sheet + '.pdf' for marked_sheet in marked_sheets]
-		os.system('zip ' + zip_path + ' ' + ' '.join(marked_pdfs))
 
 	####################################################################
 	# ----------------------- Subject creation ----------------------- #
@@ -264,7 +252,7 @@ class Study:
 			html.Br(),
 			active_subjects_table,
 			html.Br(),
-			html.A(id='download-unused-sheets-zip', children='Download unused study sheets', className='button'),
+			html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button'),
 		])
 
 	def get_study_details(self):
@@ -344,7 +332,7 @@ class Study:
 		if pd.isnull(user):
 			return html.Td('')
 		else:
-			return html.Td(html.A(children=user, href='download-' + user))
+			return html.Td(html.A(children=user, href='download-' + self.study_id + '-' + user))
 
 	####################################################################
 	# --------------------- Enrolled/Unenrolled ---------------------- #

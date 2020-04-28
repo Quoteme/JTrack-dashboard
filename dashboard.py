@@ -157,7 +157,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 
 @app.callback([Output('current-selected-study', 'children'),
-               Output('download-unused-sheets-zip', 'href')],
+               Output('download-unused-sheets-button', 'href')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -173,7 +173,7 @@ def display_study_info_callback(study_id):
 
     if study_id:
         study = Study.from_study_id(study_id)
-        return study.get_study_info_div(), '/download-unused-sheets-zip-' + study_id
+        return study.get_study_info_div(), '/download-' + study_id
     else:
         PreventUpdate
     return html.Div(''), ''
@@ -220,39 +220,22 @@ def create_additional_subjects_callback(btn, study_id, number_of_subjects):
     return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
 
 
-@app.callback(Output('download-marked-sheets-zip', 'href'),
-              [Input('table', 'selected_row_ids')],
-              [State('current-study-list', 'value')])
-def update_marked_sheets_download_link_callback(selected_rows, study_id):
-    """
-    On marking sheets in the information table, the download link will be updated containing the IDs of every marked subject
-
-    :param selected_rows: list of selected subjects
-    :param study_id: selected study
-    :return:
-    """
-    if len(selected_rows) and study_id:
-        return '/download-marked-sheets-zip-' + (study_id + '-' + '-'.join(selected_rows))
-    else:
-        PreventUpdate
-
-
-@app.server.route('/download-<string:user>')
-def download_marked_sheets(user):
+@app.server.route('/download-<string:study_id>-<string:user>')
+def download_marked_sheets(study_id, user):
     """
     Routing option to access and download subjects sheets. Just selected sheets from enrolled subjects are downloaded.
 
-    :param study_id_and_row_ids: link containing the study name and the list of selected sheets ("-" - separated)
+    :param study_id: study name
+    :param user: user name
     :return: Flask send_file delivering zip folder containing selected sheets
     """
-    study_id = str(user).split('_')[0]
 
     return send_file(dash_study_folder + '/' + study_id + '/' + sheets_folder + '/' + user + '.pdf',
                      mimetype='application/pdf',
                      as_attachment=True)
 
 
-@app.server.route('/download-unused-sheets-zip-<string:study_id>')
+@app.server.route('/download-<string:study_id>')
 def download_sheets(study_id):
     """
     Execute download of subject-sheet-zip which contains all of the subject sheets for every subject of one specified study
@@ -261,6 +244,7 @@ def download_sheets(study_id):
     :return: Flask send_file which delivers the zip belonging to the study
     """
 
+    print(study_id)
     selected_study = Study.from_study_id(study_id)
     selected_study.zip_unused_sheets()
     return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
