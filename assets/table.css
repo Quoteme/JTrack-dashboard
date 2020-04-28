@@ -1,7 +1,26 @@
 table {
   border-collapse: collapse;
-  overflow:auto;
+  overflow: auto;
   display: inline-block;
-  height:320px;
-  border=1;
+  height: 480px;
+  width: 1060px;
+  border: 1px solid black;
+}
+
+th {
+  border: 1px solid black;
+  padding: 5px;
+  text-align: left;
+  background-color: #004176;
+  color: white;
+}
+
+td {
+  border: 1px solid black;
+  padding: 5px;
+  text-align: left;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
 }

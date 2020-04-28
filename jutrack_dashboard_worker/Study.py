@@ -299,46 +299,61 @@ class Study:
 		df = pd.read_csv(self.study_csv)
 		if len(df.index) == 0:
 			raise EmptyStudyTableException
-		study_df = pd.DataFrame.dropna(df.replace(to_replace='none', value=np.nan), axis=1, how='all')
-		study_df = study_df.rename(columns={"subject_name": "id"})
 
-		conditional_list = self.get_overdue_subjects(study_df)
+		study_df = df.rename(columns={"subject_name": "id"})
+		study_df = study_df.sort_values(by='id')
+		study_df = self.add_user_column(study_df)
+		study_df = pd.DataFrame.dropna(study_df.replace(to_replace='none', value=np.nan), axis=1, how='all')
 
-		return html.Div(children=[dash_table.DataTable(
-				id='table',
-				columns=[{"name": i, "id": i} for i in study_df.columns],
-				fixed_columns={'headers': True, 'data': 1},
-				style_table={'maxWidth': '1000px'},
-				data=study_df.to_dict('records'),
-				style_cell={"fontFamily": "Arial", "size": 10, 'textAlign': 'left'},
-				style_header={
-					'backgroundColor': 'rgb(230, 230, 230)',
-					'fontWeight': 'bold'
-				},
-				style_data_conditional=conditional_list,
-				row_selectable='multi'),
-			html.A(id='download-marked-sheets-zip', children='Download marked study sheets', className='button')])
+		return self.generate_html_table(study_df)
 
-	def get_overdue_subjects(self, study_df):
-		"""
-		Creates a list containing all subjects that are longer in the study as allowed
+	def generate_html_table(self, df):
+		header = html.Tr([html.Th(col) for col in df.columns])
 
-		:param study_df: dataframe containing information regarding enrolled subjects
-		:return:
-		"""
-		study_duration = int(self.study_json["duration"])
-		conditional_list = []
-		overdue_subjects = []
-		for i, time_in_study in enumerate(study_df['time_in_study']):
-			days_in_study = int(str(time_in_study).split(' ')[0])
-			if days_in_study > study_duration:
-				overdue_subjects.append(i)
-		for i in overdue_subjects:
-			conditional_list.append({'if': {'row_index': i}, 'backgroundColor': '#FFA18C'})
+		body = []
+		for i in range(len(df)):
+			tr = []
+			for col in df.columns:
+				if col == 'user':
+					tr.append(self.create_download_link_for_user(df.iloc[i][col]))
+					continue
+				tr.append(html.Td(df.iloc[i][col]))
+			body.append(html.Tr(tr))
 
-		return conditional_list
+		return html.Table([
+			html.Thead(header),
+			html.Tbody(body)
+		])
+
+	def add_user_column(self, df):
+		current_user = ''
+		user_column = []
+
+		for index, row in df.iterrows():
+			next_user = str(row['id'])[:-2]
+			if current_user != next_user:
+				user_column.append(next_user)
+				current_user = next_user
+			else:
+				user_column.append('none')
+
+		df.insert(loc=0, column='user', value=user_column)
+		return df
+
+	def create_download_link_for_user(self, user):
+		if pd.isnull(user):
+			return html.Td('')
+		else:
+			return html.Td(html.A(children=user, href='download-' + user))
+
+	####################################################################
+	# --------------------- Enrolled/Unenrolled ---------------------- #
+	####################################################################
 
 	def get_enrolled_subjects(self):
 		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
 		all_enrolled_subjects = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
 		return all_enrolled_subjects
+
+
+

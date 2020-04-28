@@ -6,7 +6,7 @@ from dash.exceptions import PreventUpdate
 from flask import send_file
 
 from User import User
-from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict
+from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
@@ -237,21 +237,18 @@ def update_marked_sheets_download_link_callback(selected_rows, study_id):
         PreventUpdate
 
 
-@app.server.route('/download-marked-sheets-zip-<string:study_id_and_row_ids>')
-def download_marked_sheets(study_id_and_row_ids):
+@app.server.route('/download-<string:user>')
+def download_marked_sheets(user):
     """
     Routing option to access and download subjects sheets. Just selected sheets from enrolled subjects are downloaded.
 
     :param study_id_and_row_ids: link containing the study name and the list of selected sheets ("-" - separated)
     :return: Flask send_file delivering zip folder containing selected sheets
     """
-    study_id = str(study_id_and_row_ids).split('-')[0]
-    marked_sheets = str(study_id_and_row_ids).split('-')[1:]
+    study_id = str(user).split('_')[0]
 
-    selected_study = Study.from_study_id(study_id)
-    selected_study.zip_marked_sheets(marked_sheets)
-    return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
-                     mimetype='application/zip',
+    return send_file(dash_study_folder + '/' + study_id + '/' + sheets_folder + '/' + user + '.pdf',
+                     mimetype='application/pdf',
                      as_attachment=True)
 
 
