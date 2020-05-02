@@ -29,9 +29,19 @@ def get_sensor_list():
             List of sensors
     """
 
-    sensors = ['acceleration-sensor', 'app-usage-statistic', 'barometer',
-               'detected-activity-sensor', 'gravity', 'gyroscope', 'linear-acceleration',
-               'location-sensor', 'magnetic-sensor', 'rotation-vector-sensor']
+    sensors = [
+        'accelerometer',
+        'activity',
+        'application_usage',
+        'barometer',
+        'gravity_sensor',
+        'gyroscope',
+        'location',
+        'magnetic_sensor',
+        'rotation_vector',
+        'linear_acceleration'
+    ]
+
     return sensors
 
 

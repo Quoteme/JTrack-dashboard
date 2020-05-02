@@ -244,7 +244,6 @@ def download_sheets(study_id):
     :return: Flask send_file which delivers the zip belonging to the study
     """
 
-    print(study_id)
     selected_study = Study.from_study_id(study_id)
     selected_study.zip_unused_sheets()
     return send_file(dash_study_folder + '/' + study_id + '/' + zip_file,
