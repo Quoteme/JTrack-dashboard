@@ -20,6 +20,8 @@ studies_folder = storage_folder + '/studies'
 archive_folder = storage_folder + '/archive'
 users_folder = storage_folder + '/users'
 
+timestamp_format = "%Y-%m-%d %H:%M:%S"
+
 
 def get_sensor_list():
     """Retrieves a list of possible used sensors
