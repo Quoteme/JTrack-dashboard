@@ -20,6 +20,8 @@ studies_folder = storage_folder + '/studies'
 archive_folder = storage_folder + '/archive'
 users_folder = storage_folder + '/users'
 
+timestamp_format = "%Y-%m-%d %H:%M:%S"
+
 
 def get_sensor_list():
     """Retrieves a list of possible used sensors
@@ -29,9 +31,19 @@ def get_sensor_list():
             List of sensors
     """
 
-    sensors = ['acceleration-sensor', 'app-usage-statistic', 'barometer',
-               'detected-activity-sensor', 'gravity', 'gyroscope', 'linear-acceleration',
-               'location-sensor', 'magnetic-sensor', 'rotation-vector-sensor']
+    sensors = [
+        'accelerometer',
+        'activity',
+        'application_usage',
+        'barometer',
+        'gravity_sensor',
+        'gyroscope',
+        'location',
+        'magnetic_sensor',
+        'rotation_vector',
+        'linear_acceleration'
+    ]
+
     return sensors
 
 
