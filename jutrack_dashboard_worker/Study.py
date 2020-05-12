@@ -3,13 +3,13 @@ import os
 
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table
 import numpy as np
 import pandas as pd
 import qrcode
+from datetime import datetime
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
-	qr_folder, sheets_folder, zip_file, archive_folder
+	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
 from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
@@ -31,6 +31,7 @@ class Study:
 
 		self.study_json = study_json
 		self.study_id = study_json["name"]
+		self.sensors = study_json["sensor-list"]
 		self.qr_path = dash_study_folder + '/' + self.study_id + '/' + qr_folder
 		self.sheets_path = dash_study_folder + '/' + self.study_id + '/' + sheets_folder
 		self.study_csv = storage_folder + '/' + csv_prefix + self.study_id + '.csv'
@@ -63,7 +64,7 @@ class Study:
 		return cls(study_json)
 
 	####################################################################
-	# --------------------- Create and Delete ------------------------ #
+	# --------------------- Create and Close ------------------------ #
 	####################################################################
 
 	def create(self):
@@ -223,6 +224,11 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
+	def get_enrolled_subjects(self):
+		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
+		all_enrolled_subjects = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
+		return all_enrolled_subjects
+
 	####################################################################
 	# ----------------------------- Divs ----------------------------- #
 	####################################################################
@@ -235,7 +241,7 @@ class Study:
 		"""
 
 		try:
-			active_subjects_table = self.get_active_subjects_data_table()
+			active_subjects_table = self.get_subjects_table()
 		except FileNotFoundError or KeyError:
 			active_subjects_table = html.Div("No data available.")
 		except KeyError:
@@ -265,7 +271,7 @@ class Study:
 		duration = self.study_json["duration"]
 		total_number_subjects = self.study_json["number-of-subjects"]
 		enrolled_subject_list = self.get_enrolled_subjects()
-		sensor_list = self.study_json["sensor-list"]
+		sensor_list = self.sensors
 		description = self.study_json["description"]
 
 		return html.Div(children=[
@@ -277,41 +283,28 @@ class Study:
 			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '48px'})
 		], className='div-border', style={'width': '320px'})
 
-	def get_active_subjects_data_table(self):
+	####################################################################
+	# ----------------------------- Table ---------------------------- #
+	####################################################################
+
+	def get_subjects_table(self):
 		"""
 		This function returns a div displaying subjects' information which is stored in the data set for the study
 
-		:return: Dcc-Table containing all the enrolled subjects information
+		:return: Html-Table containing all the enrolled subjects information
 		"""
 
-		df = pd.read_csv(self.study_csv)
-		if len(df.index) == 0:
+		study_df = pd.read_csv(self.study_csv)
+		if len(study_df.index) == 0:
 			raise EmptyStudyTableException
 
-		study_df = df.rename(columns={"subject_name": "id"})
+		study_df = study_df.rename(columns={"subject_name": "id"})
 		study_df = study_df.sort_values(by='id')
 		study_df = self.add_user_column(study_df)
-		study_df = pd.DataFrame.dropna(study_df.replace(to_replace='none', value=np.nan), axis=1, how='all')
+		study_df = self.drop_unused_sensor_columns(study_df)
+		study_df = study_df.replace(to_replace=['none', 0], value='')
 
-		return self.generate_html_table(study_df)
-
-	def generate_html_table(self, df):
-		header = html.Tr([html.Th(col) for col in df.columns])
-
-		body = []
-		for i in range(len(df)):
-			tr = []
-			for col in df.columns:
-				if col == 'user':
-					tr.append(self.create_download_link_for_user(df.iloc[i][col]))
-					continue
-				tr.append(html.Td(df.iloc[i][col]))
-			body.append(html.Tr(tr))
-
-		return html.Table([
-			html.Thead(header),
-			html.Tbody(body)
-		])
+		return html.Div(children=[self.generate_html_table(study_df), self.get_legend()])
 
 	def add_user_column(self, df):
 		current_user = ''
@@ -323,25 +316,84 @@ class Study:
 				user_column.append(next_user)
 				current_user = next_user
 			else:
-				user_column.append('none')
+				user_column.append('')
 
 		df.insert(loc=0, column='user', value=user_column)
 		return df
 
+	def generate_html_table(self, df):
+		header = html.Tr([html.Th(col) for col in df.columns])
+		body = self.get_study_table_body(df)
+		return html.Table([html.Thead(header), html.Tbody(body)])
+
+	def get_study_table_body(self, df):
+		body = []
+		for index, row in df.iterrows():
+			body.append(self.get_table_row(row))
+		return body
+
+	def get_table_row(self, row):
+		row_dict = {}
+		for key, value in row.items():
+			if key == 'user':
+				row_dict[key] = (self.create_download_link_for_user(value))
+			else:
+				row_dict[key] = (html.Td(value))
+
+		row_dict = self.give_color(row_dict)
+
+		return html.Tr(list(row_dict.values()))
+
+	def give_color(self, row_dict):
+		id_color = ""
+		registered_timestamp = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
+		left_timestamp = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else ""
+		time_in_study_days = int(str(row_dict["time_in_study"].children).split(" ")[0])
+		last_times_received = [sensor + ' last_time_received' for sensor in self.sensors]
+
+		for last_time_received in last_times_received:
+			last_time_received_string  = row_dict[last_time_received].children
+
+			last_time_received_dt = registered_timestamp if last_time_received_string == "" else datetime.strptime(last_time_received_string, timestamp_format)
+
+			days_since_last_received = (datetime.now() - last_time_received_dt).days
+
+			if days_since_last_received > 2:
+				row_dict[last_time_received] = html.Td(children=last_time_received_string, className='red')
+				id_color = 'red'
+
+		if left_timestamp == "":
+			if time_in_study_days - registered_timestamp.day > int(self.study_json["duration"]):
+				id_color = 'light-green'
+
+		else:
+			if (left_timestamp - registered_timestamp).days >= int(self.study_json["duration"]):
+				id_color = 'dark-green'
+			elif (left_timestamp - registered_timestamp).days < int(self.study_json["duration"]):
+				id_color = 'blue'
+
+		row_dict['id'] = html.Td(children=row_dict['id'].children, className=id_color)
+
+		return row_dict
+
+	def get_legend(self):
+		return html.Ul(children=[
+			html.Li("No data sent for 2 days", className='red'),
+			html.Li("Left study too early", className='blue'),
+			html.Li("Study duration reached, not left", className='light-green'),
+			html.Li("Study duration reached, left", className='dark-green')
+		])
+
+
 	def create_download_link_for_user(self, user):
-		if pd.isnull(user):
+		if user == '':
 			return html.Td('')
 		else:
 			return html.Td(html.A(children=user, href='download-' + self.study_id + '-' + user))
 
-	####################################################################
-	# --------------------- Enrolled/Unenrolled ---------------------- #
-	####################################################################
-
-	def get_enrolled_subjects(self):
-		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
-		all_enrolled_subjects = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
-		return all_enrolled_subjects
-
-
-
+	def drop_unused_sensor_columns(self, study_df):
+		unused_sensors = np.setdiff1d(get_sensor_list(), self.sensors)
+		for sensor in unused_sensors:
+			study_df = study_df.drop(sensor + ' n_batches', axis=1)
+			study_df = study_df.drop(sensor + ' last_time_received', axis=1)
+		return study_df

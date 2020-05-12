@@ -24,3 +24,35 @@ td {
 tr:hover {
     background-color: #f5f5f5;
 }
+
+td.blue {
+    background-color: #34b4eb;
+}
+
+td.light-green {
+    background-color: #7cfc00;
+}
+
+td.dark-green {
+    background-color: #006400;
+}
+
+td.red {
+    background-color: #ff3333;
+}
+
+li.blue {
+    color: #34b4eb;
+}
+
+li.light-green {
+    color: #7cfc00;
+}
+
+li.dark-green {
+    color: #006400;
+}
+
+li.red {
+    color: #ff3333;
+}
