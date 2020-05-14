@@ -10,13 +10,13 @@ from datetime import datetime
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
+from Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
 
 class Study:
 	"""
-		This class represents a study of JuTrack
+	This class represents a study of JuTrack
 	"""
 
 	max_subjects = 5

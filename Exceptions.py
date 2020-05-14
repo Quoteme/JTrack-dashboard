@@ -13,12 +13,21 @@ class StudyCsvMissingException(Exception):
 
 
 class NoSuchUserException(Exception):
+    """
+    Exception if entered login username does not exist
+    """
     pass
 
 
 class WrongPasswordException(Exception):
+    """
+    Exception if password for existing user is wrong
+    """
     pass
 
 
 class EmptyStudyTableException(Exception):
+    """
+    Exception if study data table is empty resulting in "No data available".
+    """
     pass

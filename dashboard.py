@@ -5,9 +5,9 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
-from User import User
+from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
+from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import general_page, login_page
@@ -15,10 +15,10 @@ from websites import general_page, login_page
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
-user = User()
+user = DashboardUser()
 logo = app.get_asset_url('jutrack.png')
 
-# General dash app layout
+# General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='top-bar', className='row jutrack-background', children=[
@@ -41,10 +41,19 @@ app.layout = html.Div([
               [Input('login-button', 'n_clicks')],
               [State('username', 'value'),
                State('passwd', 'value')])
-def display_page(n_clicks, username, passwd):
-    if n_clicks:
+def display_page_callback(login_click, username, password):
+    """
+    TODO: Logout resulting in displaying the login page again
+
+    :param login_click: login button click
+    :param username: username of login
+    :param password: password of login
+
+    :return: content div (general content with menu or the login page if login was erroneous)
+    """
+    if login_click:
         try:
-            user.login(username, passwd)
+            user.login(username, password)
             return general_page(), 'Logged in successfully!', username, '', 'Logged in as: ' + username
         except NoSuchUserException:
             return login_page(), 'No such user!', username, '', ''
