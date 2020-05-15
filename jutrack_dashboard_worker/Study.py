@@ -258,7 +258,6 @@ class Study:
 			html.Br(),
 			active_subjects_table,
 			html.Br(),
-			html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button'),
 		])
 
 	def get_study_details(self):
@@ -358,7 +357,7 @@ class Study:
 
 			days_since_last_received = (datetime.now() - last_time_received_dt).days
 
-			if days_since_last_received > 2:
+			if days_since_last_received >= 2:
 				row_dict[last_time_received] = html.Td(children=last_time_received_string, className='red')
 				id_color = 'red'
 

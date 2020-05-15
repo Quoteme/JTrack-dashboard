@@ -167,8 +167,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback([Output('current-selected-study', 'children'),
-               Output('download-unused-sheets-button', 'href')],
+@app.callback(Output('current-selected-study', 'children'),
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -184,7 +183,7 @@ def display_study_info_callback(study_id):
 
     if study_id:
         study = Study.from_study_id(study_id)
-        return study.get_study_info_div(), '/download-' + study_id
+        return [study.get_study_info_div(), html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button', href='/download-' + study_id)]
     else:
         raise PreventUpdate
 
