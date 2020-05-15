@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from jutrack_dashboard_worker import list_studies, get_sensor_list, get_study_list_as_dict
+from jutrack_dashboard_worker import get_sensor_list, get_study_list_as_dict
 
 
 def create_menu():

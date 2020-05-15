@@ -10,13 +10,13 @@ from datetime import datetime
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
+from Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 
 
 class Study:
 	"""
-		This class represents a study of JuTrack
+	This class represents a study of JuTrack
 	"""
 
 	max_subjects = 5
@@ -258,7 +258,6 @@ class Study:
 			html.Br(),
 			active_subjects_table,
 			html.Br(),
-			html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button'),
 		])
 
 	def get_study_details(self):
@@ -358,7 +357,7 @@ class Study:
 
 			days_since_last_received = (datetime.now() - last_time_received_dt).days
 
-			if days_since_last_received > 2:
+			if days_since_last_received >= 2:
 				row_dict[last_time_received] = html.Td(children=last_time_received_string, className='red')
 				id_color = 'red'
 
