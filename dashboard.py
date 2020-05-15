@@ -18,6 +18,7 @@ app.config.suppress_callback_exceptions = True
 user = DashboardUser()
 logo = app.get_asset_url('jutrack.png')
 
+
 # General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -137,15 +138,16 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
     if n_clicks:
         if not study_name or not study_duration or not sensors or not freq:
+            error_output_state = ''
             if not study_name:
-                output_state = 'Please enter a study name!'
+                error_output_state = 'Please enter a study name!'
             elif not study_duration:
-                output_state = 'Please enter a study duration!'
+                error_output_state = 'Please enter a study duration!'
             elif not sensors:
-                output_state = 'Please select sensors!'
+                error_output_state = 'Please select sensors!'
             elif not freq:
-                output_state = 'Please enter a recording frequency!'
-            return output_state, study_name, study_duration, number_subjects, description, sensors, freq
+                error_output_state = 'Please enter a recording frequency!'
+            return error_output_state, study_name, study_duration, number_subjects, description, sensors, freq
 
         else:
             json_dict = {"name": study_name,
@@ -184,8 +186,7 @@ def display_study_info_callback(study_id):
         study = Study.from_study_id(study_id)
         return study.get_study_info_div(), '/download-' + study_id
     else:
-        PreventUpdate
-    return html.Div(''), ''
+        raise PreventUpdate
 
 
 @app.callback([Output('close-selected-study-output-state', 'children'),
@@ -206,7 +207,7 @@ def close_study_callback(n_clicks, study_id):
         remaining = get_study_list_as_dict()
         return html.Div('Study closed.'), remaining
     else:
-        PreventUpdate
+        raise PreventUpdate
 
 
 @app.callback([Output('total-subjects', 'children'),
@@ -214,19 +215,21 @@ def close_study_callback(n_clicks, study_id):
               [Input('create-additional-subjects-button', 'n_clicks')],
               [State('current-study-list', 'value'),
                State('create-additional-subjects-input', 'value')])
-def create_additional_subjects_callback(btn, study_id, number_of_subjects):
+def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
     """
     Creates additional subjects on button click. QR-Codes and study sheets are added to the existing directories
 
-    :param btn: not used
+    :param n_clicks: not used
     :param study_id: study receiving new subjects
     :param number_of_subjects: number of new subjects
     :return: refreshes current number of subjects state and clears input field
     """
-    study_to_extend = Study.from_study_id(study_id)
-    if number_of_subjects:
+    if n_clicks and number_of_subjects:
+        study_to_extend = Study.from_study_id(study_id)
         study_to_extend.create_additional_subjects(number_of_subjects)
-    return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
+        return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
+    else:
+        raise PreventUpdate
 
 
 @app.server.route('/download-<string:study_id>-<string:user>')
