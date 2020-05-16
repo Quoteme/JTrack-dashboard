@@ -1,4 +1,3 @@
-import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 from datetime import datetime
@@ -46,38 +45,47 @@ class AppUser:
 		return row_id
 
 	def create_download_link_for_user(self):
+		"""
+		Create link for downloading the study sheets of the app user
+		:return: dash html data cell with link (a)
+		"""
 		return html.Td(html.A(children=self.user_name, href='download-' + self.study_enrolled_in + '-' + self.user_name))
 
 	def give_color(self, row_dict):
-		id_color = ""
-		registered_timestamp = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
-		left_timestamp = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else ""
+		"""
+		Highlight cells if conditions are true:
+		red: delayed sensor data (>= 2 days)
+		light-green: study duration reached, but not left
+		dark-green: study duration reached,  left
+		blue: left prematurely
+
+		:param row_dict: dictionary with user's id data
+		:return: edited row, returned as list without the dictionary keys (order remains still correct to match the header of the html table in Study.py)
+		"""
+		id_color = ''
+		registered_timestamp_in_s = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
+		left_timestamp_in_s = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else None
+		last_mandatory_send_in_s = datetime.now() if not left_timestamp_in_s else left_timestamp_in_s
 		time_in_study_days = int(str(row_dict["time_in_study"].children).split(" ")[0])
 		last_times_received = [sensor + ' last_time_received' for sensor in self.sensors]
 
 		for last_time_received in last_times_received:
-			last_time_received_string = row_dict[last_time_received].children
-
-			last_time_received_dt = registered_timestamp if last_time_received_string == "" else datetime.strptime(
-				last_time_received_string, timestamp_format)
-
-			days_since_last_received = (datetime.now() - last_time_received_dt).days
+			ltr_string = row_dict[last_time_received].children
+			ltr_in_s = registered_timestamp_in_s if ltr_string == "" else datetime.strptime(ltr_string, timestamp_format)
+			days_since_last_received = (last_mandatory_send_in_s - ltr_in_s).days
 
 			if days_since_last_received >= 2:
-				row_dict[last_time_received] = html.Td(children=last_time_received_string, className='red')
-				id_color = 'red'
+				row_dict[last_time_received] = html.Td(children=ltr_string, className='red')
 
-		if left_timestamp == "":
-			if time_in_study_days - registered_timestamp.day > int(self.study_duration):
+		if not left_timestamp_in_s:
+			if time_in_study_days - registered_timestamp_in_s.day > int(self.study_duration):
 				id_color = 'light-green'
-
 		else:
-			if (left_timestamp - registered_timestamp).days >= int(self.study_duration):
+			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
 				id_color = 'dark-green'
-			elif (left_timestamp - registered_timestamp).days < int(self.study_duration):
+			elif (left_timestamp_in_s - registered_timestamp_in_s).days < int(self.study_duration):
 				id_color = 'blue'
 
 		row_dict['id'] = html.Td(children=row_dict['id'].children, className=id_color)
 
 		return list(row_dict.values())
-
