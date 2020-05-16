@@ -7,7 +7,8 @@ from flask import send_file
 
 from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
-from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
+from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException, \
+    EmptyStudyTableException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import general_page, login_page
@@ -167,7 +168,9 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback(Output('current-selected-study', 'children'),
+@app.callback([Output('current-study-info', 'children'),
+               Output('current-study-table', 'children'),
+               Output('download-unused-sheets', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -176,14 +179,22 @@ def display_study_info_callback(study_id):
 
     :param study_id:  Name of the study which information should be displayed. The value is transferred by a drop down menu.
                 Given by Input('current-study-list', 'value')
-    :return: Html-Div containing the information of the study. Displayed beneath the drop down list. Returned
-                by Output('current-selected-study', 'children'). Also returning a href containing the link to
-                download subject sheets in Output('download-sheet-zip', 'href')
+    :return: Html-Div containing the information of the study and a button for downloading unused sheets.
+                Displayed beneath the drop down list. Returned by Output('current-selected-study', 'children').
     """
-
     if study_id:
         study = Study.from_study_id(study_id)
-        return [study.get_study_info_div(), html.A(id='download-unused-sheets-button', children='Download unused study sheets', className='button', href='/download-' + study_id)]
+
+        try:
+            active_subjects_table = study.get_study_data_table()
+        except FileNotFoundError:
+            active_subjects_table = html.Div("Table file not found")
+        except KeyError:
+            active_subjects_table = html.Div("Data erroneous")
+        except EmptyStudyTableException:
+            active_subjects_table = html.Div("No data available")
+
+        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets()
     else:
         raise PreventUpdate
 

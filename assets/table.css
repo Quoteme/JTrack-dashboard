@@ -9,12 +9,16 @@ table {
 }
 
 /* Header and data attributes */
-th {
+th{
   border: 1px solid black;
   padding: 5px;
   text-align: left;
-  background-color: #004176;
   color: white;
+
+}
+
+th.clean {
+  background-color: #004176;
 }
 
 td {
@@ -45,6 +49,10 @@ td.red {
     background-color: #ff3333;
 }
 
+th.not-clean {
+  background-color: #f7725e;
+}
+
 /* Color of legend items*/
 li.blue {
     color: #34b4eb;
@@ -60,4 +68,8 @@ li.dark-green {
 
 li.red {
     color: #ff3333;
+}
+
+li.not-clean{
+    color: #f7725e;
 }

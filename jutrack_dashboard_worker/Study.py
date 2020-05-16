@@ -106,6 +106,14 @@ class Study:
 	# ----------------------- Sheets zipping ------------------------- #
 	####################################################################
 
+	def get_download_link_unused_sheets(self):
+		"""
+		Create download button for unused study sheets
+
+		:return: Link which looks like a button to download sheets
+		"""
+		return html.A(id='download-unused-sheets', children='Download unused study sheets', className='button', href='/download-' + self.study_id)
+
 	def zip_unused_sheets(self):
 		"""
 		zip all unused study sheets in order to download it later
@@ -230,10 +238,14 @@ class Study:
 		"""
 		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
 		all_enrolled_app_users = np.unique([scanned[:-2] for scanned in enrolled_qr_codes])
-		return all_enrolled_app_users
+		sorted_list = np.sort(all_enrolled_app_users)
+		return sorted_list
+
+	def get_unused_sensors(self):
+		return np.setdiff1d(get_sensor_list(), self.sensors)
 
 	####################################################################
-	# ----------------------------- Divs ----------------------------- #
+	# ----------------------- Study information ---------------------- #
 	####################################################################
 
 	def get_study_info_div(self):
@@ -242,27 +254,16 @@ class Study:
 
 		:return: Study information div
 		"""
-		try:
-			active_subjects_table = self.get_subjects_table()
-		except FileNotFoundError or KeyError:
-			active_subjects_table = html.Div("No data available.")
-		except KeyError:
-			active_subjects_table = html.Div("No data available.")
-		except EmptyStudyTableException:
-			active_subjects_table = html.Div("No data available.")
 		return html.Div([
 			html.Br(),
-			dcc.Loading(id='loading-study-details', children=[self.get_study_details()], type='circle'),
+			dcc.Loading(id='loading-study-details', children=[self.get_study_information()], type='circle'),
 			html.Br(),
 			html.Div(children=[
 				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
 				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-			html.Br(),
-			active_subjects_table,
-			html.Br(),
 		])
 
-	def get_study_details(self):
+	def get_study_information(self):
 		"""
 		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
 
@@ -284,10 +285,10 @@ class Study:
 		], className='div-border', style={'width': '320px'})
 
 	####################################################################
-	# ----------------------------- Table ---------------------------- #
+	# -------------------------- Study Table ------------------------- #
 	####################################################################
 
-	def get_subjects_table(self):
+	def get_study_data_table(self):
 		"""
 		This function returns a div displaying subjects' information which is stored in the data set for the study
 
@@ -300,31 +301,40 @@ class Study:
 		study_df = study_df.rename(columns={"subject_name": "id"})
 		study_df = study_df.sort_values(by='id')
 		study_df = study_df.replace(to_replace=['none', 0], value='')
-
-		study_df = self.add_user_column(study_df)
 		study_df = self.drop_unused_sensor_columns(study_df)
 
 		return html.Div(children=[self.generate_html_table(study_df), self.get_legend()])
 
-	def add_user_column(self, df):
-		current_user = ''
-		user_column = []
+	def drop_unused_sensor_columns(self, study_df):
+		"""
+		Drops columns of sensors which are not selected in the study. Only if completely empty
 
-		for index, row in df.iterrows():
-			next_user = str(row['id'])[:-2]
-			if current_user != next_user:
-				user_column.append(next_user)
-				current_user = next_user
-			else:
-				user_column.append('')
+		:param study_df: data frame of study
+		:return: edited data frame without unused sensors
+		"""
+		unused_sensors = self.get_unused_sensors()
+		for sensor in unused_sensors:
+			study_df[sensor + ' n_batches'] = study_df[sensor + ' n_batches'].replace(to_replace=[''], value=np.nan)
+			study_df[sensor + ' last_time_received'] = study_df[sensor + ' last_time_received'].replace(to_replace=[''], value=np.nan)
+		study_df = pd.DataFrame.dropna(study_df, axis=1, how='all')
+		return study_df
 
-		df.insert(loc=0, column='user', value=user_column)
-		return df
-
-	def generate_html_table(self, df):
-		header = html.Tr([html.Th(col) for col in df.columns])
-		body = self.get_study_table_body(df)
+	def generate_html_table(self, study_df):
+		header = self.get_study_table_header(study_df)
+		body = self.get_study_table_body(study_df)
 		return html.Table([html.Thead(header), html.Tbody(body)])
+
+	def get_study_table_header(self, study_df):
+		tr = []
+		unused_sensor_ltr_list = [sensor + ' last_time_received' for sensor in self.get_unused_sensors()]
+		unused_sensor_batches_list = [sensor + ' n_batches' for sensor in self.get_unused_sensors()]
+
+		for col in study_df.columns:
+			if col in unused_sensor_ltr_list or col in unused_sensor_batches_list:
+				tr.append(html.Th(children=col, className='not-clean'))
+			else:
+				tr.append(html.Th(children=col, className='clean'))
+		return html.Tr(tr)
 
 	def get_study_table_body(self, df):
 		body = []
@@ -379,6 +389,7 @@ class Study:
 	def get_legend(self):
 		return html.Ul(children=[
 			html.Li("No data sent for 2 days", className='red'),
+			html.Li("Sensor was not chosen", className='not-clean'),
 			html.Li("Left study too early", className='blue'),
 			html.Li("Study duration reached, not left", className='light-green'),
 			html.Li("Study duration reached, left", className='dark-green')
@@ -390,13 +401,18 @@ class Study:
 		else:
 			return html.Td(html.A(children=user, href='download-' + self.study_id + '-' + user))
 
-	def drop_unused_sensor_columns(self, study_df):
-		unused_sensors = self.get_unused_sensors()
-		for sensor in unused_sensors:
-			study_df[sensor + ' n_batches'] = study_df[sensor + ' n_batches'].replace(to_replace=[''], value=np.nan)
-			study_df[sensor + ' last_time_received'] = study_df[sensor + ' last_time_received'].replace(to_replace=[''], value=np.nan)
-		study_df = pd.DataFrame.dropna(study_df, axis=1, how='all')
-		return study_df
+	@staticmethod
+	def add_user_column(df):
+		current_user = ''
+		user_column = []
 
-	def get_unused_sensors(self):
-		return np.setdiff1d(get_sensor_list(), self.sensors)
+		for index, row in df.iterrows():
+			next_user = str(row['id'])[:-2]
+			if current_user != next_user:
+				user_column.append(next_user)
+				current_user = next_user
+			else:
+				user_column.append('')
+
+		df.insert(loc=0, column='user', value=user_column)
+		return df
