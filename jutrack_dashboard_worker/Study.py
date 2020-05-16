@@ -6,12 +6,12 @@ import dash_html_components as html
 import numpy as np
 import pandas as pd
 import qrcode
-from datetime import datetime
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
 from Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
+from jutrack_dashboard_worker.AppUser import AppUser
 
 
 class Study:
@@ -32,6 +32,7 @@ class Study:
 		self.study_json = study_json
 		self.study_id = study_json["name"]
 		self.sensors = study_json["sensor-list"]
+		self.duration = study_json["duration"]
 		self.qr_path = dash_study_folder + '/' + self.study_id + '/' + qr_folder
 		self.sheets_path = dash_study_folder + '/' + self.study_id + '/' + sheets_folder
 		self.study_csv = storage_folder + '/' + csv_prefix + self.study_id + '.csv'
@@ -124,7 +125,7 @@ class Study:
 		if os.path.isfile(zip_path):
 			os.remove(zip_path)
 		all_subject_list = np.array(os.listdir(self.sheets_path))
-		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.get_enrolled_app_users()])
+		enrolled_subject_list = np.array([enrolled_subject + '.pdf' for enrolled_subject in self.get_enrolled_app_users_from_json()])
 		not_enrolled_subjects = [self.sheets_path + '/' + not_enrolled_subject for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
 		os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
 
@@ -230,7 +231,7 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
-	def get_enrolled_app_users(self):
+	def get_enrolled_app_users_from_json(self):
 		"""
 		get list of all app users that have ever scanned at least one qr code
 
@@ -271,7 +272,7 @@ class Study:
 		"""
 		duration = self.study_json["duration"]
 		total_number_subjects = self.study_json["number-of-subjects"]
-		enrolled_subject_list = self.get_enrolled_app_users()
+		enrolled_subject_list = self.get_enrolled_app_users_from_json()
 		sensor_list = self.sensors
 		description = self.study_json["description"]
 
@@ -300,8 +301,8 @@ class Study:
 
 		study_df = study_df.rename(columns={"subject_name": "id"})
 		study_df = study_df.sort_values(by='id')
-		study_df = study_df.replace(to_replace=['none', 0], value='')
 		study_df = self.drop_unused_sensor_columns(study_df)
+		study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
 		return html.Div(children=[self.generate_html_table(study_df), self.get_legend()])
 
@@ -314,79 +315,73 @@ class Study:
 		"""
 		unused_sensors = self.get_unused_sensors()
 		for sensor in unused_sensors:
-			study_df[sensor + ' n_batches'] = study_df[sensor + ' n_batches'].replace(to_replace=[''], value=np.nan)
-			study_df[sensor + ' last_time_received'] = study_df[sensor + ' last_time_received'].replace(to_replace=[''], value=np.nan)
+			study_df[sensor + ' n_batches'] = study_df[sensor + ' n_batches'].replace(to_replace=[0], value=np.nan)
+			study_df[sensor + ' last_time_received'] = study_df[sensor + ' last_time_received'].replace(to_replace=['none'], value=np.nan)
 		study_df = pd.DataFrame.dropna(study_df, axis=1, how='all')
 		return study_df
 
 	def generate_html_table(self, study_df):
+		"""
+		generate html table with dash containing header and data body
+
+		:param study_df: study data frame
+		:return: dash html table
+		"""
 		header = self.get_study_table_header(study_df)
 		body = self.get_study_table_body(study_df)
 		return html.Table([html.Thead(header), html.Tbody(body)])
 
 	def get_study_table_header(self, study_df):
-		tr = []
+		"""
+		retrieves header for the html table, if there is a sensor that should not be in the study and has data it will be highlighted
+
+		:param study_df: study data frame
+		:return: dash html table row which will be the header row
+		"""
+		header_row = [html.Th(children='user', className='clean')]
 		unused_sensor_ltr_list = [sensor + ' last_time_received' for sensor in self.get_unused_sensors()]
 		unused_sensor_batches_list = [sensor + ' n_batches' for sensor in self.get_unused_sensors()]
 
 		for col in study_df.columns:
 			if col in unused_sensor_ltr_list or col in unused_sensor_batches_list:
-				tr.append(html.Th(children=col, className='not-clean'))
+				header_row.append(html.Th(children=col, className='not-clean'))
 			else:
-				tr.append(html.Th(children=col, className='clean'))
-		return html.Tr(tr)
+				header_row.append(html.Th(children=col, className='clean'))
+		return html.Tr(header_row)
 
-	def get_study_table_body(self, df):
+	def get_study_table_body(self, study_df):
+		"""
+		create dash html body, iterates over a list of app user objects which contain necessary information about each user. The actual list of
+		active users is returned by get_enrolled_app_users_from_json
+
+		:param study_df:
+		:return:
+		"""
 		body = []
-		for index, row in df.iterrows():
-			body.append(self.get_table_row(row))
+		users = self.get_app_user_objects_from_table(study_df)
+		for user in users:
+			body.extend(user.get_rows_for_all_ids())
 		return body
 
-	def get_table_row(self, row):
-		row_dict = {}
-		for key, value in row.items():
-			if key == 'user':
-				row_dict[key] = (self.create_download_link_for_user(value))
-			else:
-				row_dict[key] = (html.Td(value))
+	def get_app_user_objects_from_table(self, study_df):
+		"""
+		return list of app user objects that store necessary data for each user that comes from the different qr code activations
 
-		row_dict = self.give_color(row_dict)
+		:param study_df: study data frame
+		:return: list with app user objects
+		"""
+		active_users = self.get_enrolled_app_users_from_json()
+		user_list = []
+		for user in active_users:
+			user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=self.study_id, duration=self.duration))
+		return user_list
 
-		return html.Tr(list(row_dict.values()))
-
-	def give_color(self, row_dict):
-		id_color = ""
-		registered_timestamp = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
-		left_timestamp = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else ""
-		time_in_study_days = int(str(row_dict["time_in_study"].children).split(" ")[0])
-		last_times_received = [sensor + ' last_time_received' for sensor in self.sensors]
-
-		for last_time_received in last_times_received:
-			last_time_received_string  = row_dict[last_time_received].children
-
-			last_time_received_dt = registered_timestamp if last_time_received_string == "" else datetime.strptime(last_time_received_string, timestamp_format)
-
-			days_since_last_received = (datetime.now() - last_time_received_dt).days
-
-			if days_since_last_received >= 2:
-				row_dict[last_time_received] = html.Td(children=last_time_received_string, className='red')
-				id_color = 'red'
-
-		if left_timestamp == "":
-			if time_in_study_days - registered_timestamp.day > int(self.study_json["duration"]):
-				id_color = 'light-green'
-
-		else:
-			if (left_timestamp - registered_timestamp).days >= int(self.study_json["duration"]):
-				id_color = 'dark-green'
-			elif (left_timestamp - registered_timestamp).days < int(self.study_json["duration"]):
-				id_color = 'blue'
-
-		row_dict['id'] = html.Td(children=row_dict['id'].children, className=id_color)
-
-		return row_dict
-
-	def get_legend(self):
+	@staticmethod
+	def get_legend():
+		"""
+		color legend beneath the table to identify meaning of highlights
+		:return: unordered list with color information
+		"""
 		return html.Ul(children=[
 			html.Li("No data sent for 2 days", className='red'),
 			html.Li("Sensor was not chosen", className='not-clean'),
@@ -394,25 +389,3 @@ class Study:
 			html.Li("Study duration reached, not left", className='light-green'),
 			html.Li("Study duration reached, left", className='dark-green')
 		])
-
-	def create_download_link_for_user(self, user):
-		if user == '':
-			return html.Td('')
-		else:
-			return html.Td(html.A(children=user, href='download-' + self.study_id + '-' + user))
-
-	@staticmethod
-	def add_user_column(df):
-		current_user = ''
-		user_column = []
-
-		for index, row in df.iterrows():
-			next_user = str(row['id'])[:-2]
-			if current_user != next_user:
-				user_column.append(next_user)
-				current_user = next_user
-			else:
-				user_column.append('')
-
-		df.insert(loc=0, column='user', value=user_column)
-		return df
