@@ -19,9 +19,8 @@ def general_page():
 
 	:return: Div for general layout
 	"""
-	return [html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'},
-					 children=[html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'),
-							   create_menu()]),
+	return [html.Div(id='menu', className='column-small jutrack-background', style={'margin': '6px'}, children=[
+		html.H2(id='menu-title', style={'color': 'white', 'margin': '6px'}, children='Menu'), create_menu()]),
 			html.Div(id='page-content', style={'margin': '12px'}, className='column-big row')]
 
 

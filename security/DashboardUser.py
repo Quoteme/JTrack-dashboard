@@ -6,6 +6,7 @@ class DashboardUser:
 	"""
 	Class for dashboard users having name, role and authorized boolean
 	"""
+
 	name = None
 	role = None
 	authorized = False
