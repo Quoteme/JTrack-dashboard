@@ -24,11 +24,10 @@ timestamp_format = "%Y-%m-%d %H:%M:%S"
 
 
 def get_sensor_list():
-    """Retrieves a list of possible used sensors
+    """
+    Retrieves a list of possible used sensors
 
-        Return
-        ------
-            List of sensors
+    :return: list of sensors
     """
 
     sensors = [
@@ -48,6 +47,10 @@ def get_sensor_list():
 
 
 def list_studies():
+    """
+    retrieves study list
+    :return: list with active studies
+    """
     study_list = []
     for study in os.listdir(studies_folder):
         if study != "users" and study != "lost+found" and os.path.isdir(studies_folder + '/' + study):
@@ -57,6 +60,10 @@ def list_studies():
 
 
 def get_study_list_as_dict():
+    """
+    dict for drop downs consisting of key for access and value for displaying a study
+    :return: dict with active studies
+    """
     current_studies = list_studies()
     study_list = []
     for study in current_studies:

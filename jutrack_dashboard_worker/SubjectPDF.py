@@ -6,6 +6,7 @@ class SubjectPDF(FPDF):
     This class specifies the pdf output format of subject study sheets. Several information like study name, the QR-Code
     to enroll and subject name are stored.
     """
+
     subject_name = 'Subject'
 
     def __init__(self, subj_name):
@@ -15,6 +16,8 @@ class SubjectPDF(FPDF):
     def header(self):
         """
         prints a header of a new page (executed if pdf.add_page())
+
+        :return:
         """
 
         # Arial bold 15

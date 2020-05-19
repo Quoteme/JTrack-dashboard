@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from jutrack_dashboard_worker import list_studies, get_sensor_list, get_study_list_as_dict
+from jutrack_dashboard_worker import get_sensor_list, get_study_list_as_dict
 
 
 def create_menu():
@@ -83,7 +83,11 @@ def get_current_studies_div():
             html.Div(className='column-medium', children=dcc.Dropdown(id='current-study-list', options=study_list)),
             html.Br(),
             # is filled when study is selected
-            html.Div(id='current-selected-study', className='row', style={'padding-top': '24px'}),
+            html.Div(children=[html.Div(id='current-study-info', className='row', style={'padding-top': '24px'}),
+                               html.Br(),
+                               html.Div(id='current-study-table'),
+                               html.Br(),
+                               html.Div(id='download-unused-sheets')])
         ])
     ])
 
