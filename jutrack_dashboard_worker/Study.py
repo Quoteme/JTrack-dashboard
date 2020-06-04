@@ -184,7 +184,7 @@ class Study:
 				box_size=10,
 				border=4,
 			)
-			data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (subject_name + str(activation_number), self.study_id)
+			data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (subject_name + '_' + str(activation_number), self.study_id)
 			# Add data
 			qr.add_data(data)
 			qr.make(fit=True)
