@@ -4,13 +4,13 @@
   width: 13%;
 }
 
-/* mdeium column for content */
+/* medium column for content */
 .column-medium {
   float: left;
   width: 60%;
 }
 
-/* big column for content */
+/* big column for larger content */
 .column-big {
   float: left;
   width: 80%;

@@ -5,9 +5,10 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
-from User import User
+from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
-from jutrack_dashboard_worker.Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException
+from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException, \
+    EmptyStudyTableException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import general_page, login_page
@@ -15,10 +16,11 @@ from websites import general_page, login_page
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
-user = User()
+user = DashboardUser()
 logo = app.get_asset_url('jutrack.png')
 
-# General dash app layout
+
+# General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='top-bar', className='row jutrack-background', children=[
@@ -41,10 +43,19 @@ app.layout = html.Div([
               [Input('login-button', 'n_clicks')],
               [State('username', 'value'),
                State('passwd', 'value')])
-def display_page(n_clicks, username, passwd):
-    if n_clicks:
+def display_page_callback(login_click, username, password):
+    """
+    TODO: Logout resulting in displaying the login page again
+
+    :param login_click: login button click
+    :param username: username of login
+    :param password: password of login
+
+    :return: content div (general content with menu or the login page if login was erroneous)
+    """
+    if login_click:
         try:
-            user.login(username, passwd)
+            user.login(username, password)
             return general_page(), 'Logged in successfully!', username, '', 'Logged in as: ' + username
         except NoSuchUserException:
             return login_page(), 'No such user!', username, '', ''
@@ -128,15 +139,16 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
     if n_clicks:
         if not study_name or not study_duration or not sensors or not freq:
+            error_output_state = ''
             if not study_name:
-                output_state = 'Please enter a study name!'
+                error_output_state = 'Please enter a study name!'
             elif not study_duration:
-                output_state = 'Please enter a study duration!'
+                error_output_state = 'Please enter a study duration!'
             elif not sensors:
-                output_state = 'Please select sensors!'
+                error_output_state = 'Please select sensors!'
             elif not freq:
-                output_state = 'Please enter a recording frequency!'
-            return output_state, study_name, study_duration, number_subjects, description, sensors, freq
+                error_output_state = 'Please enter a recording frequency!'
+            return error_output_state, study_name, study_duration, number_subjects, description, sensors, freq
 
         else:
             json_dict = {"name": study_name,
@@ -156,8 +168,9 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback([Output('current-selected-study', 'children'),
-               Output('download-unused-sheets-button', 'href')],
+@app.callback([Output('current-study-info', 'children'),
+               Output('current-study-table', 'children'),
+               Output('download-unused-sheets', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -166,17 +179,24 @@ def display_study_info_callback(study_id):
 
     :param study_id:  Name of the study which information should be displayed. The value is transferred by a drop down menu.
                 Given by Input('current-study-list', 'value')
-    :return: Html-Div containing the information of the study. Displayed beneath the drop down list. Returned
-                by Output('current-selected-study', 'children'). Also returning a href containing the link to
-                download subject sheets in Output('download-sheet-zip', 'href')
+    :return: Html-Div containing the information of the study and a button for downloading unused sheets.
+                Displayed beneath the drop down list. Returned by Output('current-selected-study', 'children').
     """
-
     if study_id:
         study = Study.from_study_id(study_id)
-        return study.get_study_info_div(), '/download-' + study_id
+
+        try:
+            active_subjects_table = study.get_study_data_table()
+        except FileNotFoundError:
+            active_subjects_table = html.Div("Table file not found")
+        except KeyError:
+            active_subjects_table = html.Div("Data erroneous")
+        except EmptyStudyTableException:
+            active_subjects_table = html.Div("No data available")
+
+        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets()
     else:
-        PreventUpdate
-    return html.Div(''), ''
+        raise PreventUpdate
 
 
 @app.callback([Output('close-selected-study-output-state', 'children'),
@@ -197,7 +217,7 @@ def close_study_callback(n_clicks, study_id):
         remaining = get_study_list_as_dict()
         return html.Div('Study closed.'), remaining
     else:
-        PreventUpdate
+        raise PreventUpdate
 
 
 @app.callback([Output('total-subjects', 'children'),
@@ -205,19 +225,21 @@ def close_study_callback(n_clicks, study_id):
               [Input('create-additional-subjects-button', 'n_clicks')],
               [State('current-study-list', 'value'),
                State('create-additional-subjects-input', 'value')])
-def create_additional_subjects_callback(btn, study_id, number_of_subjects):
+def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
     """
     Creates additional subjects on button click. QR-Codes and study sheets are added to the existing directories
 
-    :param btn: not used
+    :param n_clicks: not used
     :param study_id: study receiving new subjects
     :param number_of_subjects: number of new subjects
     :return: refreshes current number of subjects state and clears input field
     """
-    study_to_extend = Study.from_study_id(study_id)
-    if number_of_subjects:
+    if n_clicks and number_of_subjects:
+        study_to_extend = Study.from_study_id(study_id)
         study_to_extend.create_additional_subjects(number_of_subjects)
-    return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
+        return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
+    else:
+        raise PreventUpdate
 
 
 @app.server.route('/download-<string:study_id>-<string:user>')
