@@ -78,7 +78,7 @@ class AppUser:
 				row_dict[last_time_received] = html.Td(children=ltr_string, className='red')
 
 		if not left_timestamp_in_s:
-			if time_in_study_days - registered_timestamp_in_s.day > int(self.study_duration):
+			if time_in_study_days > int(self.study_duration):
 				id_color = 'light-green'
 		else:
 			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
