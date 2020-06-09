@@ -49,6 +49,10 @@ td.red {
     background-color: #ff3333;
 }
 
+td.orange {
+    background-color: #f58300;
+}
+
 th.not-clean {
   background-color: #f7725e;
 }
@@ -68,6 +72,10 @@ li.dark-green {
 
 li.red {
     color: #ff3333;
+}
+
+li.orange {
+    color: #f58300;
 }
 
 li.not-clean{

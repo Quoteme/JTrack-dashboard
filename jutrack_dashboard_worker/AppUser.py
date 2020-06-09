@@ -13,6 +13,7 @@ class AppUser:
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
+		self.multi_registration = self.check_multi_registration()
 
 	def get_rows_for_all_ids(self):
 		"""
@@ -78,7 +79,9 @@ class AppUser:
 				row_dict[last_time_received] = html.Td(children=ltr_string, className='red')
 
 		if not left_timestamp_in_s:
-			if time_in_study_days > int(self.study_duration):
+			if self.multi_registration:
+				id_color = 'orange'
+			elif time_in_study_days > int(self.study_duration):
 				id_color = 'light-green'
 		else:
 			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
@@ -89,3 +92,14 @@ class AppUser:
 		row_dict['id'] = html.Td(children=row_dict['id'].children, className=id_color)
 
 		return list(row_dict.values())
+
+	def check_multi_registration(self):
+		"""
+		check if there are multiple registrations (active qr codes) of one user. Look if more than one entry of date_left_study is empty
+		:return: true if multiple qr codes are active
+		"""
+		time_left_col = self.data["date_left_study"]
+		not_left = time_left_col[time_left_col == '']
+		if not_left.size > 1:
+			return True
+		return False
