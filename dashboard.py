@@ -17,18 +17,21 @@ from websites import general_page, login_page
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 user = DashboardUser()
-logo = app.get_asset_url('jutrack.png')
+logo1 = app.get_asset_url('Logos.JPG')
+logo2 = app.get_asset_url('Logo_BrainandBehaviour.png')
 
 
 # General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='top-bar', className='row jutrack-background', children=[
-        html.Div(id='image-container', className='column-small',
-                 children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
-        html.H1(id='header', className='column-big', children='JuTrack Dashboard',
+        html.Div(id='image-container1', className='column-mid',
+                 children=html.Img(id='logo1', src=logo1, className='juelich-icon-header')),
+        html.H1(id='header', className='column-medium', children='JuTrack Dashboard',
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'}),
+        html.Div(id='image-container2', className='column-small',
+                 children=html.Img(id='logo2', src=logo2, className='bb-icon-header')),
         html.Span(id='logged-in-as')
     ]),
     html.Div(id='menu-and-content', className='row', children=login_page())
@@ -89,11 +92,11 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     if len(ctx.triggered) > 0:
         if ctx.triggered[0]['value']:
             button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-            if button_id == 'create-button':
+            if button_id == 'create-button' and user.role == 'master':
                 return get_create_study_div()
             if button_id == 'current-studies':
                 return get_current_studies_div()
-            if button_id == 'close-button':
+            if button_id == 'close-button' and user.role == 'master':
                 return get_close_study_div()
             if button_id == 'about-button':
                 return get_about_div()
@@ -234,7 +237,7 @@ def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
     :param number_of_subjects: number of new subjects
     :return: refreshes current number of subjects state and clears input field
     """
-    if n_clicks and number_of_subjects:
+    if n_clicks and number_of_subjects and (user.role == 'master' or user.role == 'invest'):
         study_to_extend = Study.from_study_id(study_id)
         study_to_extend.create_additional_subjects(number_of_subjects)
         return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
