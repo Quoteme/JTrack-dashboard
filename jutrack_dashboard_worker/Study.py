@@ -387,5 +387,6 @@ class Study:
 			html.Li("Sensor was not chosen", className='not-clean'),
 			html.Li("Left study too early", className='blue'),
 			html.Li("Study duration reached, not left", className='light-green'),
-			html.Li("Study duration reached, left", className='dark-green')
+			html.Li("Study duration reached, left", className='dark-green'),
+			html.Li("Multiple QR Codes of one user active", className='orange')
 		])
