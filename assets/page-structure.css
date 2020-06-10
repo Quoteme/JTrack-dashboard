@@ -1,7 +1,12 @@
 /* small column for menu, etc..*/
 .column-small {
   float: left;
-  width: 13%;
+  width: 15%;
+}
+
+.column-mid{
+  float: left;
+  width: 25%;
 }
 
 /* medium column for content */
@@ -13,7 +18,7 @@
 /* big column for larger content */
 .column-big {
   float: left;
-  width: 75%;
+  width: 77%;
 }
 
 /* Clear floats after the columns */

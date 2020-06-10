@@ -17,18 +17,21 @@ from websites import general_page, login_page
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 user = DashboardUser()
-logo = app.get_asset_url('jutrack.png')
+logo1 = app.get_asset_url('Logos.JPG')
+logo2 = app.get_asset_url('Logo_BrainandBehaviour.png')
 
 
 # General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='top-bar', className='row jutrack-background', children=[
-        html.Div(id='image-container', className='column-small',
-                 children=html.Img(id='image', src=logo, className='jutrack-icon-header')),
-        html.H1(id='header', className='column-big', children='JuTrack Dashboard',
+        html.Div(id='image-container1', className='column-mid',
+                 children=html.Img(id='logo1', src=logo1, className='juelich-icon-header')),
+        html.H1(id='header', className='column-medium', children='JuTrack Dashboard',
                 style={'color': 'white', 'text-align': 'center',
                        'line-height': '102px', 'vertical-align': 'middle'}),
+        html.Div(id='image-container2', className='column-small',
+                 children=html.Img(id='logo2', src=logo2, className='bb-icon-header')),
         html.Span(id='logged-in-as')
     ]),
     html.Div(id='menu-and-content', className='row', children=login_page())
