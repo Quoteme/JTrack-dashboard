@@ -92,11 +92,11 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     if len(ctx.triggered) > 0:
         if ctx.triggered[0]['value']:
             button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-            if button_id == 'create-button':
+            if button_id == 'create-button' and user.role == 'master':
                 return get_create_study_div()
             if button_id == 'current-studies':
                 return get_current_studies_div()
-            if button_id == 'close-button':
+            if button_id == 'close-button' and user.role == 'master':
                 return get_close_study_div()
             if button_id == 'about-button':
                 return get_about_div()
@@ -237,7 +237,7 @@ def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
     :param number_of_subjects: number of new subjects
     :return: refreshes current number of subjects state and clears input field
     """
-    if n_clicks and number_of_subjects:
+    if n_clicks and number_of_subjects and (user.role == 'master' or user.role == 'invest'):
         study_to_extend = Study.from_study_id(study_id)
         study_to_extend.create_additional_subjects(number_of_subjects)
         return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
