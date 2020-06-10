@@ -13,7 +13,7 @@
 /* big column for larger content */
 .column-big {
   float: left;
-  width: 80%;
+  width: 75%;
 }
 
 /* Clear floats after the columns */
