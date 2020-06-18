@@ -1,4 +1,4 @@
-from Exceptions import NoSuchUserException, WrongPasswordException
+from Exceptions import NoSuchUserException, WrongPasswordException, MissingCredentialsException
 from security import auth_pairs
 
 
@@ -18,6 +18,10 @@ class DashboardUser:
 		:param password: password
 		:return:
 		"""
+
+		if name == '' or password == '':
+			return MissingCredentialsException
+
 		user = auth_pairs.loc[auth_pairs['user'] == name]
 		if user.shape[0] != 1:
 			raise NoSuchUserException

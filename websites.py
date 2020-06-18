@@ -3,16 +3,6 @@ import dash_core_components as dcc
 
 from menu_tabs import create_menu
 
-
-def page_not_found():
-	"""
-	Page not found (404) site
-
-	:return: Div for page not found
-	"""
-	return html.Div(children=[html.H1("404 Error"), html.H3("Page not found")])
-
-
 def general_page():
 	"""
 	General page with menu and div for content
@@ -31,16 +21,6 @@ def login_page():
 	:return: Div for logging in
 	"""
 	return html.Div(className='row', children=[
-		html.Div(id='login', className='center column-small ', children=[
-			html.Div(style={'padding': '12px'}, children=[
-				html.Span("Username:"),
-				dcc.Input(id='username', placeholder='Username', type='text', style={'margin-left': '9px'})]),
-			html.Div(style={'padding': '12px'}, children=[
-				html.Span("Password:"),
-				dcc.Input(id='passwd', placeholder='Password', type='password', style={'margin-left': '12px'})]),
-			html.Button(id='login-button', children='Login', style={'margin': '16px'}),
-			html.Br(),
-			html.Span(id='login-output-state', children='')]),
 		html.Div(className='column-big welcome', children=[
 			html.Span(
 				"You are visiting the JuTrack website which provides access to the dashboard for managing research studies "

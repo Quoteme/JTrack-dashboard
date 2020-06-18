@@ -5,10 +5,11 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
+from layout import get_main_page, get_log_in_div, get_logged_in_div
 from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
 from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException, \
-    EmptyStudyTableException
+    EmptyStudyTableException, MissingCredentialsException
 from jutrack_dashboard_worker.Study import Study
 from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
 from websites import general_page, login_page
@@ -17,36 +18,16 @@ from websites import general_page, login_page
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 user = DashboardUser()
-hhu_icon = app.get_asset_url('hhu-icon.png')
-fz_icon = app.get_asset_url('fz-icon.png')
-bb_icon = app.get_asset_url('bb-icon.png')
 
 # General dash app layout starting with the login div
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Header(id='page-header', className='row', children=[
-        html.Div(id='title-wrapper', style={'float': 'left'}, children=[
-            html.H1(id='title', children='JuTrack Dashboard'),
-            html.H6(id='subtitle', children=[
-                html.Span('by '),
-                html.A('Biomarker Development Group, INM-7', href='https://www.fz-juelich.de/inm/inm-7/EN/Forschung/Biomarker%20Development/artikel.html?nn=654270', target='_blank', rel='noreferrer')])
-        ]),
-        html.Div(id='icons-wrapper', style={'float': 'right'}, children=[
-            html.A(html.Img(style={'border-left': '0'}, src=hhu_icon), href='https://www.medizin.hhu.de/', target='_blank', rel='noreferrer'),
-            html.A(html.Img(style={'border-left': '0'}, src=fz_icon), href='https://www.fz-juelich.de/portal/EN/Home/home_node.html', target='_blank', rel='noreferrer'),
-            html.A(html.Img(style={'border-left': '0', 'border-right': '0'}, src=bb_icon), href='https://www.fz-juelich.de/inm/inm-7/EN/Home/home_node.html', target='_blank', rel='noreferrer')
-        ]),
-    ]),
-    html.Div(id='menu-and-content', className='row', children=login_page()),
-    html.Span(id='logged-in-as')
-])
+app.layout = get_main_page()
 
 
-@app.callback([Output('menu-and-content', 'children'),
+@app.callback([Output('login-wrapper', 'children'),
+               Output('menu-and-content', 'children'),
                Output('login-output-state', 'children'),
                Output('username', 'value'),
-               Output('passwd', 'value'),
-               Output('logged-in-as', 'children')],
+               Output('passwd', 'value')],
               [Input('login-button', 'n_clicks')],
               [State('username', 'value'),
                State('passwd', 'value')])
@@ -63,11 +44,13 @@ def display_page_callback(login_click, username, password):
     if login_click:
         try:
             user.login(username, password)
-            return general_page(), 'Logged in successfully!', username, '', 'Logged in as: ' + username
+            return get_logged_in_div(username), general_page(), 'Logged in successfully!', username, ''
         except NoSuchUserException:
-            return login_page(), 'No such user!', username, '', ''
+            return get_log_in_div(), '', 'This user does not exist!', username, ''
         except WrongPasswordException:
-            return login_page(), 'Wrong Password!', username, '', ''
+            return get_log_in_div(), '', 'Wrong Password!', username, ''
+        except MissingCredentialsException:
+            return get_log_in_div(), '', 'Please enter your credentials', username, ''
     else:
         raise PreventUpdate
 
