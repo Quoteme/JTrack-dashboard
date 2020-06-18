@@ -1,36 +1,7 @@
-/* main theme background (menu and header) */
-.jutrack-background {
-     border-radius: 5px;
-     background-color: #004176;
-}
-
-/* style of icon in header */
-.juelich-icon-header {
-    width: 100%;
-    height: 100%;
-    padding: 12px;
-}
-
-.bb-icon-header {
-    width: 80%;
-    height: 80%;
-    padding: 12px;
-}
-.div-border {
-    border-radius: 10px;
-    border-width:2px;
-    border-style:solid;
-    border-color:#004176;
-}
-
 a.button {
     -webkit-appearance: button;
     -moz-appearance: button;
     appearance: button;
     text-decoration: none;
     color: #004176;
-}
-
-.menu-button {
-    width: 70%;
 }

@@ -17,24 +17,28 @@ from websites import general_page, login_page
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 user = DashboardUser()
-logo1 = app.get_asset_url('Logos.JPG')
-logo2 = app.get_asset_url('Logo_BrainandBehaviour.png')
-
+hhu_icon = app.get_asset_url('hhu-icon.png')
+fz_icon = app.get_asset_url('fz-icon.png')
+bb_icon = app.get_asset_url('bb-icon.png')
 
 # General dash app layout starting with the login div
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='top-bar', className='row jutrack-background', children=[
-        html.Div(id='image-container1', className='column-mid',
-                 children=html.Img(id='logo1', src=logo1, className='juelich-icon-header')),
-        html.H1(id='header', className='column-medium', children='JuTrack Dashboard',
-                style={'color': 'white', 'text-align': 'center',
-                       'line-height': '102px', 'vertical-align': 'middle'}),
-        html.Div(id='image-container2', className='column-small',
-                 children=html.Img(id='logo2', src=logo2, className='bb-icon-header')),
-        html.Span(id='logged-in-as')
+    html.Header(id='page-header', className='row', children=[
+        html.Div(id='title-wrapper', style={'float': 'left'}, children=[
+            html.H1(id='title', children='JuTrack Dashboard'),
+            html.H6(id='subtitle', children=[
+                html.Span('by '),
+                html.A('Biomarker Development Group, INM-7', href='https://www.fz-juelich.de/inm/inm-7/EN/Forschung/Biomarker%20Development/artikel.html?nn=654270', target='_blank', rel='noreferrer')])
+        ]),
+        html.Div(id='icons-wrapper', style={'float': 'right'}, children=[
+            html.A(html.Img(style={'border-left': '0'}, src=hhu_icon), href='https://www.medizin.hhu.de/', target='_blank', rel='noreferrer'),
+            html.A(html.Img(style={'border-left': '0'}, src=fz_icon), href='https://www.fz-juelich.de/portal/EN/Home/home_node.html', target='_blank', rel='noreferrer'),
+            html.A(html.Img(style={'border-left': '0', 'border-right': '0'}, src=bb_icon), href='https://www.fz-juelich.de/inm/inm-7/EN/Home/home_node.html', target='_blank', rel='noreferrer')
+        ]),
     ]),
-    html.Div(id='menu-and-content', className='row', children=login_page())
+    html.Div(id='menu-and-content', className='row', children=login_page()),
+    html.Span(id='logged-in-as')
 ])
 
 
