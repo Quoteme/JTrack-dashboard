@@ -292,11 +292,16 @@ class Study:
 		study_df = self.drop_unused_sensor_columns(study_df)
 		study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
-		return html.Div(children=[self.generate_html_table(study_df), self.get_legend()])
+		return html.Div(id='study-table', children=[
+			self.generate_html_table(study_df),
+			html.Div(id='legend-wrapper', className='row', children=[
+				html.Div(id='color-legend-wrapper', children=self.get_color_legend()),
+				html.Div(id='status-code-legend-wrapper', children=self.get_status_code_legend())])])
 
 	def drop_unused_sensor_columns(self, study_df):
 		"""
-		Drops columns of sensors which are not selected in the study. Only if completely empty
+		Drops columns of sensors which are not selected in the study. Only if completely empty (-> if actual unused sensors contain
+		data they will be highlighted)
 
 		:param study_df: data frame of study
 		:return: edited data frame without unused sensors
@@ -365,7 +370,7 @@ class Study:
 		return user_list
 
 	@staticmethod
-	def get_legend():
+	def get_color_legend():
 		"""
 		color legend beneath the table to identify meaning of highlights
 		:return: unordered list with color information
@@ -377,4 +382,16 @@ class Study:
 			html.Li("Study duration reached, not left", className='light-green'),
 			html.Li("Study duration reached, left", className='dark-green'),
 			html.Li("Multiple QR Codes of one user active", className='orange')
+		])
+
+	@staticmethod
+	def get_status_code_legend():
+		"""
+		legend for status codes empty,1,2
+		:return:
+		"""
+		return html.Ul(children=[
+			html.Li("Empty - everything is fine"),
+			html.Li("1 - User left study with this QR Code"),
+			html.Li("2 - Inform an admin"),
 		])
