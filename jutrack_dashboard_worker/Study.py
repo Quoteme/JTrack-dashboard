@@ -113,7 +113,7 @@ class Study:
 
 		:return: Link which looks like a button to download sheets
 		"""
-		return html.A(id='download-unused-sheets', children='Download unused study sheets', className='button', href='/download-' + self.study_id)
+		return html.A(id='download-unused-sheets-link', children='Download unused study sheets', className='button', href='/download-' + self.study_id)
 
 	def zip_unused_sheets(self):
 		"""
@@ -255,35 +255,23 @@ class Study:
 
 		:return: Study information div
 		"""
-		return html.Div([
-			html.Br(),
-			dcc.Loading(id='loading-study-details', children=[self.get_study_information()], type='circle'),
-			html.Br(),
-			html.Div(children=[
-				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
-				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-		])
-
-	def get_study_information(self):
-		"""
-		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
-
-		:return: div with information
-		"""
 		duration = self.study_json["duration"]
 		total_number_subjects = self.study_json["number-of-subjects"]
 		enrolled_subject_list = self.get_enrolled_app_users_from_json()
 		sensor_list = self.sensors
 		description = self.study_json["description"]
 
-		return html.Div(children=[
-			html.P(description, style={'padding-left': '12px'}),
-			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subjects: " + total_number_subjects, style={'padding-left': '24px'}),
-			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
-			html.P("Sensors: ", style={'padding-left': '24px'}),
-			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '72px'})
-		], className='div-border', style={'width': '320px'})
+		return html.Div(id='study-info', children=[
+				html.P(description),
+				html.P('Study duration: ' + duration + ' days'),
+				html.P(id='total-subjects', children='Total number of subjects: ' + total_number_subjects),
+				html.Div(id='create-subject-wrapper', children=[
+					dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
+					html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
+				html.P('Number of enrolled subjects: ' + str(len(enrolled_subject_list))),
+				html.P('Sensors: '),
+				html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]))
+		])
 
 	####################################################################
 	# -------------------------- Study Table ------------------------- #

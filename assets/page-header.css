@@ -1,7 +1,6 @@
 #page-header {
-     border-top: 5px solid #005B82;
-     background-color: #ffffff;
-     box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.3);
+    border-top: 5px solid #005B82;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
 
 #title-wrapper {
@@ -11,7 +10,7 @@
 #title {
     color: #005B82;
     font-weight: bold;
-    font-size: 2.5em;
+    font-size: 2.3em;
 }
 
 #subtitle{
@@ -26,8 +25,8 @@
 }
 
 #icons-wrapper img {
-    width: 160px;
-    height: 100px;
+    width: 140px;
+    height: 80px;
     border-style: none double;
 }
 

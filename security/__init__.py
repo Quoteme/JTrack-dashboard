@@ -8,4 +8,4 @@ if getpass.getuser() == 'msfz':
 	auth_pairs = pd.DataFrame(
 		{'user': ['ms', 'admin', 'investigator', 'viewer'],
 		 'password': ['ms', 'ju7r4cK!', 'juInvest!', 'juView!'],
-		 'role': ['invest', 'master', 'invest', 'view']})
+		 'role': ['master', 'master', 'invest', 'view']})

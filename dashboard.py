@@ -5,14 +5,13 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
-from layout import get_main_page, get_log_in_div, get_logged_in_div
+from layout import get_main_page, get_log_in_div, get_logged_in_div, get_body
 from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
 from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException, \
     EmptyStudyTableException, MissingCredentialsException
 from jutrack_dashboard_worker.Study import Study
-from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
-from websites import general_page, login_page
+from menu_tabs import get_create_study_div, get_current_studies_div, get_close_study_div, get_about_div
 
 # Generate dash app
 app = dash.Dash(__name__)
@@ -24,7 +23,7 @@ app.layout = get_main_page()
 
 
 @app.callback([Output('login-wrapper', 'children'),
-               Output('menu-and-content', 'children'),
+               Output('page-body', 'children'),
                Output('login-output-state', 'children'),
                Output('username', 'value'),
                Output('passwd', 'value')],
@@ -44,7 +43,7 @@ def display_page_callback(login_click, username, password):
     if login_click:
         try:
             user.login(username, password)
-            return get_logged_in_div(username), general_page(), 'Logged in successfully!', username, ''
+            return get_logged_in_div(username), get_body(), 'Logged in successfully!', username, ''
         except NoSuchUserException:
             return get_log_in_div(), '', 'This user does not exist!', username, ''
         except WrongPasswordException:
@@ -55,14 +54,13 @@ def display_page_callback(login_click, username, password):
         raise PreventUpdate
 
 
-@app.callback(Output('page-content', 'children'),
+@app.callback(Output('content-div', 'children'),
               [Input('create-button', 'n_clicks'),
-               Input('current-studies', 'n_clicks'),
+               Input('current-studies-button', 'n_clicks'),
                Input('about-button', 'n_clicks'),
-               Input('home-button', 'n_clicks'),
                Input('close-button', 'n_clicks')
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
+def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
     """
     Callback reacting if a menu button is clicked. Returns clicked button content
 
@@ -70,7 +68,6 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     :param btn2: not used due callback_context syntax
     :param btn3: not used due callback_context syntax
     :param btn4: not used due callback_context syntax
-    :param btn5: not used due callback_context syntax
     :return: Several possible divs depending which button was clicked. The div is displayed on the page right next
             to the menu. Returned by Output('page-content', 'children')
     """
@@ -81,14 +78,12 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
             button_id = ctx.triggered[0]['prop_id'].split('.')[0]
             if button_id == 'create-button' and user.role == 'master':
                 return get_create_study_div()
-            if button_id == 'current-studies':
+            if button_id == 'current-studies-button':
                 return get_current_studies_div()
             if button_id == 'close-button' and user.role == 'master':
                 return get_close_study_div()
             if button_id == 'about-button':
                 return get_about_div()
-            if button_id == 'home-button':
-                return html.Div()
     return html.Div()
 
 
@@ -158,9 +153,9 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
         raise PreventUpdate
 
 
-@app.callback([Output('current-study-info', 'children'),
+@app.callback([Output('study-info-wrapper', 'children'),
                Output('current-study-table', 'children'),
-               Output('download-unused-sheets', 'children')],
+               Output('download-unused-sheets-link-wrapper', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
