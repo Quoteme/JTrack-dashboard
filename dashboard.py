@@ -146,7 +146,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             new_study = Study.from_json_dict(json_dict)
             try:
                 new_study.create()
-                return 'You created the study:\t' + study_name, '', '', '', '', [], ''
+                return 'You created the study: ' + study_name, '', '', '', '', [], ''
             except StudyAlreadyExistsException:
                 return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors, freq
     else:

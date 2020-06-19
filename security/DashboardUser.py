@@ -19,8 +19,8 @@ class DashboardUser:
 		:return:
 		"""
 
-		if name == '' or password == '':
-			return MissingCredentialsException
+		if name is None or password is None or name == '' or password == '':
+			raise MissingCredentialsException
 
 		user = auth_pairs.loc[auth_pairs['user'] == name]
 		if user.shape[0] != 1:
