@@ -13,7 +13,6 @@ class AppUser:
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
-		self.multi_registration = self.check_multi_registration()
 
 	def get_rows_for_all_ids(self):
 		"""
@@ -69,6 +68,7 @@ class AppUser:
 		last_mandatory_send_in_s = datetime.now() if not left_timestamp_in_s else left_timestamp_in_s
 		time_in_study_days = int(str(row_dict["time_in_study"].children).split(" ")[0])
 		last_times_received = [sensor + ' last_time_received' for sensor in self.sensors]
+		missing_data = False
 
 		for last_time_received in last_times_received:
 			ltr_string = row_dict[last_time_received].children
@@ -77,12 +77,15 @@ class AppUser:
 
 			if days_since_last_received >= 2:
 				row_dict[last_time_received] = html.Td(children=ltr_string, className='red')
+				missing_data = True
 
 		if not left_timestamp_in_s:
-			if self.multi_registration:
+			if self.check_multi_registration():
 				id_color = 'orange'
 			elif time_in_study_days > int(self.study_duration):
 				id_color = 'light-green'
+			elif missing_data:
+				id_color = 'red'
 		else:
 			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
 				id_color = 'dark-green'
