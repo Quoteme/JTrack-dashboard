@@ -38,6 +38,7 @@ class Study:
 		self.study_csv = storage_folder + '/' + csv_prefix + self.study_id + '.csv'
 		self.study_path = studies_folder + '/' + self.study_id
 		self.json_file_path = self.study_path + "/" + self.study_id + ".json"
+		self.user_list = []
 
 	@classmethod
 	def from_json_dict(cls, study_json):
@@ -353,8 +354,8 @@ class Study:
 		:return:
 		"""
 		body = []
-		users = self.get_app_user_objects_from_table(study_df)
-		for user in users:
+		self.get_app_user_objects_from_table(study_df)
+		for user in self.user_list:
 			body.extend(user.get_rows_for_all_ids())
 		return body
 
@@ -366,10 +367,8 @@ class Study:
 		:return: list with app user objects
 		"""
 		active_users = self.get_enrolled_app_users_from_json()
-		user_list = []
 		for user in active_users:
-			user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=self.study_id, duration=self.duration))
-		return user_list
+			self.user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=self.study_id, duration=self.duration))
 
 	@staticmethod
 	def get_color_legend():

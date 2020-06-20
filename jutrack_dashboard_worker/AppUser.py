@@ -13,6 +13,7 @@ class AppUser:
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
+		self.ids_with_missing_data = []
 
 	def get_rows_for_all_ids(self):
 		"""
@@ -62,6 +63,7 @@ class AppUser:
 		:param row_dict: dictionary with user's id data
 		:return: edited row, returned as list without the dictionary keys (order remains still correct to match the header of the html table in Study.py)
 		"""
+		qr_id = row_dict['id'].children
 		id_color = ''
 		registered_timestamp_in_s = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
 		left_timestamp_in_s = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else None
@@ -86,13 +88,14 @@ class AppUser:
 				id_color = 'light-green'
 			elif missing_data:
 				id_color = 'red'
+				self.ids_with_missing_data.append(qr_id)
 		else:
 			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
 				id_color = 'dark-green'
 			elif (left_timestamp_in_s - registered_timestamp_in_s).days < int(self.study_duration):
 				id_color = 'blue'
 
-		row_dict['id'] = html.Td(children=row_dict['id'].children, className=id_color)
+		row_dict['id'] = html.Td(children=qr_id, className=id_color)
 
 		return list(row_dict.values())
 
