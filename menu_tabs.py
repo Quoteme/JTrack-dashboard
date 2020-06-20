@@ -51,7 +51,7 @@ def get_current_studies_div():
             # is filled when study is selected
             dcc.Loading(html.Div(id='study-info-wrapper'), type='circle'),
             html.Div(id='download-unused-sheets-link-wrapper'),
-            html.Div(id='study-table-wrapper')
+            html.Div(id='study-data-wrapper')
     ])
 
 

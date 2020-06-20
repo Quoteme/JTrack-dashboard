@@ -292,8 +292,8 @@ class Study:
 		study_df = self.drop_unused_sensor_columns(study_df)
 		study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
-		return html.Div(id='study-table', children=[
-			self.generate_html_table(study_df),
+		return html.Div(id='study-table-and-legend-wrapper', children=[
+			html.Div(id='study-table-wrapper', children=self.generate_html_table(study_df)),
 			html.Div(id='legend-wrapper', className='row', children=[
 				html.Div(id='color-legend-wrapper', children=self.get_color_legend()),
 				html.Div(id='status-code-legend-wrapper', children=self.get_status_code_legend())])])
@@ -322,7 +322,9 @@ class Study:
 		"""
 		header = self.get_study_table_header(study_df)
 		body = self.get_study_table_body(study_df)
-		return html.Table([html.Thead(header), html.Tbody(body)])
+		return html.Table(id='study-table', children=[
+			html.Thead(header),
+			html.Tbody(body)])
 
 	def get_study_table_header(self, study_df):
 		"""

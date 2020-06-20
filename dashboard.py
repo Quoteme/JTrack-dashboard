@@ -154,7 +154,7 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 
 @app.callback([Output('study-info-wrapper', 'children'),
-               Output('study-table-wrapper', 'children'),
+               Output('study-data-wrapper', 'children'),
                Output('download-unused-sheets-link-wrapper', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
