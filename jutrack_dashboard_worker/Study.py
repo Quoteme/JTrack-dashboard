@@ -423,7 +423,6 @@ class Study:
 
 	def get_push_notification_div(self):
 		all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in self.get_enrolled_qr_codes_from_json()]
-		print(self.get_ids_with_missing_data())
 		return html.Div(id='push-notification', children=[
 			html.H3('Push notifications'),
 			html.Div(id='push-notification-information-wrapper', children=[

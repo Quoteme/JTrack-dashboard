@@ -238,8 +238,9 @@ def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
               [State('push-notification-title', 'value'),
                State('push-notification-text', 'value'),
                State('receiver-list', 'value'),
-               State('user-with-missing-data-button', 'data-user-list')])
-def push_notifications(autofillbtn1, send_button, title, text, receivers, missing_data_users):
+               State('user-with-missing-data-button', 'data-user-list'),
+               State('current-study-list', 'value')])
+def push_notifications(autofillbtn1, send_button, title, text, receivers, missing_data_users, study_id):
     ctx = dash.callback_context
     if len(ctx.triggered) > 0:
         if ctx.triggered[0]['value']:
@@ -247,7 +248,7 @@ def push_notifications(autofillbtn1, send_button, title, text, receivers, missin
             if button_id == 'user-with-missing-data-button':
                 return title, text, missing_data_users, ''
             if button_id == 'send-push-notification-button' and (user.role == 'master' or user.role == 'invest'):
-                send_push_notification(title, text, receivers)
+                send_push_notification(title, text, receivers, study_id)
                 return '', '', [], 'Push notification sent!'
     raise PreventUpdate
 
