@@ -431,6 +431,7 @@ class Study:
 				html.Div(id='push-notification-receiver-list-wrapper', children=[
 					dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
 			html.Div(id='autofill-button-wrapper', children=[
+				html.Button(id='every-user-button', children='All IDs', **{'data-user-list': self.get_enrolled_qr_codes_from_json()}),
 				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': self.get_ids_with_missing_data()})]),
 			html.Button(id='send-push-notification-button', children='Send notification'),
 			html.Div(id='push-notification-output-state')

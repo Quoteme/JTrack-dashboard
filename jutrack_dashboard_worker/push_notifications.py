@@ -16,8 +16,7 @@ def send_push_notification(title, text, receivers, study_id):
 		},
 		'registration_ids': tokens
 	}
-	x = requests.post(url, headers={'Authorization': auth, 'Content-Type': content_type}, json=body)
-	print(x.text)
+	requests.post(url, headers={'Authorization': auth, 'Content-Type': content_type}, json=body)
 
 
 def get_receivers_tokens(receivers, study_id):
