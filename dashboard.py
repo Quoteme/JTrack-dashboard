@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
+from jutrack_dashboard_worker.push_notifications import send_push_notification
 from layout import get_main_page, get_log_in_div, get_logged_in_div, get_body
 from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
@@ -84,7 +85,7 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
                 return get_close_study_div()
             if button_id == 'about-button':
                 return get_about_div()
-    return html.Div()
+    raise PreventUpdate
 
 
 @app.callback([Output('create-study-output-state', 'children'),
@@ -226,6 +227,29 @@ def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
         return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
     else:
         raise PreventUpdate
+
+
+@app.callback([Output('push-notification-title', 'value'),
+               Output('push-notification-text', 'value'),
+               Output('receiver-list', 'value'),
+               Output('push-notification-output-state', 'children')],
+              [Input('user-with-missing-data-button', 'n_clicks'),
+               Input('send-push-notification-button', 'n_clicks')],
+              [State('push-notification-title', 'value'),
+               State('push-notification-text', 'value'),
+               State('receiver-list', 'value'),
+               State('user-with-missing-data-button', 'data-user-list')])
+def push_notifications(autofillbtn1, send_button, title, text, receivers, missing_data_users):
+    ctx = dash.callback_context
+    if len(ctx.triggered) > 0:
+        if ctx.triggered[0]['value']:
+            button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+            if button_id == 'user-with-missing-data-button':
+                return title, text, missing_data_users, ''
+            if button_id == 'send-push-notification-button' and (user.role == 'master' or user.role == 'invest'):
+                send_push_notification(title, text, receivers)
+                return '', '', [], 'Push notification sent!'
+    raise PreventUpdate
 
 
 @app.server.route('/download-<string:study_id>-<string:user>')

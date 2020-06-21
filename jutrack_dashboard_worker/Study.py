@@ -263,7 +263,7 @@ class Study:
 	def get_ids_with_missing_data(self):
 		missing_data_ids = []
 		for user in self.user_list:
-			missing_data_ids.append(user.ids_with_missing_data)
+			missing_data_ids.extend(user.ids_with_missing_data)
 		return missing_data_ids
 
 	####################################################################
@@ -423,8 +423,7 @@ class Study:
 
 	def get_push_notification_div(self):
 		all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in self.get_enrolled_qr_codes_from_json()]
-		missing_data_ids = [{'label': qr_code, 'value': qr_code} for qr_code in  self.get_ids_with_missing_data()]
-
+		print(self.get_ids_with_missing_data())
 		return html.Div(id='push-notification', children=[
 			html.H3('Push notifications'),
 			html.Div(id='push-notification-information-wrapper', children=[
@@ -433,6 +432,7 @@ class Study:
 				html.Div(id='push-notification-receiver-list-wrapper', children=[
 					dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
 			html.Div(id='autofill-button-wrapper', children=[
-				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': missing_data_ids})]),
-			html.Button(id='send-push-notification-button', children='Send notification')
+				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': self.get_ids_with_missing_data()})]),
+			html.Button(id='send-push-notification-button', children='Send notification'),
+			html.Div(id='push-notification-output-state')
 		])
