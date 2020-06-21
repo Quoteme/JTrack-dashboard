@@ -5,44 +5,29 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import send_file
 
+from jutrack_dashboard_worker.push_notifications import send_push_notification
+from layout import get_main_page, get_log_in_div, get_logged_in_div, get_body
 from security.DashboardUser import DashboardUser
 from jutrack_dashboard_worker import zip_file, dash_study_folder, get_study_list_as_dict, sheets_folder
 from Exceptions import StudyAlreadyExistsException, NoSuchUserException, WrongPasswordException, \
-    EmptyStudyTableException
+    EmptyStudyTableException, MissingCredentialsException
 from jutrack_dashboard_worker.Study import Study
-from menu_tabs import get_about_div, get_create_study_div, get_current_studies_div, get_close_study_div
-from websites import general_page, login_page
+from menu_tabs import get_create_study_div, get_current_studies_div, get_close_study_div, get_about_div
 
 # Generate dash app
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
 user = DashboardUser()
-logo1 = app.get_asset_url('Logos.JPG')
-logo2 = app.get_asset_url('Logo_BrainandBehaviour.png')
-
 
 # General dash app layout starting with the login div
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='top-bar', className='row jutrack-background', children=[
-        html.Div(id='image-container1', className='column-mid',
-                 children=html.Img(id='logo1', src=logo1, className='juelich-icon-header')),
-        html.H1(id='header', className='column-medium', children='JuTrack Dashboard',
-                style={'color': 'white', 'text-align': 'center',
-                       'line-height': '102px', 'vertical-align': 'middle'}),
-        html.Div(id='image-container2', className='column-small',
-                 children=html.Img(id='logo2', src=logo2, className='bb-icon-header')),
-        html.Span(id='logged-in-as')
-    ]),
-    html.Div(id='menu-and-content', className='row', children=login_page())
-])
+app.layout = get_main_page()
 
 
-@app.callback([Output('menu-and-content', 'children'),
+@app.callback([Output('login-wrapper', 'children'),
+               Output('page-body', 'children'),
                Output('login-output-state', 'children'),
                Output('username', 'value'),
-               Output('passwd', 'value'),
-               Output('logged-in-as', 'children')],
+               Output('passwd', 'value')],
               [Input('login-button', 'n_clicks')],
               [State('username', 'value'),
                State('passwd', 'value')])
@@ -59,23 +44,24 @@ def display_page_callback(login_click, username, password):
     if login_click:
         try:
             user.login(username, password)
-            return general_page(), 'Logged in successfully!', username, '', 'Logged in as: ' + username
+            return get_logged_in_div(username), get_body(), 'Logged in successfully!', username, ''
         except NoSuchUserException:
-            return login_page(), 'No such user!', username, '', ''
+            return get_log_in_div(), '', 'This user does not exist!', username, ''
         except WrongPasswordException:
-            return login_page(), 'Wrong Password!', username, '', ''
+            return get_log_in_div(), '', 'Wrong Password!', username, ''
+        except MissingCredentialsException:
+            return get_log_in_div(), '', 'Please enter your credentials', username, ''
     else:
         raise PreventUpdate
 
 
-@app.callback(Output('page-content', 'children'),
+@app.callback(Output('content-div', 'children'),
               [Input('create-button', 'n_clicks'),
-               Input('current-studies', 'n_clicks'),
+               Input('current-studies-button', 'n_clicks'),
                Input('about-button', 'n_clicks'),
-               Input('home-button', 'n_clicks'),
                Input('close-button', 'n_clicks')
                ])
-def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
+def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
     """
     Callback reacting if a menu button is clicked. Returns clicked button content
 
@@ -83,7 +69,6 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
     :param btn2: not used due callback_context syntax
     :param btn3: not used due callback_context syntax
     :param btn4: not used due callback_context syntax
-    :param btn5: not used due callback_context syntax
     :return: Several possible divs depending which button was clicked. The div is displayed on the page right next
             to the menu. Returned by Output('page-content', 'children')
     """
@@ -94,15 +79,13 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
             button_id = ctx.triggered[0]['prop_id'].split('.')[0]
             if button_id == 'create-button' and user.role == 'master':
                 return get_create_study_div()
-            if button_id == 'current-studies':
+            if button_id == 'current-studies-button':
                 return get_current_studies_div()
             if button_id == 'close-button' and user.role == 'master':
                 return get_close_study_div()
             if button_id == 'about-button':
                 return get_about_div()
-            if button_id == 'home-button':
-                return html.Div()
-    return html.Div()
+    raise PreventUpdate
 
 
 @app.callback([Output('create-study-output-state', 'children'),
@@ -110,14 +93,14 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4, btn5):
                Output('create-study-duration-input', 'value'),
                Output('create-study-subject-number', 'value'),
                Output('create-study-description', 'value'),
-               Output('create-study-sensors-checklist', 'value'),
+               Output('create-study-sensors-list', 'value'),
                Output('frequency-list', 'value')],
               [Input('create-study-button', 'n_clicks')],
               [State('create-study-name-input', 'value'),
                State('create-study-duration-input', 'value'),
                State('create-study-subject-number', 'value'),
                State('create-study-description', 'value'),
-               State('create-study-sensors-checklist', 'value'),
+               State('create-study-sensors-list', 'value'),
                State('frequency-list', 'value')])
 def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq):
     """
@@ -164,16 +147,17 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             new_study = Study.from_json_dict(json_dict)
             try:
                 new_study.create()
-                return 'You created the study:\t' + study_name, '', '', '', '', [], ''
+                return 'You created the study: ' + study_name, '', '', '', '', [], ''
             except StudyAlreadyExistsException:
                 return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors, freq
     else:
         raise PreventUpdate
 
 
-@app.callback([Output('current-study-info', 'children'),
-               Output('current-study-table', 'children'),
-               Output('download-unused-sheets', 'children')],
+@app.callback([Output('study-info-wrapper', 'children'),
+               Output('study-data-wrapper', 'children'),
+               Output('download-unused-sheets-link-wrapper', 'children'),
+               Output('push-notification-wrapper', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -197,7 +181,7 @@ def display_study_info_callback(study_id):
         except EmptyStudyTableException:
             active_subjects_table = html.Div("No data available")
 
-        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets()
+        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets(), study.get_push_notification_div()
     else:
         raise PreventUpdate
 
@@ -243,6 +227,45 @@ def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
         return "Total number of subject: " + study_to_extend.study_json["number-of-subjects"], ''
     else:
         raise PreventUpdate
+
+
+@app.callback([Output('push-notification-title', 'value'),
+               Output('push-notification-text', 'value'),
+               Output('receiver-list', 'value'),
+               Output('push-notification-output-state', 'children')],
+              [Input('user-with-missing-data-button', 'n_clicks'),
+               Input('every-user-button', 'n_clicks'),
+               Input('send-push-notification-button', 'n_clicks')],
+              [State('push-notification-title', 'value'),
+               State('push-notification-text', 'value'),
+               State('receiver-list', 'value'),
+               State('user-with-missing-data-button', 'data-user-list'),
+               State('every-user-button', 'data-user-list'),
+               State('current-study-list', 'value')])
+def push_notifications(autofillbtn1, autofillbtn2, send_button, title, text, receivers, missing_data_users_list, every_user_list , study_id):
+    ctx = dash.callback_context
+
+    if len(ctx.triggered) > 0:
+        if ctx.triggered[0]['value']:
+            button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+            if button_id == 'user-with-missing-data-button':
+                return title, text, missing_data_users_list, ''
+            if button_id == 'every-user-button':
+                return title, text, every_user_list, ''
+            if button_id == 'send-push-notification-button' and (user.role == 'master' or user.role == 'invest'):
+                if not title or not text or not receivers:
+                    error_output_state = ''
+                    if not title:
+                        error_output_state = 'Please enter a message title!'
+                    elif not text:
+                        error_output_state = 'Please enter a message!'
+                    elif not receivers:
+                        error_output_state = 'Please select receivers!'
+                    return title, text, receivers, error_output_state
+                else:
+                    send_push_notification(title, text, receivers, study_id)
+                    return '', '', [], 'Push notification sent!'
+    raise PreventUpdate
 
 
 @app.server.route('/download-<string:study_id>-<string:user>')

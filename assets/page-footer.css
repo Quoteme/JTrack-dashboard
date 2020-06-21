@@ -1,0 +1,19 @@
+#page-footer {
+    box-shadow: -2px -6px 5px rgba(0, 0, 0, 0.5);
+    z-index: 150;
+}
+
+#footer-div {
+    padding: 16px;
+    background-color: #005B82;
+}
+
+#footer-div p {
+    color: white;
+    margin: 0px;
+    font-size: 0.8em;
+}
+
+#footer-div a {
+    color: #5cbbff;
+}

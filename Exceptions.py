@@ -26,6 +26,13 @@ class WrongPasswordException(Exception):
     pass
 
 
+class MissingCredentialsException(Exception):
+    """
+    Exception if credentials are missing
+    """
+    pass
+
+
 class EmptyStudyTableException(Exception):
     """
     Exception if study data table is empty resulting in "No data available".
