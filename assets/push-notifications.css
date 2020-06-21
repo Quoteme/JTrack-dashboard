@@ -1,0 +1,42 @@
+#push-notification-wrapper {
+    padding-top: 16px;
+}
+
+#push-notification-information-wrapper {
+    padding-left: 8px;
+}
+
+#push-notification-title-wrapper {
+    padding-bottom: 8px;
+}
+
+#push-notification-title {
+    height: 20px;
+    width: 240px;
+}
+
+#push-notification-text-wrapper {
+    padding-bottom: 8px;
+}
+
+#push-notification-text {
+    height: 56px;
+    width: 320px;
+}
+
+#push-notification-receiver-list-wrapper {
+    padding-bottom: 8px;
+}
+
+#receiver-list {
+    width: 600px;
+}
+
+#autofill-button-wrapper {
+    padding-left: 16px;
+    padding-bottom: 24px;
+}
+
+#user-with-missing-data-button {
+    background-color: rgba(255, 51, 51, 0.8);
+}

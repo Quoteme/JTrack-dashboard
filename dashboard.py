@@ -92,14 +92,14 @@ def display_menu_tab_content_callback(btn1, btn2, btn3, btn4):
                Output('create-study-duration-input', 'value'),
                Output('create-study-subject-number', 'value'),
                Output('create-study-description', 'value'),
-               Output('create-study-sensors-checklist', 'value'),
+               Output('create-study-sensors-list', 'value'),
                Output('frequency-list', 'value')],
               [Input('create-study-button', 'n_clicks')],
               [State('create-study-name-input', 'value'),
                State('create-study-duration-input', 'value'),
                State('create-study-subject-number', 'value'),
                State('create-study-description', 'value'),
-               State('create-study-sensors-checklist', 'value'),
+               State('create-study-sensors-list', 'value'),
                State('frequency-list', 'value')])
 def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq):
     """
@@ -155,7 +155,8 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
 
 @app.callback([Output('study-info-wrapper', 'children'),
                Output('study-data-wrapper', 'children'),
-               Output('download-unused-sheets-link-wrapper', 'children')],
+               Output('download-unused-sheets-link-wrapper', 'children'),
+               Output('push-notification-wrapper', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -179,7 +180,7 @@ def display_study_info_callback(study_id):
         except EmptyStudyTableException:
             active_subjects_table = html.Div("No data available")
 
-        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets()
+        return study.get_study_info_div(), active_subjects_table, study.get_download_link_unused_sheets(), study.get_push_notification_div()
     else:
         raise PreventUpdate
 

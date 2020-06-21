@@ -232,6 +232,13 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
+	def get_unused_sensors(self):
+		return np.setdiff1d(get_sensor_list(), self.sensors)
+
+	####################################################################
+	# ------------------------ User management ----------------------- #
+	####################################################################
+
 	def get_enrolled_app_users_from_json(self):
 		"""
 		get list of all app users that have ever scanned at least one qr code
@@ -243,8 +250,21 @@ class Study:
 		sorted_list = np.sort(all_enrolled_app_users)
 		return sorted_list
 
-	def get_unused_sensors(self):
-		return np.setdiff1d(get_sensor_list(), self.sensors)
+	def get_enrolled_qr_codes_from_json(self):
+		"""
+		get list of all app users that have ever scanned at least one qr code
+
+		:return: list of active app users
+		"""
+		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
+		sorted_list = np.sort(enrolled_qr_codes)
+		return sorted_list
+
+	def get_ids_with_missing_data(self):
+		missing_data_ids = []
+		for user in self.user_list:
+			missing_data_ids.append(user.ids_with_missing_data)
+		return missing_data_ids
 
 	####################################################################
 	# ----------------------- Study information ---------------------- #
@@ -395,4 +415,24 @@ class Study:
 			html.Li("Empty - everything is fine"),
 			html.Li("1 - User left study with this QR Code"),
 			html.Li("2 - Inform an admin"),
+		])
+
+	####################################################################
+	# ---------------------- Push notifications ---------------------- #
+	####################################################################
+
+	def get_push_notification_div(self):
+		all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in self.get_enrolled_qr_codes_from_json()]
+		missing_data_ids = [{'label': qr_code, 'value': qr_code} for qr_code in  self.get_ids_with_missing_data()]
+
+		return html.Div(id='push-notification', children=[
+			html.H3('Push notifications'),
+			html.Div(id='push-notification-information-wrapper', children=[
+				html.Div(id='push-notification-title-wrapper', children=dcc.Input(id='push-notification-title', placeholder='Message title', type='text')),
+				html.Div(id='push-notification-text-wrapper', children=dcc.Textarea(id='push-notification-text', placeholder='Message text')),
+				html.Div(id='push-notification-receiver-list-wrapper', children=[
+					dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
+			html.Div(id='autofill-button-wrapper', children=[
+				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': missing_data_ids})]),
+			html.Button(id='send-push-notification-button', children='Send notification')
 		])

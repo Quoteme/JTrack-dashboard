@@ -28,7 +28,7 @@ def get_create_study_div():
             html.Div(children=[html.Span(className='create-span', children='Recording frequency:'),
                                dcc.Dropdown(id='frequency-list', options=frequencies)]),
             html.Div(id='sensors', children=[html.Span(className='create-span', children='Sensors:'),
-                               dcc.Dropdown(id='create-study-sensors-checklist', options=sensor_checkboxes, multi=True)])]),
+                               dcc.Dropdown(id='create-study-sensors-list', options=sensor_checkboxes, multi=True)])]),
         html.Button(id='create-study-button', children='Create'),
         # is filled if user tries to create study, reset also other input fields
         dcc.Loading(id='loading-create-study', children=[html.P(id='create-study-output-state')], type='circle')
@@ -51,7 +51,8 @@ def get_current_studies_div():
             # is filled when study is selected
             dcc.Loading(html.Div(id='study-info-wrapper'), type='circle'),
             html.Div(id='download-unused-sheets-link-wrapper'),
-            html.Div(id='study-data-wrapper')
+            html.Div(id='study-data-wrapper'),
+            html.Div(id='push-notification-wrapper')
     ])
 
 

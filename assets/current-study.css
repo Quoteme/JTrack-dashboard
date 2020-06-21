@@ -23,3 +23,11 @@
 #download-unused-sheets-link {
     padding: 8px;
 }
+
+#download-unused-sheets-link.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    text-decoration: none;
+    color: #004176;
+}

@@ -23,6 +23,10 @@ li.not-clean{
     color: #f7725e;
 }
 
+#legend-wrapper {
+    padding-top: 16px;
+}
+
 #color-legend-wrapper {
     float: left;
     width: 250px;
@@ -32,8 +36,4 @@ li.not-clean{
 #status-code-legend-wrapper {
     float: left;
     width: 250px;
-}
-
-#legend-wrapper {
-    padding-top: 16px;
 }
