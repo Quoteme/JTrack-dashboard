@@ -1,0 +1,32 @@
+#page-header {
+    border-top: 5px solid #005B82;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+#title-wrapper {
+    padding-left: 32px;
+}
+
+#title {
+    color: #005B82;
+    font-weight: bold;
+    font-size: 2.3em;
+}
+
+#subtitle{
+    margin-top: -24px;
+    padding-left: 8px;
+    color: #005B82;
+}
+
+#icons-wrapper {
+    padding-top: 8px;
+    padding-right: 8px;
+}
+
+#icons-wrapper img {
+    width: 140px;
+    height: 80px;
+    border-style: none double;
+}
+
