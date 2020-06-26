@@ -412,9 +412,10 @@ class Study:
 		:return:
 		"""
 		return html.Ul(children=[
-			html.Li("Empty - everything is fine"),
+			html.Li("Empty - Everything is fine"),
 			html.Li("1 - User left study with this QR Code"),
-			html.Li("2 - Inform an admin"),
+			html.Li("2 - User reached study duration and left automatically"),
+			html.Li("3 - Missing data")
 		])
 
 	####################################################################
