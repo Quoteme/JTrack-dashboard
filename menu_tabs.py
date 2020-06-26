@@ -70,6 +70,7 @@ def get_close_study_div():
             html.Div(children=dcc.Dropdown(id='close-study-list', options=study_list)),
             html.Button(id='close-study-button', children='Close study'),
             html.P(id='close-selected-study-output-state'),
+            dcc.ConfirmDialog(id='close-study-confirm-dialog', message='Please confirm closing the study'),
     ])
 
 
