@@ -38,6 +38,7 @@ class Study:
 		self.study_csv = storage_folder + '/' + csv_prefix + self.study_id + '.csv'
 		self.study_path = studies_folder + '/' + self.study_id
 		self.json_file_path = self.study_path + "/" + self.study_id + ".json"
+		self.user_list = []
 
 	@classmethod
 	def from_json_dict(cls, study_json):
@@ -113,7 +114,7 @@ class Study:
 
 		:return: Link which looks like a button to download sheets
 		"""
-		return html.A(id='download-unused-sheets', children='Download unused study sheets', className='button', href='/download-' + self.study_id)
+		return html.A(id='download-unused-sheets-link', children='Download unused study sheets', className='button', href='/download-' + self.study_id)
 
 	def zip_unused_sheets(self):
 		"""
@@ -231,6 +232,13 @@ class Study:
 		with open(self.json_file_path, 'w') as f:
 			json.dump(self.study_json, f, ensure_ascii=False, indent=4)
 
+	def get_unused_sensors(self):
+		return np.setdiff1d(get_sensor_list(), self.sensors)
+
+	####################################################################
+	# ------------------------ User management ----------------------- #
+	####################################################################
+
 	def get_enrolled_app_users_from_json(self):
 		"""
 		get list of all app users that have ever scanned at least one qr code
@@ -242,8 +250,21 @@ class Study:
 		sorted_list = np.sort(all_enrolled_app_users)
 		return sorted_list
 
-	def get_unused_sensors(self):
-		return np.setdiff1d(get_sensor_list(), self.sensors)
+	def get_enrolled_qr_codes_from_json(self):
+		"""
+		get list of all app users that have ever scanned at least one qr code
+
+		:return: list of active app users
+		"""
+		enrolled_qr_codes = np.array(self.study_json["enrolled-subjects"])
+		sorted_list = np.sort(enrolled_qr_codes)
+		return sorted_list
+
+	def get_ids_with_missing_data(self):
+		missing_data_ids = []
+		for user in self.user_list:
+			missing_data_ids.extend(user.ids_with_missing_data)
+		return missing_data_ids
 
 	####################################################################
 	# ----------------------- Study information ---------------------- #
@@ -255,35 +276,23 @@ class Study:
 
 		:return: Study information div
 		"""
-		return html.Div([
-			html.Br(),
-			dcc.Loading(id='loading-study-details', children=[self.get_study_information()], type='circle'),
-			html.Br(),
-			html.Div(children=[
-				dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
-				html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-		])
-
-	def get_study_information(self):
-		"""
-		get all relevant study information in a div (number of all subjects/enrolled subjects, duration, ...)
-
-		:return: div with information
-		"""
 		duration = self.study_json["duration"]
 		total_number_subjects = self.study_json["number-of-subjects"]
 		enrolled_subject_list = self.get_enrolled_app_users_from_json()
 		sensor_list = self.sensors
 		description = self.study_json["description"]
 
-		return html.Div(children=[
-			html.P(description, style={'padding-left': '12px'}),
-			html.P("Study duration: " + duration + " days", style={'padding-left': '24px'}),
-			html.P(id='total-subjects', children="Total number of subjects: " + total_number_subjects, style={'padding-left': '24px'}),
-			html.P("Number of enrolled subjects: " + str(len(enrolled_subject_list)), style={'padding-left': '24px'}),
-			html.P("Sensors: ", style={'padding-left': '24px'}),
-			html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]), style={'padding-left': '72px'})
-		], className='div-border', style={'width': '320px'})
+		return html.Div(id='study-info', children=[
+				html.P(description),
+				html.P('Study duration: ' + duration + ' days'),
+				html.P(id='total-subjects', children='Total number of subjects: ' + total_number_subjects),
+				html.Div(id='create-subject-wrapper', children=[
+					dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
+					html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
+				html.P('Number of enrolled subjects: ' + str(len(enrolled_subject_list))),
+				html.P('Sensors: '),
+				html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]))
+		])
 
 	####################################################################
 	# -------------------------- Study Table ------------------------- #
@@ -304,11 +313,16 @@ class Study:
 		study_df = self.drop_unused_sensor_columns(study_df)
 		study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
-		return html.Div(children=[self.generate_html_table(study_df), self.get_legend()])
+		return html.Div(id='study-table-and-legend-wrapper', children=[
+			html.Div(id='study-table-wrapper', children=self.generate_html_table(study_df)),
+			html.Div(id='legend-wrapper', className='row', children=[
+				html.Div(id='color-legend-wrapper', children=self.get_color_legend()),
+				html.Div(id='status-code-legend-wrapper', children=self.get_status_code_legend())])])
 
 	def drop_unused_sensor_columns(self, study_df):
 		"""
-		Drops columns of sensors which are not selected in the study. Only if completely empty
+		Drops columns of sensors which are not selected in the study. Only if completely empty (-> if actual unused sensors contain
+		data they will be highlighted)
 
 		:param study_df: data frame of study
 		:return: edited data frame without unused sensors
@@ -329,7 +343,9 @@ class Study:
 		"""
 		header = self.get_study_table_header(study_df)
 		body = self.get_study_table_body(study_df)
-		return html.Table([html.Thead(header), html.Tbody(body)])
+		return html.Table(id='study-table', children=[
+			html.Thead(header),
+			html.Tbody(body)])
 
 	def get_study_table_header(self, study_df):
 		"""
@@ -358,8 +374,8 @@ class Study:
 		:return:
 		"""
 		body = []
-		users = self.get_app_user_objects_from_table(study_df)
-		for user in users:
+		self.get_app_user_objects_from_table(study_df)
+		for user in self.user_list:
 			body.extend(user.get_rows_for_all_ids())
 		return body
 
@@ -371,13 +387,11 @@ class Study:
 		:return: list with app user objects
 		"""
 		active_users = self.get_enrolled_app_users_from_json()
-		user_list = []
 		for user in active_users:
-			user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=self.study_id, duration=self.duration))
-		return user_list
+			self.user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=self.study_id, duration=self.duration))
 
 	@staticmethod
-	def get_legend():
+	def get_color_legend():
 		"""
 		color legend beneath the table to identify meaning of highlights
 		:return: unordered list with color information
@@ -387,5 +401,39 @@ class Study:
 			html.Li("Sensor was not chosen", className='not-clean'),
 			html.Li("Left study too early", className='blue'),
 			html.Li("Study duration reached, not left", className='light-green'),
-			html.Li("Study duration reached, left", className='dark-green')
+			html.Li("Study duration reached, left", className='dark-green'),
+			html.Li("Multiple QR Codes of one user active", className='orange')
+		])
+
+	@staticmethod
+	def get_status_code_legend():
+		"""
+		legend for status codes empty,1,2
+		:return:
+		"""
+		return html.Ul(children=[
+			html.Li("Empty - Everything is fine"),
+			html.Li("1 - User left study with this QR Code"),
+			html.Li("2 - User reached study duration and left automatically"),
+			html.Li("3 - Missing data")
+		])
+
+	####################################################################
+	# ---------------------- Push notifications ---------------------- #
+	####################################################################
+
+	def get_push_notification_div(self):
+		all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in self.get_enrolled_qr_codes_from_json()]
+		return html.Div(id='push-notification', children=[
+			html.H3('Push notifications'),
+			html.Div(id='push-notification-information-wrapper', children=[
+				html.Div(id='push-notification-title-wrapper', children=dcc.Input(id='push-notification-title', placeholder='Message title', type='text')),
+				html.Div(id='push-notification-text-wrapper', children=dcc.Textarea(id='push-notification-text', placeholder='Message text')),
+				html.Div(id='push-notification-receiver-list-wrapper', children=[
+					dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
+			html.Div(id='autofill-button-wrapper', children=[
+				html.Button(id='every-user-button', children='All IDs', **{'data-user-list': self.get_enrolled_qr_codes_from_json()}),
+				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': self.get_ids_with_missing_data()})]),
+			html.Button(id='send-push-notification-button', children='Send notification'),
+			html.Div(id='push-notification-output-state')
 		])

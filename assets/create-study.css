@@ -1,0 +1,30 @@
+.create-span{
+    min-width: 200px;
+    display: inline-block;
+    padding-bottom: 12px;
+}
+
+#sensors {
+    padding-top: 8px;
+}
+
+#frequency-list {
+    width: 400px;
+}
+
+#create-study-sensors-list {
+    width: 400px;
+}
+
+#create-study-button {
+    margin-top: 32px;
+}
+
+#data-div input{
+    height: 20px;
+}
+
+#data-div textarea{
+    height: 48px;
+    width: 192px;
+}
