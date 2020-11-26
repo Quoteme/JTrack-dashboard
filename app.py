@@ -1,4 +1,5 @@
 from dash import dash
+import os
 
 # Paths to storage directory and for the qrcodes + subject sheets
 dash_study_folder = 'Studies'
