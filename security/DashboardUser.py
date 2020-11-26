@@ -1,4 +1,4 @@
-from Exceptions import NoSuchUserException, WrongPasswordException, MissingCredentialsException
+from exceptions import NoSuchUserException, WrongPasswordException, MissingCredentialsException
 from security import auth_pairs
 
 

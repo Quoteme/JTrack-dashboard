@@ -9,7 +9,7 @@ import qrcode
 
 from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
 	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
-from Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
+from exceptions import StudyAlreadyExistsException, EmptyStudyTableException
 from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
 from jutrack_dashboard_worker.AppUser import AppUser
 
