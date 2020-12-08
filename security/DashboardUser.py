@@ -1,4 +1,4 @@
-from exceptions import NoSuchUserException, WrongPasswordException, MissingCredentialsException
+from exceptions.Exceptions import NoSuchUserException, WrongPasswordException, MissingCredentialsException
 from security import auth_pairs
 
 
@@ -13,7 +13,7 @@ class DashboardUser:
 
 	def login(self, name, password):
 		"""
-		login function that checks if entered username and password are correct
+		login function that checks if entered username and password are correct and sets corresponding values for user
 		:param name: username
 		:param password: password
 		:return:

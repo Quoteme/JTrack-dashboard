@@ -1,8 +1,14 @@
 #!/usr/bin/python
+import getpass
+import os
 import sys
 from index import app
 
-sys.path.insert(0, "/var/www/jutrack.inm7.de/www/dashboard")
+if getpass.getuser() == 'msfz':
+	home = os.environ['HOME']
+	sys.path.insert(0, home + '/JuTrack/jutrack-dashboard')
+else:
+	sys.path.insert(0, "/var/www/jutrack.inm7.de/www/dashboard")
 
 server = app.server
 application = server

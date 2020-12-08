@@ -1,11 +1,10 @@
-from dash import dash
+import dash
 from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
 
-from index import user
-from study.push_notification.push_notifications import send_push_notification
 
-from app import app
+from app import app, user
+from push_notification.push_notifications import send_push_notification
 
 
 @app.callback([Output('push-notification-title', 'value'),

@@ -1,13 +1,13 @@
 from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
 
-from app import app
-from exceptions import MissingCredentialsException, NoSuchUserException, WrongPasswordException
-from index import user, get_body
+from app import app, user
+from exceptions.Exceptions import MissingCredentialsException, NoSuchUserException, WrongPasswordException
+from layout import get_body
 from security.layout import get_logged_in_div, get_log_in_div
 
 
-@app.callback([Output('login-wrapper', 'children'),
+@app.callback([Output('login-div', 'children'),
                Output('page-body', 'children'),
                Output('login-output-state', 'children'),
                Output('username', 'value'),

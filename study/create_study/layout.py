@@ -1,6 +1,8 @@
 import dash_core_components as dcc
 import dash_html_components as html
 
+from study import get_sensor_list
+
 
 def get_create_study_div():
     """
@@ -29,6 +31,19 @@ def get_create_study_div():
             html.Div(id='sensors', children=[html.Span(className='create-span', children='Sensors:'),
                                dcc.Dropdown(id='create-study-sensors-list', options=sensor_checkboxes, multi=True)])]),
         html.Button(id='create-study-button', children='Create'),
+        dcc.Upload(id='upload-ema-json', children=html.Div(['Drag and Drop or ', html.A('Select JSON File')]),
+                   style={
+                       'width': '25%',
+                       'height': '60px',
+                       'lineHeight': '60px',
+                       'borderWidth': '1px',
+                       'borderStyle': 'dashed',
+                       'borderRadius': '5px',
+                       'textAlign': 'center',
+                       'margin': '10px'
+                   },
+                   multiple=False,
+                   accept='application/json'),
         # is filled if user tries to create study, reset also other input fields
         dcc.Loading(id='loading-create-study', children=[html.P(id='create-study-output-state')], type='circle')
     ])

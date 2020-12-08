@@ -7,11 +7,12 @@ import numpy as np
 import pandas as pd
 import qrcode
 
-from jutrack_dashboard_worker import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
-	qr_folder, sheets_folder, zip_file, archive_folder, get_sensor_list, timestamp_format
-from exceptions import StudyAlreadyExistsException, EmptyStudyTableException
-from jutrack_dashboard_worker.SubjectPDF import SubjectPDF
-from jutrack_dashboard_worker.AppUser import AppUser
+from app import studies_folder, storage_folder, csv_prefix, dash_study_folder, \
+	qr_folder, sheets_folder, zip_file, archive_folder
+from exceptions.Exceptions import StudyAlreadyExistsException, EmptyStudyTableException
+from study.SubjectPDF import SubjectPDF
+from study.AppUser import AppUser
+from study import get_sensor_list
 
 
 class Study:
@@ -286,7 +287,7 @@ class Study:
 				html.P(description),
 				html.P('Study duration: ' + duration + ' days'),
 				html.P(id='total-subjects', children='Total number of subjects: ' + total_number_subjects),
-				html.Div(id='create-subject-wrapper', children=[
+				html.Div(id='create-subject-div', children=[
 					dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number', min='0'),
 					html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
 				html.P('Number of enrolled subjects: ' + str(len(enrolled_subject_list))),
@@ -313,11 +314,11 @@ class Study:
 		study_df = self.drop_unused_sensor_columns(study_df)
 		study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
-		return html.Div(id='study-table-and-legend-wrapper', children=[
-			html.Div(id='study-table-wrapper', children=self.generate_html_table(study_df)),
-			html.Div(id='legend-wrapper', className='row', children=[
-				html.Div(id='color-legend-wrapper', children=self.get_color_legend()),
-				html.Div(id='status-code-legend-wrapper', children=self.get_status_code_legend())])])
+		return html.Div(id='study-table-and-legend-div', children=[
+			html.Div(id='study-table-div', children=self.generate_html_table(study_df)),
+			html.Div(id='legend-div', className='row', children=[
+				html.Div(id='color-legend-div', children=self.get_color_legend()),
+				html.Div(id='status-code-legend-div', children=self.get_status_code_legend())])])
 
 	def drop_unused_sensor_columns(self, study_df):
 		"""
@@ -426,12 +427,12 @@ class Study:
 		all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in self.get_enrolled_qr_codes_from_json()]
 		return html.Div(id='push-notification', children=[
 			html.H3('Push notifications'),
-			html.Div(id='push-notification-information-wrapper', children=[
-				html.Div(id='push-notification-title-wrapper', children=dcc.Input(id='push-notification-title', placeholder='Message title', type='text')),
-				html.Div(id='push-notification-text-wrapper', children=dcc.Textarea(id='push-notification-text', placeholder='Message text')),
-				html.Div(id='push-notification-receiver-list-wrapper', children=[
+			html.Div(id='push-notification-information-div', children=[
+				html.Div(id='push-notification-title-div', children=dcc.Input(id='push-notification-title', placeholder='Message title', type='text')),
+				html.Div(id='push-notification-text-div', children=dcc.Textarea(id='push-notification-text', placeholder='Message text')),
+				html.Div(id='push-notification-receiver-list-div', children=[
 					dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
-			html.Div(id='autofill-button-wrapper', children=[
+			html.Div(id='autofill-button-div', children=[
 				html.Button(id='every-user-button', children='All IDs', **{'data-user-list': self.get_enrolled_qr_codes_from_json()}),
 				html.Button(id='user-with-missing-data-button', children='Missing data IDs', **{'data-user-list': self.get_ids_with_missing_data()})]),
 			html.Button(id='send-push-notification-button', children='Send notification'),

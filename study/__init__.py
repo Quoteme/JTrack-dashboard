@@ -1,5 +1,6 @@
 import os
 
+from app import studies_folder
 
 
 def get_sensor_list():
@@ -32,7 +33,7 @@ def list_studies():
     """
     study_list = []
     for study in os.listdir(studies_folder):
-        if study != "users" and study != "lost+found" and os.path.isdir(studies_folder + '/' + study):
+        if study != "users" and study != "lost+found" and os.path.isdir(os.path.join(studies_folder, study)):
             study_list.append(study)
 
     return study_list

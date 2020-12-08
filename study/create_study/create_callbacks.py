@@ -1,7 +1,10 @@
+import base64
+import json
+
 from dash.exceptions import PreventUpdate
-from exceptions import StudyAlreadyExistsException
+from exceptions.Exceptions import StudyAlreadyExistsException
 from dash.dependencies import Output, Input, State
-from jutrack_dashboard_worker.Study import Study
+from study.Study import Study
 
 from app import app
 
@@ -19,8 +22,9 @@ from app import app
                State('create-study-subject-number', 'value'),
                State('create-study-description', 'value'),
                State('create-study-sensors-list', 'value'),
-               State('frequency-list', 'value')])
-def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq):
+               State('frequency-list', 'value'),
+               State('upload-ema-json', 'contents')])
+def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq, ema_json):
     """
      Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
     if input field contains a valid input und the study does not exist yet.
@@ -41,8 +45,10 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                 Output('create-study-sensors-checklist', 'value')
     """
 
-    print("heloooo")
     if n_clicks:
+        content_type, content_string = ema_json.split(',')
+        decoded = base64.b64decode(content_string)
+        ema = json.loads(decoded)
         if not study_name or not study_duration or not sensors or not freq:
             error_output_state = ''
             if not study_name:
@@ -56,13 +62,15 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
             return error_output_state, study_name, study_duration, number_subjects, description, sensors, freq
 
         else:
+            sensors.append('ema')
             json_dict = {"name": study_name,
                          "duration": str(study_duration),
                          "number-of-subjects": str(number_subjects),
                          "description": description,
                          "sensor-list": sensors,
                          "enrolled-subjects": [],
-                         "frequency": str(freq)}
+                         "frequency": str(freq),
+                         "survey": ema["survey"]}
             new_study = Study.from_json_dict(json_dict)
             try:
                 new_study.create()

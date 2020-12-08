@@ -1,6 +1,8 @@
 import dash_core_components as dcc
 import dash_html_components as html
 
+from study import get_study_list_as_dict
+
 
 def get_close_study_div():
     """

@@ -1,6 +1,7 @@
-from jutrack_dashboard_worker import users_folder
 import json
 import requests
+
+from app import users_folder
 
 url = 'https://fcm.googleapis.com/fcm/send'
 auth = 'key=AAAA_jwmwEU:APA91bFYuWaWejK255G8cGIlCTSumBSkUjrK_LzTNS-38D7dCOBRt4REFczSnSmsx-9tZKdJzjmR8sSU2bVBMWKADhK3TXRy6WBtOMVG9Jm77-PhtDEBowb5TwV3PxWa0PEjs4YU9bP6'

@@ -1,8 +1,16 @@
+from dash.exceptions import PreventUpdate
+from flask import send_file
+import dash_html_components as html
+from app import dash_study_folder, zip_file, sheets_folder, app
+from exceptions.Exceptions import EmptyStudyTableException
+from dash.dependencies import Output, Input
+from study.Study import Study
 
-@app.callback([Output('study-info-wrapper', 'children'),
-               Output('study-data-wrapper', 'children'),
-               Output('download-unused-sheets-link-wrapper', 'children'),
-               Output('push-notification-wrapper', 'children')],
+
+@app.callback([Output('study-info-div', 'children'),
+               Output('study-data-div', 'children'),
+               Output('download-unused-sheets-link-div', 'children'),
+               Output('push-notification-div', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """

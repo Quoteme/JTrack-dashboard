@@ -2,7 +2,7 @@ import dash_html_components as html
 import pandas as pd
 from datetime import datetime
 
-from jutrack_dashboard_worker import timestamp_format
+timestamp_format = "%Y-%m-%d %H:%M:%S"
 
 
 class AppUser:
