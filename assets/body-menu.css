@@ -1,6 +1,6 @@
 #menu-div {
-    width: 100%;
-    margin-top: 8px;
+    width: 10%;
+    float: left;
 }
 
 #menu-div button {

@@ -28,3 +28,16 @@
     height: 48px;
     width: 192px;
 }
+
+#create-study-list {
+    width: 300px;
+}
+
+.modality-button {
+
+}
+
+#create-study-name-input {
+    font-size: 16px;
+    padding-bottom: px;
+}

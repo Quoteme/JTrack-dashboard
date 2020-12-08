@@ -3,20 +3,3 @@
     min-height: 450px;
     margin-bottom: 32px;
 }
-
-#body-div {
-    height: 100%;
-}
-
-#menu-wrapper {
-    background-color: rgba(230, 237, 233, 0.1);
-    width: 10%;
-    height: 400px;
-    min-width: 100px;
-    float: left;
-}
-
-#content-wrapper {
-    width: 80%;
-    float: left;
-}
