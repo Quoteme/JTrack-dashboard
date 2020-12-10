@@ -2,28 +2,25 @@ import os
 
 from app import studies_folder
 
+passive = 'passive'
+ema = 'ema'
 
-def get_sensor_list():
-    """
-    Retrieves a list of possible used sensors
+sensor_list = [
+    'accelerometer',
+    'activity',
+    'application_usage',
+    'barometer',
+    'gravity_sensor',
+    'gyroscope',
+    'location',
+    'magnetic_sensor',
+    'rotation_vector',
+    'linear_acceleration'
+]
 
-    :return: list of sensors
-    """
+frequency_list = [50, 100, 150, 200]
 
-    sensors = [
-        'accelerometer',
-        'activity',
-        'application_usage',
-        'barometer',
-        'gravity_sensor',
-        'gyroscope',
-        'location',
-        'magnetic_sensor',
-        'rotation_vector',
-        'linear_acceleration'
-    ]
-
-    return sensors
+modality_list = [{'label': 'Ecological momentary assessment', 'value': 'ema'}, {'label': 'Passive monitoring', 'value': 'passive'}]
 
 
 def list_studies():

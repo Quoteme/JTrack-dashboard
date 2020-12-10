@@ -1,7 +1,6 @@
 from dash.exceptions import PreventUpdate
 
 from app import app
-from study.Study import Study
 from study import get_study_list_as_dict
 from dash.dependencies import Output, Input, State
 import dash_html_components as html
@@ -20,8 +19,8 @@ def close_study_callback(confirm_click, study_id):
     :return: output state and cleans value of study list
     """
     if confirm_click and study_id:
-        study_to_close = Study.from_study_id(study_id)
-        study_to_close.close()
+      #  study_to_close = Study.from_study_id(study_id)
+       # study_to_close.close()
         remaining = get_study_list_as_dict()
         return html.Div('Study closed.'), remaining
     else:

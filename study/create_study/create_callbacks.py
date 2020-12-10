@@ -4,26 +4,12 @@ import json
 from dash.exceptions import PreventUpdate
 from exceptions.Exceptions import StudyAlreadyExistsException
 from dash.dependencies import Output, Input, State
-from study.Study import Study
 
 from app import app
+from study import ema, passive
+from study.create_study.layout import get_ema_part, get_passive_monitoring_part, uploaded_div
 
 
-@app.callback([Output('create-study-output-state', 'children'),
-               Output('create-study-name-input', 'value'),
-               Output('create-study-duration-input', 'value'),
-               Output('create-study-subject-number', 'value'),
-               Output('create-study-description', 'value'),
-               Output('create-study-sensors-list', 'value'),
-               Output('frequency-list', 'value')],
-              [Input('create-study-button', 'n_clicks')],
-              [State('create-study-name-input', 'value'),
-               State('create-study-duration-input', 'value'),
-               State('create-study-subject-number', 'value'),
-               State('create-study-description', 'value'),
-               State('create-study-sensors-list', 'value'),
-               State('frequency-list', 'value'),
-               State('upload-ema-json', 'contents')])
 def create_study_callback(n_clicks, study_name, study_duration, number_subjects, description, sensors, freq, ema_json):
     """
      Callback to create a new study on button click. Reacting if the create study button is clicked. Creates a new study
@@ -71,11 +57,43 @@ def create_study_callback(n_clicks, study_name, study_duration, number_subjects,
                          "enrolled-subjects": [],
                          "frequency": str(freq),
                          "survey": ema["survey"]}
-            new_study = Study.from_json_dict(json_dict)
+           # new_study = Study.from_json_dict(json_dict)
             try:
-                new_study.create()
+        #       new_study.create()
                 return 'You created the study: ' + study_name, '', '', '', '', [], ''
             except StudyAlreadyExistsException:
                 return study_name + ' already exists. Please chose another name!', '', study_duration, number_subjects, description, sensors, freq
     else:
         raise PreventUpdate
+
+
+@app.callback(Output('data-div', 'children'),
+              [Input('modality-list', 'value')])
+def update_data_div_callback(modaliy_checklist_values):
+    if modaliy_checklist_values:
+        ema_div = get_ema_part() if ema in modaliy_checklist_values else ''
+        passive_monitoring_div = get_passive_monitoring_part() if passive in modaliy_checklist_values else ''
+        return [ema_div, passive_monitoring_div]
+    else:
+        PreventUpdate
+
+
+@app.callback(Output('name-ema-json', 'children'),
+              [Input('upload-ema-json', 'contents')],
+              [State('upload-ema-json', 'filename'),
+              State('upload-ema-json', 'last_modified')])
+def update_after_ema_json_upload_callback(c,n,l):
+    print("im in")
+    if n:
+        return uploaded_div(n)
+    else:
+        PreventUpdate
+
+
+@app.callback(Output('name-ema-images', 'children'),
+              Input('upload-ema-images', 'filename'))
+def update_after_ema_json_upload_callback(filename):
+    if filename:
+        return uploaded_div(filename)
+    else:
+        PreventUpdate
