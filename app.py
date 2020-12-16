@@ -27,6 +27,10 @@ studies_folder = os.path.join(storage_folder, studies)
 archive_folder = os.path.join(storage_folder, archive)
 users_folder = os.path.join(storage_folder, users)
 
+fire_url = 'https://fcm.googleapis.com/fcm/send'
+fire_auth = 'key=AAAA_jwmwEU:APA91bFYuWaWejK255G8cGIlCTSumBSkUjrK_LzTNS-38D7dCOBRt4REFczSnSmsx-9tZKdJzjmR8sSU2bVBMWKADhK3TXRy6WBtOMVG9Jm77-PhtDEBowb5TwV3PxWa0PEjs4YU9bP6'
+fire_content_type = 'application/json'
+
 
 user = DashboardUser()
 app = dash.Dash(__name__, suppress_callback_exceptions=True)

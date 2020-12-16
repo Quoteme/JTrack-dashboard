@@ -38,4 +38,3 @@ class WrongPasswordException(BaseException):
     Exception if password for existing user is wrong
     """
     pass
-
