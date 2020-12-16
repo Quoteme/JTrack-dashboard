@@ -9,13 +9,9 @@ from study.close_study.layout import get_close_study_div
 from study.create_study.layout import get_create_study_div
 from study.display_study.layout import get_current_studies_div
 
-# noinspection PyUnresolvedReferences
 from security import login_callbacks
-# noinspection PyUnresolvedReferences
 from study.close_study import close_callbacks
-# noinspection PyUnresolvedReferences
 from study.create_study import create_callbacks
-# noinspection PyUnresolvedReferences
 from study.display_study import display_callbacks
 
 
