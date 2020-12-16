@@ -1,5 +1,7 @@
 from fpdf import FPDF
 
+from study import number_of_activations
+
 
 class SubjectPDF(FPDF):
     """
@@ -68,15 +70,14 @@ class SubjectPDF(FPDF):
         self.cell(40, 10, txt=text, ln=0, align='L')
         self.ln(10)
 
-    def qr_code(self, qr_code_path, number_codes):
+    def qr_codes(self, qr_code_path):
         """
         Draws all 4 qr codes for different activations
 
         :param qr_code_path: path to qr_code to img file. Only needs the activation number to be completed
-        :param number_codes: number of activation codes (4)
         :return:
         """
-        for i in range(1, number_codes):
+        for i in range(1, number_of_activations + 1):
             self.text_field('Activation ' + str(i))
             self.draw_input_line('Date of activation')
             self.image(qr_code_path + '_' + str(i) + '.png', x=140, y=75 + (i - 1) * 40, w=40)

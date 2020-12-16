@@ -2,7 +2,7 @@
 import getpass
 import os
 import sys
-from dashboard import app
+from index import app
 
 if getpass.getuser() == 'msfz':
 	home = os.environ['HOME']

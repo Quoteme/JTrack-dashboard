@@ -1,12 +1,12 @@
-#push-notification-wrapper {
+#push-notification-div {
     padding-top: 16px;
 }
 
-#push-notification-information-wrapper {
+#push-notification-information-div {
     padding-left: 8px;
 }
 
-#push-notification-title-wrapper {
+#push-notification-title-div {
     padding-bottom: 8px;
 }
 
@@ -15,7 +15,7 @@
     width: 240px;
 }
 
-#push-notification-text-wrapper {
+#push-notification-text-div {
     padding-bottom: 8px;
 }
 
@@ -24,7 +24,7 @@
     width: 320px;
 }
 
-#push-notification-receiver-list-wrapper {
+#push-notification-receiver-list-div {
     padding-bottom: 8px;
 }
 
@@ -32,7 +32,7 @@
     width: 600px;
 }
 
-#autofill-button-wrapper {
+#autofill-button-div {
     padding-left: 16px;
     padding-bottom: 24px;
 }
