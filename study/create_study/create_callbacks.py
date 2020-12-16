@@ -79,7 +79,7 @@ def update_uploaded_ema_details_callback(json_filename, zip_filename):
 			   Input('create-study-duration', 'value'),
 			   Input('create-subject-number', 'value'),
 			   Input('create-study-description', 'value')],
-			  State('study-details', 'data'))
+			  [State('study-details', 'data')])
 def update_study_details_callback(name, duration, subject_number, description, data):
 	data = data or get_default_study_details_dict()
 	data['name'] = name
@@ -92,7 +92,7 @@ def update_study_details_callback(name, duration, subject_number, description, d
 @app.callback(Output('ema-details', 'data'),
 			  [Input('upload-ema-json', 'contents'),
 			   Input('upload-ema-images', 'contents')],
-			  State('ema-details', 'data'))
+			  [State('ema-details', 'data')])
 def update_ema_details_callback(ema_json, ema_images_zip, data):
 	data = data or get_default_ema_details_dict()
 
@@ -115,7 +115,7 @@ def update_ema_details_callback(ema_json, ema_images_zip, data):
 @app.callback(Output('passive-monitoring-details', 'data'),
 			  [Input('frequency-list', 'value'),
 			   Input('create-study-sensors-list', 'value')],
-			  State('passive-monitoring-details', 'data'))
+			  [State('passive-monitoring-details', 'data')])
 def update_passive_monitoring_details_callback(frequency, sensor_list, data):
 	data = data or get_default_passive_monitoring_details_dict()
 	data['frequency'] = frequency
