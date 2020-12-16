@@ -1,7 +1,8 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
-from study import get_study_list_as_dict
+from study import get_study_list_as_dict, open_study_json, get_enrolled_app_users_from_json, \
+    get_enrolled_qr_codes_from_json, get_ids_with_missing_data
 
 
 def get_current_studies_div():
@@ -25,22 +26,22 @@ def get_current_studies_div():
     ])
 
 
-def get_study_info_div(self):
+def get_study_info_div(study_json):
     """
     Returns information of specified study as a div
 
     :return: Study information div
     """
-    duration = self.study_json["duration"]
-    total_number_subjects = self.study_json["number-of-subjects"]
-    enrolled_subject_list = self.get_enrolled_app_users_from_json()
-    sensor_list = self.sensors
-    description = self.study_json["description"]
+    duration = study_json["duration"]
+    total_number_subjects = study_json["number-of-subjects"]
+    enrolled_subject_list = get_enrolled_app_users_from_json(study_json)
+    sensor_list = study_json["sensor-list"]
+    description = study_json["description"]
 
     return html.Div(id='study-info', children=[
         html.P(description),
-        html.P('Study duration: ' + duration + ' days'),
-        html.P(id='total-subjects', children='Total number of subjects: ' + total_number_subjects),
+        html.P('Study duration: ' + str(duration) + ' days'),
+        html.P(id='total-subjects', children='Total number of subjects: ' + str(total_number_subjects)),
         html.Div(id='create-subject-div', children=[
             dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number',
                       min='0'),
@@ -51,37 +52,10 @@ def get_study_info_div(self):
     ])
 
 
-def get_color_legend():
-    """
-    color legend beneath the table to identify meaning of highlights
-    :return: unordered list with color information
-    """
-    return html.Ul(children=[
-        html.Li("No data sent for 2 days", className='red'),
-        html.Li("Sensor was not chosen", className='not-clean'),
-        html.Li("Left study too early", className='blue'),
-        html.Li("Study duration reached, not left", className='light-green'),
-        html.Li("Study duration reached, left", className='dark-green'),
-        html.Li("Multiple QR Codes of one user active", className='orange')
-    ])
-
-
-def get_status_code_legend():
-    """
-    legend for status codes empty,1,2
-    :return:
-    """
-    return html.Ul(children=[
-        html.Li("Empty - Everything is fine"),
-        html.Li("1 - User left study with this QR Code"),
-        html.Li("2 - User reached study duration and left automatically"),
-        html.Li("3 - Missing data")
-    ])
-
-
-def get_push_notification_div(self):
+def get_push_notification_div(study_json, user_list):
     all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in
-               self.get_enrolled_qr_codes_from_json()]
+               get_enrolled_qr_codes_from_json(study_json)]
+
     return html.Div(id='push-notification', children=[
         html.H3('Push notifications'),
         html.Div(id='push-notification-information-div', children=[
@@ -93,9 +67,9 @@ def get_push_notification_div(self):
                 dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
         html.Div(id='autofill-button-div', children=[
             html.Button(id='every-user-button', children='All IDs',
-                        **{'data-user-list': self.get_enrolled_qr_codes_from_json()}),
+                        **{'data-user-list': get_enrolled_qr_codes_from_json(study_json)}),
             html.Button(id='user-with-missing-data-button', children='Missing data IDs',
-                        **{'data-user-list': self.get_ids_with_missing_data()})]),
+                        **{'data-user-list': get_ids_with_missing_data(user_list)})]),
         html.Button(id='send-push-notification-button', children='Send notification'),
         html.Div(id='push-notification-output-state')
     ])

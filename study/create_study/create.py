@@ -1,9 +1,14 @@
+import base64
+import json
 import os
 
+from app import studies_folder, dash_study_folder, qr_folder, sheets_folder
 from exceptions.Exceptions import StudyAlreadyExistsException
+from study import save_study_json
+from study.create_subjects.create_subjects import create_subjects
 
 
-def create(self):
+def create_study(study_dict):
 	"""
 	Create study using underlying json data which contains study_name, initial number of subjects, study duration and a list
 	of sensors to be used. The new study is created in the storage folder. Further,
@@ -12,43 +17,23 @@ def create(self):
 
 	:return: True or False depending if creation succeeded. False if and only if study already exists.
 	"""
-	if os.path.isdir(self.study_path):
+	study_path = os.path.join(studies_folder, study_dict['name'])
+	if os.path.isdir(study_path):
 		raise StudyAlreadyExistsException
+	os.makedirs(study_path)
+	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], qr_folder), exist_ok=True)
+	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], sheets_folder), exist_ok=True)
+	study_json_file = os.path.join(study_path, study_dict['name'] + '.json')
 
-	# creates study folder in storage folder
-	os.makedirs(self.study_path)
+	if 'images' in study_dict:
+		if study_dict['images'] in study_dict:
+			ema_images_bytes = base64.b64decode(study_dict['images'])
+			with open(os.path.join(study_path, study_dict['name'] + '_images.zip'), 'wb') as zf:
+				zf.write(ema_images_bytes)
+				study_dict['images'] = True
 
-	# generate folders for qr codes and subject sheets in dashboard folder of study
-	os.makedirs(self.qr_path)
-	os.makedirs(self.sheets_path)
-
-	# store json file with meta data
-	self.save_study_json()
+	# store json file with data
+	save_study_json(study_dict['name'], study_dict)
 
 	# create subjects depending on initial subject number
-	self.create_sheets_wrt_total_subject_number()
-
-
-def create_additional_subjects(self, number_of_subjects):
-	"""
-	create additional subjects for the study
-
-	:param number_of_subjects: number of subjects to create
-	:return:
-	"""
-	self.study_json["number-of-subjects"] = str(int(self.study_json["number-of-subjects"]) + number_of_subjects)
-	self.save_study_json()
-	self.create_sheets_wrt_total_subject_number()
-
-
-def create_sheets_wrt_total_subject_number(self):
-	"""
-	adjust the number of existing subject sheets according to the number of all subjects (creates for each subject a sheet)
-
-	:return:
-	"""
-	n_subjects = int(self.study_json["number-of-subjects"])
-	for subject_number in range(1, n_subjects + 1):
-		self.create_subject(subject_number)
-
-
+	create_subjects(study_dict['name'], study_dict['number-of-subjects'])

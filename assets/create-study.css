@@ -43,5 +43,9 @@
     border-style: dashed;
     border-radius: 5px;
     text-align: center;
-    margin: 10px;
+    margin: 16px;
+}
+
+.upload-file {
+    padding-bottom: 16px;
 }

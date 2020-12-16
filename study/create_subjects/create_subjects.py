@@ -2,62 +2,63 @@ import os
 
 import qrcode
 
+from app import dash_study_folder, sheets_folder, qr_folder
+from study import max_subjects_exp, number_of_activations
 from study.create_subjects.SubjectPDF import SubjectPDF
 
 
-def create_subject(self, subject_number):
+def create_subjects(study_id, number_to_create):
 	"""
 	creates one subject, if he or she exists return
 
-	:param subject_number: the number of one subject used as suffix
 	:return:
 	"""
-	subject_name = self.study_id + '_' + str(subject_number).zfill(self.max_subjects)
-	sheets_path = self.sheets_path
-	if os.path.isfile(sheets_path + '/' + subject_name + '.pdf'):
-		return
-	else:
-		self.create_qr_codes(subject_name)
-		self.write_to_pdf(subject_name)
+	for subject_number in range(1, number_to_create + 1):
+		subject_name = study_id + '_' + str(subject_number).zfill(max_subjects_exp)
+		if os.path.isfile(os.path.join(dash_study_folder, study_id, sheets_folder, subject_name + '.pdf')):
+			continue
+		else:
+			create_qr_codes(study_id, subject_name)
+			write_to_pdf(study_id, subject_name)
 
 
-def create_qr_codes(self, subject_name):
+def create_qr_codes(study_id, subject_name):
 	"""
 	Function to create a QR-code which corresponds to the new subject given. The Code will be stored in a .png.
 
-	:param subject_name: id of subject (study name + number)
 	:return:
 	"""
-	for activation_number in range(1, self.number_of_activations + 1):
-		current_qr_code = self.qr_path + '/' + subject_name + '_' + str(activation_number) + '.png'
+	qr_path = os.path.join(dash_study_folder, study_id, qr_folder)
+	for activation_number in range(1, number_of_activations + 1):
+		user_activation_number = subject_name + '_' + str(activation_number)
+
 		qr = qrcode.QRCode(
 			version=1,
 			error_correction=qrcode.constants.ERROR_CORRECT_H,
 			box_size=10,
 			border=4,
 		)
-		data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (subject_name + '_' + str(activation_number), self.study_id)
+		data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (user_activation_number, study_id)
 		# Add data
 		qr.add_data(data)
 		qr.make(fit=True)
 		# Create an image from the QR Code instance
 		img = qr.make_image()
 		# Save it somewhere, change the extension as needed:
-		img.save(current_qr_code)
+		img.save(os.path.join(qr_path, user_activation_number + '.png'))
 
 
-def write_to_pdf(self, subject_name):
+def write_to_pdf(study_id, subject_name):
 	"""
 	TODO: more information
 	Function to generate a pdf based on QR-Code and other information.
 
-	:param subject_name: id of subject
 	:return:
 	"""
-	qr_codes = self.qr_path + '/' + subject_name
-	pdf_path = self.sheets_path + '/' + subject_name + '.pdf'
+	qr_codes_path = os.path.join(dash_study_folder, study_id, qr_folder, subject_name)
+	pdf_path = os.path.join(dash_study_folder, study_id, sheets_folder, subject_name + '.pdf')
 
-	pdf = SubjectPDF(self.study_id)
+	pdf = SubjectPDF(study_id)
 	pdf.add_page()
 
 	pdf.draw_input_line_filled('Subject ID', subject_name)
@@ -67,6 +68,6 @@ def write_to_pdf(self, subject_name):
 	pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
 	pdf.ln(15)
 
-	pdf.qr_code(qr_codes, 5)
+	pdf.qr_codes(qr_codes_path)
 
 	pdf.output(pdf_path)
