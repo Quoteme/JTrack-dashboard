@@ -13,6 +13,7 @@ class AppUser:
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
+		# TODO fill it here with missing data users
 		self.ids_with_missing_data = []
 
 	def get_rows_for_all_ids(self):

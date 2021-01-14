@@ -47,6 +47,7 @@ def display_study_info_callback(study_id):
 
             study_table = get_study_data_table(study_df, user_list)
             push_notification_div = get_push_notification_div(study_json, user_list)
+           # remove_users_div = get_remove_users_div(study_json, user_list)
         except FileNotFoundError:
             study_table = html.Div("Table file not found.")
             push_notification_div = ''
