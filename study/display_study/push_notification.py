@@ -1,7 +1,7 @@
 import json
 import requests
 
-from app import users_folder, fire_url, fire_auth, fire_content_type
+from app import users_folder, firebase_url, firebase_auth, firebase_content_type
 
 
 def send_push_notification(title, text, receivers, study_id):
@@ -13,7 +13,7 @@ def send_push_notification(title, text, receivers, study_id):
 		},
 		'registration_ids': tokens
 	}
-	requests.post(fire_url, headers={'Authorization': fire_auth, 'Content-Type': fire_content_type}, json=body)
+	requests.post(firebase_url, headers={'Authorization': firebase_auth, 'Content-Type': firebase_content_type}, json=body)
 
 
 def get_receivers_tokens(receivers, study_id):
