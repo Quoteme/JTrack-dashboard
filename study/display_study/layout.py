@@ -34,9 +34,11 @@ def get_study_info_div(study_json):
     """
     duration = study_json["duration"]
     total_number_subjects = study_json["number-of-subjects"]
-    enrolled_subject_list = get_enrolled_app_users_from_json(study_json)
-    sensor_list = study_json["sensor-list"]
     description = study_json["description"]
+    n_enrolled_subject_list = len(get_enrolled_app_users_from_json(study_json))
+
+    active_sensors_div = html.P('Sensors: ' + ', '.join(study_json["sensor-list"])) if 'sensor-list' in study_json else ''
+    ema_active_json = html.P('EMA modality: active') if 'survey' in study_json else ''
 
     return html.Div(id='study-info', children=[
         html.P(description),
@@ -46,30 +48,10 @@ def get_study_info_div(study_json):
             dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number',
                       min='0'),
             html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-        html.P('Number of enrolled subjects: ' + str(len(enrolled_subject_list))),
-        html.P('Sensors: '),
-        html.Div(children=html.Ul(children=[html.Li(children=sensor) for sensor in sensor_list]))
+        html.P('Number of enrolled subjects: ' + str(n_enrolled_subject_list)),
+        active_sensors_div,
+        ema_active_json
     ])
 
 
-def get_push_notification_div(study_json, user_list):
-    all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in
-               get_enrolled_qr_codes_from_json(study_json)]
 
-    return html.Div(id='push-notification', children=[
-        html.H3('Push notifications'),
-        html.Div(id='push-notification-information-div', children=[
-            html.Div(id='push-notification-title-div',
-                     children=dcc.Input(id='push-notification-title', placeholder='Message title', type='text')),
-            html.Div(id='push-notification-text-div',
-                     children=dcc.Textarea(id='push-notification-text', placeholder='Message text')),
-            html.Div(id='push-notification-receiver-list-div', children=[
-                dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
-        html.Div(id='autofill-button-div', children=[
-            html.Button(id='every-user-button', children='All IDs',
-                        **{'data-user-list': get_enrolled_qr_codes_from_json(study_json)}),
-            html.Button(id='user-with-missing-data-button', children='Missing data IDs',
-                        **{'data-user-list': get_ids_with_missing_data(user_list)})]),
-        html.Button(id='send-push-notification-button', children='Send notification'),
-        html.Div(id='push-notification-output-state')
-    ])

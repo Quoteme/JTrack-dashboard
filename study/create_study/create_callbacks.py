@@ -81,7 +81,6 @@ def update_uploaded_ema_details_callback(json_filename, zip_filename):
 			   Input('create-study-description', 'value')],
 			  [State('study-details', 'data')])
 def update_study_details_callback(name, duration, subject_number, description, data):
-	data = data or get_default_study_details_dict()
 	data['name'] = name
 	data['duration'] = duration
 	data['number-of-subjects'] = subject_number
@@ -94,8 +93,6 @@ def update_study_details_callback(name, duration, subject_number, description, d
 			   Input('upload-ema-images', 'contents')],
 			  [State('ema-details', 'data')])
 def update_ema_details_callback(ema_json, ema_images_zip, data):
-	data = data or get_default_ema_details_dict()
-
 	ctx = dash.callback_context
 	if len(ctx.triggered) > 0:
 		if ctx.triggered[0]['value']:
@@ -117,32 +114,7 @@ def update_ema_details_callback(ema_json, ema_images_zip, data):
 			   Input('create-study-sensors-list', 'value')],
 			  [State('passive-monitoring-details', 'data')])
 def update_passive_monitoring_details_callback(frequency, sensor_list, data):
-	data = data or get_default_passive_monitoring_details_dict()
 	data['frequency'] = frequency
 	data['sensor-list'] = sensor_list
 	return data
 
-
-def get_default_study_details_dict():
-	return {
-		'name': None,
-		'duration': None,
-		'number-of-subjects': None,
-		'description': None,
-		'enrolled-subjects': [],
-		'sensor-list': []
-	}
-
-
-def get_default_ema_details_dict():
-	return {
-		'survey': None,
-		'images': None
-	}
-
-
-def get_default_passive_monitoring_details_dict():
-	return {
-		'frequency': None,
-		'sensor-list': None
-	}

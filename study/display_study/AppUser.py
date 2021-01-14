@@ -13,6 +13,7 @@ class AppUser:
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
+		# TODO fill it here with missing data users
 		self.ids_with_missing_data = []
 
 	def get_rows_for_all_ids(self):
@@ -40,17 +41,10 @@ class AppUser:
 		:return:
 		"""
 		if index == 0:
-			row_id.insert(0, self.create_download_link_for_user())
+			row_id.insert(0, html.Td(html.A(children=self.user_name, href='download-' + self.study_enrolled_in + '-' + self.user_name)))
 		else:
 			row_id.insert(0, html.Td(''))
 		return row_id
-
-	def create_download_link_for_user(self):
-		"""
-		Create link for downloading the study sheets of the app user
-		:return: dash html data cell with link (a)
-		"""
-		return html.Td(html.A(children=self.user_name, href='download-' + self.study_enrolled_in + '-' + self.user_name))
 
 	def give_color(self, row_dict):
 		"""

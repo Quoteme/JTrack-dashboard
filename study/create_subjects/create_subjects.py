@@ -50,7 +50,6 @@ def create_qr_codes(study_id, subject_name):
 
 def write_to_pdf(study_id, subject_name):
 	"""
-	TODO: more information
 	Function to generate a pdf based on QR-Code and other information.
 
 	:return:
