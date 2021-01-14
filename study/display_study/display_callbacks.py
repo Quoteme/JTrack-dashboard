@@ -48,13 +48,13 @@ def display_study_info_callback(study_id):
             study_table = get_study_data_table(study_df, user_list)
             push_notification_div = get_push_notification_div(study_json, user_list)
         except FileNotFoundError:
-            study_table = html.Div("Table file not found")
+            study_table = html.Div("Table file not found.")
             push_notification_div = ''
         except KeyError:
-            study_table = html.Div("Data erroneous")
+            study_table = html.Div("Data is erroneous.")
             push_notification_div = ''
         except EmptyStudyTableException:
-            study_table = html.Div("No data available")
+            study_table = html.Div("No data available.")
             push_notification_div = ''
 
         return study_info_div, study_table, study_download_link, push_notification_div

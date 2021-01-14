@@ -30,19 +30,28 @@ def create_study_callback(create_btn, modality_list, study_data, ema_data, passi
 		if not modality_list:
 			return 'Please select at least one modality!'
 
-		if not (study_data['name'] and study_data['duration'] and study_data['number-of-subjects']):
+		if study_data:
+			if not (study_data['name'] and study_data['duration'] and study_data['number-of-subjects']):
+				return 'Please fill out general study information(*)!'
+			study_dict.update(study_data)
+		else:
 			return 'Please fill out general study information(*)!'
-		study_dict.update(study_data)
 
 		if ema in modality_list:
-			if not ema_data['survey']:
+			if ema_data:
+				if not ema_data['survey']:
+					return 'Please upload JSON file for EMA(*)!'
+				study_dict.update(ema_data)
+			else:
 				return 'Please upload JSON file for EMA(*)!'
-			study_dict.update(ema_data)
 
 		if passive_monitoring in modality_list:
-			if not (passive_monitoring_data['frequency'] and passive_monitoring_data['sensor-list']):
+			if passive_monitoring_data:
+				if not (passive_monitoring_data['frequency'] and passive_monitoring_data['sensor-list']):
+					return 'Please specify frequency and sensors(*)!'
+				study_dict.update(passive_monitoring_data)
+			else:
 				return 'Please specify frequency and sensors(*)!'
-			study_dict.update(passive_monitoring_data)
 
 		try:
 			create_study(study_dict)
