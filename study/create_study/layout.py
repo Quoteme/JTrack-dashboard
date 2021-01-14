@@ -13,9 +13,9 @@ def get_create_study_div():
     """
 
     return html.Div(id='create-study-div', children=[
-        dcc.Store(id='study-details'),
-        dcc.Store(id='ema-details'),
-        dcc.Store(id='passive-monitoring-details'),
+        dcc.Store(id='study-details', data=get_default_study_details_dict()),
+        dcc.Store(id='ema-details', data=get_default_ema_details_dict()),
+        dcc.Store(id='passive-monitoring-details', data=get_default_passive_monitoring_details_dict()),
         html.H2(children='Create new study'),
         html.Div(children=[
             html.Div(children=[html.Span(className='create-span', children='Study name*:'),
@@ -77,4 +77,26 @@ def uploaded_div(filename):
     return html.Div(filename + ' uploaded!')
 
 
+def get_default_study_details_dict():
+    return {
+        'name': None,
+        'duration': None,
+        'number-of-subjects': None,
+        'description': None,
+        'enrolled-subjects': [],
+        'sensor-list': []
+    }
 
+
+def get_default_ema_details_dict():
+    return {
+        'survey': None,
+        'images': None
+    }
+
+
+def get_default_passive_monitoring_details_dict():
+    return {
+        'frequency': None,
+        'sensor-list': None
+    }
