@@ -77,7 +77,6 @@ def read_study_df(study_json):
 
     study_df = pd.read_csv(study_csv)
     study_df = study_df.rename(columns={"subject_name": "id"})
-    study_df = study_df.sort_values(by='id')
     study_df = drop_unused_data(study_json, study_df)
     study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
