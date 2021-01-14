@@ -5,15 +5,15 @@ import dash
 from dash.exceptions import PreventUpdate
 from flask import send_file
 import dash_html_components as html
-from app import dash_study_folder, zip_file, sheets_folder, app, user, studies_folder
+from app import dash_study_folder, zip_file, sheets_folder, app, user
 from exceptions.Exceptions import EmptyStudyTableException
 from dash.dependencies import Output, Input, State
 
 from study import get_app_user_objects_from_study_df, read_study_df, open_study_json, save_study_json
 from study.create_subjects.create_subjects import create_subjects
 from study.display_study.download_sheets import get_download_link_unused_sheets, zip_unused_sheets
-from study.display_study.layout import get_study_info_div, get_push_notification_div
-from study.display_study.push_notification import send_push_notification
+from study.display_study.layout import get_study_info_div
+from study.display_study.push_notification import send_push_notification, get_push_notification_div
 from study.display_study.study_table import get_study_data_table
 
 

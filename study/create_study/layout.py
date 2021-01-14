@@ -83,8 +83,7 @@ def get_default_study_details_dict():
         'duration': None,
         'number-of-subjects': None,
         'description': None,
-        'enrolled-subjects': [],
-        'sensor-list': []
+        'enrolled-subjects': []
     }
 
 

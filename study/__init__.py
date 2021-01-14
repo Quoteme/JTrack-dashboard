@@ -12,7 +12,9 @@ max_subjects_exp = 5
 number_of_activations = 4
 
 passive_monitoring = 'passive_monitoring'
+passive_monitoring_suffix = ''
 ema = 'ema'
+ema_suffix = 'ema'
 
 sensor_list = [
     'accelerometer',
@@ -29,7 +31,7 @@ sensor_list = [
 
 frequency_list = [50, 100, 150, 200]
 
-modality_list = [{'label': 'Ecological momentary assessment', 'value': 'ema'}, {'label': 'Passive monitoring', 'value': 'passive_monitoring'}]
+modality_list = [{'label': 'Ecological momentary assessment', 'value': ema}, {'label': 'Passive monitoring', 'value': passive_monitoring}]
 
 
 def list_studies():
@@ -76,7 +78,7 @@ def read_study_df(study_json):
     study_df = pd.read_csv(study_csv)
     study_df = study_df.rename(columns={"subject_name": "id"})
     study_df = study_df.sort_values(by='id')
-    study_df = drop_empty_sensor_columns(study_json, study_df)
+    study_df = drop_unused_data(study_json, study_df)
     study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
 
     if len(study_df.index) == 0:
@@ -85,7 +87,7 @@ def read_study_df(study_json):
     return study_df
 
 
-def drop_empty_sensor_columns(study_json, study_df):
+def drop_unused_data(study_json, study_df):
     """
     Drops columns of sensors which are not selected in the study. Only if completely empty (-> if actual unused sensors contain
     data they will be highlighted)
@@ -93,10 +95,14 @@ def drop_empty_sensor_columns(study_json, study_df):
     :param study_df: data frame of study
     :return: edited data frame without unused sensors
     """
-    unused_sensors = np.setdiff1d(sensor_list, study_json["sensor-list"])
-    for sensor in unused_sensors:
-        study_df[sensor + ' n_batches'] = study_df[sensor + ' n_batches'].replace(to_replace=[0], value=np.nan)
-        study_df[sensor + ' last_time_received'] = study_df[sensor + ' last_time_received'].replace(to_replace=['none'],
+
+    unused_data = np.setdiff1d(sensor_list, study_json["sensor-list"]) if 'sensor-list' in study_json else sensor_list
+    if 'survey' not in study_json:
+        unused_data = np.append(unused_data, ema)
+
+    for data in unused_data:
+        study_df[data + ' n_batches'] = study_df[data + ' n_batches'].replace(to_replace=[0], value=np.nan)
+        study_df[data + ' last_time_received'] = study_df[data + ' last_time_received'].replace(to_replace=['none'],
                                                                                                     value=np.nan)
     study_df = pd.DataFrame.dropna(study_df, axis=1, how='all')
     return study_df
