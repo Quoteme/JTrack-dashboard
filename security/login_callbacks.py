@@ -17,7 +17,6 @@ from security.layout import get_logged_in_div, get_log_in_div
                State('passwd', 'value')])
 def display_page_callback(login_click, username, password):
     """
-    TODO: Logout resulting in displaying the login page again
 
     :param login_click: login button click
     :param username: username of login
