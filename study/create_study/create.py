@@ -23,7 +23,6 @@ def create_study(study_dict):
 	os.makedirs(study_path)
 	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], qr_folder), exist_ok=True)
 	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], sheets_folder), exist_ok=True)
-	study_json_file = os.path.join(study_path, study_dict['name'] + '.json')
 
 	if 'images' in study_dict:
 		if study_dict['images'] in study_dict:
