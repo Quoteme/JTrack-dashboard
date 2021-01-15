@@ -120,6 +120,7 @@ def get_enrolled_app_users_from_json(study_json):
 
 
 def get_enrolled_qr_codes_from_json(study_json):
+    # TODO: Replace this one by getting qr codes from study_df or userlist with AppUsers
     """
     get list of all app users that have ever scanned at least one qr code
 
