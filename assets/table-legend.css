@@ -23,17 +23,17 @@ li.not-clean{
     color: #f7725e;
 }
 
-#legend-wrapper {
+#legend-div {
     padding-top: 16px;
 }
 
-#color-legend-wrapper {
+#color-legend-div {
     float: left;
     width: 300px;
     border-right: 1px solid;
 }
 
-#status-code-legend-wrapper {
+#status-code-legend-div {
     float: left;
     width: 300px;
 }
