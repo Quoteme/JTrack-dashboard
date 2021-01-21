@@ -9,8 +9,8 @@ number_of_activations = 4
 passive_monitoring = 'passive_monitoring'
 main = 'main'
 ema = 'ema'
-
-missing_data_sep = ":"
+modalities = [ema, main]
+sep = ':'
 
 sensors_per_modality_dict = {
     main: [

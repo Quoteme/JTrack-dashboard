@@ -11,7 +11,7 @@ class AppUser:
 
 	def __init__(self, user_name, data, study_id, duration):
 		self.user_name = user_name
-		self.data = pd.DataFrame(data).sort_values(by=['app', 'id']).reset_index(drop=True)
+		self.data = pd.DataFrame(data).sort_values(by=['id', 'app']).reset_index(drop=True)
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
@@ -65,9 +65,9 @@ class AppUser:
 		time_left = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else None
 		days_in_study = int(str(row_dict["time_in_study"].children).split(" ")[0])
 
-		self.check_for_missing_data(qr_id, row_dict, time_registered, time_left)
-
 		if not time_left:
+			self.check_for_missing_data(qr_id, row_dict, time_registered, time_left)
+
 			if self.check_multi_registration(row_dict):
 				id_color = 'orange'
 			elif days_in_study > int(self.study_duration):
