@@ -2,6 +2,8 @@ import dash_html_components as html
 import pandas as pd
 from datetime import datetime
 
+from study import sensors_per_modality_dict
+
 timestamp_format = "%Y-%m-%d %H:%M:%S"
 
 
@@ -9,14 +11,13 @@ class AppUser:
 
 	def __init__(self, user_name, data, study_id, duration):
 		self.user_name = user_name
-		self.data = pd.DataFrame.reset_index(data, drop=True)
+		self.data = pd.DataFrame(data).sort_values(by=['app', 'id']).reset_index(drop=True)
 		self.study_enrolled_in = study_id
 		self.study_duration = duration
 		self.sensors = [sensor_column.split(' ')[0] for sensor_column in data.columns if 'n_batches' in sensor_column]
-		# TODO fill it here with missing data users
-		self.ids_with_missing_data = []
+		self.ids_with_missing_data = {}
 
-	def get_rows_for_all_ids(self):
+	def get_rows_for_user(self):
 		"""
 		Get dash html rows for every scanned qr code of one app user. Data is a pandas data frame according to the user's data.
 		Iterates through the rows resulting in multiple pandas series resp. dictionaries. Highlighting if certain conditions are true.
@@ -59,47 +60,54 @@ class AppUser:
 		"""
 		qr_id = row_dict['id'].children
 		id_color = ''
-		registered_timestamp_in_s = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
-		left_timestamp_in_s = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else None
-		last_mandatory_send_in_s = datetime.now() if not left_timestamp_in_s else left_timestamp_in_s
-		time_in_study_days = int(str(row_dict["time_in_study"].children).split(" ")[0])
-		last_times_received = [sensor + ' last_time_received' for sensor in self.sensors]
-		missing_data = False
 
-		for last_time_received in last_times_received:
-			ltr_string = row_dict[last_time_received].children
-			ltr_in_s = registered_timestamp_in_s if ltr_string == "" else datetime.strptime(ltr_string, timestamp_format)
-			days_since_last_received = (last_mandatory_send_in_s - ltr_in_s).days
+		time_registered = datetime.strptime(row_dict["date_registered"].children, timestamp_format)
+		time_left = datetime.strptime(row_dict["date_left_study"].children, timestamp_format) if row_dict["date_left_study"].children != "" else None
+		days_in_study = int(str(row_dict["time_in_study"].children).split(" ")[0])
 
-			if days_since_last_received >= 2:
-				row_dict[last_time_received] = html.Td(children=ltr_string, className='red')
-				missing_data = True
+		self.check_for_missing_data(qr_id, row_dict, time_registered, time_left)
 
-		if not left_timestamp_in_s:
-			if self.check_multi_registration():
+		if not time_left:
+			if self.check_multi_registration(row_dict):
 				id_color = 'orange'
-			elif time_in_study_days > int(self.study_duration):
+			elif days_in_study > int(self.study_duration):
 				id_color = 'light-green'
-			elif missing_data:
+			elif row_dict["app"].children in self.ids_with_missing_data and qr_id in self.ids_with_missing_data[row_dict["app"].children]:
 				id_color = 'red'
-				self.ids_with_missing_data.append(qr_id)
 		else:
-			if (left_timestamp_in_s - registered_timestamp_in_s).days >= int(self.study_duration):
+			if (time_left - time_registered).days >= int(self.study_duration):
 				id_color = 'dark-green'
-			elif (left_timestamp_in_s - registered_timestamp_in_s).days < int(self.study_duration):
+			elif (time_left - time_registered).days < int(self.study_duration):
 				id_color = 'blue'
 
 		row_dict['id'] = html.Td(children=qr_id, className=id_color)
 
 		return list(row_dict.values())
 
-	def check_multi_registration(self):
+	def check_multi_registration(self, row_dict):
 		"""
 		check if there are multiple registrations (active qr codes) of one user. Look if more than one entry of date_left_study is empty
 		:return: true if multiple qr codes are active
 		"""
-		time_left_col = self.data["date_left_study"]
+		time_left_col = self.data[self.data["app"] == row_dict["app"].children]["date_left_study"]
 		not_left = time_left_col[time_left_col == '']
 		if not_left.size > 1:
 			return True
 		return False
+
+	def check_for_missing_data(self, qr_id, row_dict, time_registered, time_left):
+		ltr_list = [sensor + ' last_time_received' for sensor in self.sensors if sensor in sensors_per_modality_dict[row_dict["app"].children]]
+		time_last_possible_batch = time_left or datetime.now()
+
+		for ltr in ltr_list:
+			timestamp_ltr = row_dict[ltr].children
+			time_ltr = datetime.strptime(timestamp_ltr, timestamp_format) if timestamp_ltr != "" else time_registered
+			days_since_last_received = (time_last_possible_batch - time_ltr).days
+
+			if days_since_last_received >= 2:
+				row_dict[ltr] = html.Td(children=timestamp_ltr, className='red')
+				if row_dict["app"].children in self.ids_with_missing_data:
+					if qr_id not in self.ids_with_missing_data[row_dict["app"].children]:
+						self.ids_with_missing_data[row_dict["app"].children].append(qr_id)
+				else:
+					self.ids_with_missing_data[row_dict["app"].children] = [qr_id]

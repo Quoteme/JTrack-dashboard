@@ -4,17 +4,7 @@ import dash_html_components as html
 import numpy as np
 
 from app import dash_study_folder, zip_file, sheets_folder
-from study import open_study_json, get_enrolled_app_users_from_json
-
-
-def get_download_link_unused_sheets(study_json):
-	"""
-	Create download button for unused study sheets
-
-	:return: Link which looks like a button to download sheets
-	"""
-	return html.A(id='download-unused-sheets-link', children='Download unused study sheets', className='button',
-				  href='/download-' + study_json["name"])
+from study import open_study_json
 
 
 def zip_unused_sheets(study_id):

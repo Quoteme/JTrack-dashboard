@@ -21,7 +21,6 @@ def get_color_legend():
 	"""
 	return html.Ul(children=[
 		html.Li("No data sent for 2 days", className='red'),
-		html.Li("Sensor was not chosen", className='not-clean'),
 		html.Li("Left study too early", className='blue'),
 		html.Li("Study duration reached, not left", className='light-green'),
 		html.Li("Study duration reached, left", className='dark-green'),
@@ -79,6 +78,6 @@ def get_study_table_body(user_list):
 	"""
 	body = []
 	for user in user_list:
-		body.extend(user.get_rows_for_all_ids())
+		body.extend(user.get_rows_for_user())
 	return body
 

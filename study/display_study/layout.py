@@ -1,8 +1,7 @@
 import dash_html_components as html
 import dash_core_components as dcc
 
-from study import get_study_list_as_dict, open_study_json, get_enrolled_app_users_from_json, \
-    get_enrolled_qr_codes_from_json, get_ids_with_missing_data
+from study import get_study_list_as_dict
 
 
 def get_current_studies_div():
@@ -26,7 +25,7 @@ def get_current_studies_div():
     ])
 
 
-def get_study_info_div(study_json):
+def get_study_info_div(study_json, userlist):
     """
     Returns information of specified study as a div
 
@@ -35,7 +34,7 @@ def get_study_info_div(study_json):
     duration = study_json["duration"]
     total_number_subjects = study_json["number-of-subjects"]
     description = study_json["description"]
-    n_enrolled_subject_list = len(get_enrolled_app_users_from_json(study_json))
+    n_enrolled_users = len(userlist)
 
     active_sensors_div = html.P('Sensors: ' + ', '.join(study_json["sensor-list"])) if 'sensor-list' in study_json else ''
     ema_active_json = html.P('EMA modality: active') if 'survey' in study_json else ''
@@ -48,7 +47,7 @@ def get_study_info_div(study_json):
             dcc.Input(id='create-additional-subjects-input', placeholder='Number of new subjects', type='number',
                       min='0'),
             html.Button(id='create-additional-subjects-button', children='Create new subjects')]),
-        html.P('Number of enrolled subjects: ' + str(n_enrolled_subject_list)),
+        html.P('Number of enrolled subjects: ' + str(n_enrolled_users)),
         active_sensors_div,
         ema_active_json
     ])

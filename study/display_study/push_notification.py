@@ -1,17 +1,18 @@
 import json
 import requests
+import numpy as np
 
 import dash_html_components as html
 import dash_core_components as dcc
 
 from app import users_folder, firebase_url, firebase_auth, firebase_content_type
-from study import get_enrolled_qr_codes_from_json, get_ids_with_missing_data
+from study.display_study.study_data import get_ids_with_missing_data
 
 
-def get_push_notification_div(study_json, user_list):
+def get_push_notification_div(study_df, user_list):
     # TODO: EMA and passive monitoring Checklist and output if successful sent
     all_ids = [{'label': enrolled_qr_code, 'value': enrolled_qr_code} for enrolled_qr_code in
-               get_enrolled_qr_codes_from_json(study_json)]
+               np.unique(study_df['id'])]
 
     return html.Div(id='push-notification', children=[
         html.H3('Push notifications'),
@@ -24,7 +25,7 @@ def get_push_notification_div(study_json, user_list):
                 dcc.Dropdown(id='receiver-list', options=all_ids, multi=True, placeholder='Receiver...')])]),
         html.Div(id='autofill-button-div', children=[
             html.Button(id='every-user-button', children='All IDs',
-                        **{'data-user-list': get_enrolled_qr_codes_from_json(study_json)}),
+                        **{'data-user-list': np.unique(study_df['id'])}),
             html.Button(id='user-with-missing-data-button', children='Missing data IDs',
                         **{'data-user-list': get_ids_with_missing_data(user_list)})]),
         html.Button(id='send-push-notification-button', children='Send notification'),
