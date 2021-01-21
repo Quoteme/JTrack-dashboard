@@ -1,7 +1,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
 
-from study import sensor_list, frequency_list, modality_list
+from study import modality_list, sensors_per_modality_dict, main, ema, frequency_list
 
 
 def get_create_study_div():
@@ -39,7 +39,7 @@ def get_passive_monitoring_part():
 
     :return: passive monitoring div
     """
-    sensor_checkboxes = [{'label': sensor, 'value': sensor} for sensor in sensor_list]
+    sensor_checkboxes = [{'label': sensor, 'value': sensor} for sensor in sensors_per_modality_dict[main]]
     frequencies = [{'label': str(freq) + 'Hz', 'value': freq} for freq in frequency_list]
 
     return html.Div(id='passive-monitoring-data', children=[
