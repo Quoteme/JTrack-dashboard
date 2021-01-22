@@ -25,3 +25,8 @@ def zip_unused_sheets(study_id):
 	not_enrolled_subjects = [os.path.join(sheets_path, not_enrolled_subject) for not_enrolled_subject in np.setdiff1d(all_subject_list, enrolled_subject_list)]
 
 	os.system('zip ' + zip_path + ' ' + ' '.join(not_enrolled_subjects))
+
+
+def get_download_unused_sheets_button(study_json):
+	return html.A(id='download-unused-sheets-link', children='Download unused study sheets',
+				  className='button', href='/download-' + study_json["name"])

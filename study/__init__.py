@@ -6,6 +6,8 @@ from app import studies_folder
 max_subjects_exp = 5
 number_of_activations = 4
 
+timestamp_format = "%Y-%m-%d %H:%M:%S"
+
 passive_monitoring = 'passive_monitoring'
 main = 'main'
 ema = 'ema'

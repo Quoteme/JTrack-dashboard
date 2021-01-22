@@ -11,10 +11,10 @@ from dash.dependencies import Output, Input, State
 
 from study import open_study_json, save_study_json
 from study.create_subjects.create_subjects import create_subjects
-from study.display_study.download_sheets import zip_unused_sheets
+from study.display_study.download_sheets import zip_unused_sheets, get_download_unused_sheets_button
 from study.display_study.layout import get_study_info_div
 from study.display_study.push_notification import send_push_notification, get_push_notification_div
-from study.display_study.study_data import read_study_df, get_app_users
+from study.display_study.study_data import read_study_df
 from study.display_study.study_table import get_study_data_table
 
 
@@ -37,17 +37,19 @@ def display_study_info_callback(study_id):
         study_json = open_study_json(study_id)
         try:
             study_df = read_study_df(study_json)
-            user_list = get_app_users(study_json, study_df)
         except (FileNotFoundError, KeyError, EmptyStudyTableException):
             study_df = None
-            user_list = []
 
-        study_info_div = get_study_info_div(study_json, user_list)
-        study_table = get_study_data_table(study_df, user_list)
-        push_notification_div = get_push_notification_div(study_df, user_list)
-        study_download_link = html.A(id='download-unused-sheets-link', children='Download unused study sheets',
-                                     className='button', href='/download-' + study_json["name"])
-         # remove_users_div = get_remove_users_div(study_json, user_list)
+        study_info_div = get_study_info_div(study_json, study_df)
+        study_download_link = get_download_unused_sheets_button(study_json)
+
+        if study_df is not None:
+            study_table, missing_data_dict, active_users_dict = get_study_data_table(study_json, study_df)
+            push_notification_div = get_push_notification_div(missing_data_dict, active_users_dict)
+        else:
+            study_table = html.Div("No data available.")
+            push_notification_div = ''
+         #remove_users_div = get_remove_users_div(study_json, user_list)
 
         return study_info_div, study_table, study_download_link, push_notification_div
     else:
