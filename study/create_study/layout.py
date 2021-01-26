@@ -5,6 +5,8 @@ from study import modality_list, sensors_per_modality_dict, main, ema, frequency
 
 
 def get_create_study_div():
+    # TODO labeling option for passsive monitoring
+    # TODO Upload images
     """
     Returns the create study div
 

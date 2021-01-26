@@ -120,8 +120,11 @@ def push_notifications(autofillbtn1, autofillbtn2, send_button, title, text, rec
                         error_output_state = 'Please select receivers!'
                     return title, text, receivers, error_output_state
                 else:
-                    send_push_notification(title, text, receivers, study_id)
-                    return '', '', [], 'Push notification sent!'
+                    sending_errors = send_push_notification(title, text, receivers, study_id)
+                    push_result = ["Push notification sent!", html.Br()]
+                    for error in sending_errors:
+                        push_result.extend([html.Br(), error])
+                    return '', '', [], push_result
     raise PreventUpdate
 
 

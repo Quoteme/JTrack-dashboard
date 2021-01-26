@@ -19,7 +19,6 @@ firebase_content_type = 'application/json'
 
 
 def get_push_notification_div(missing_data_dict, active_users_dict):
-    # TODO: EMA and passive monitoring Checklist and output if successful sent
     qr_and_app_list = get_ids_and_app_of_active_users(active_users_dict)
     missing_ids_list = get_ids_and_app_with_missing_data(missing_data_dict)
 
