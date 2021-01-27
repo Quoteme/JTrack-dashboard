@@ -40,8 +40,8 @@ def create_study_callback(create_btn, modality_list, study_data, ema_data, passi
 			study_dict.update(ema_data)
 
 		if passive_monitoring in modality_list:
-			if not (passive_monitoring_data['frequency'] and passive_monitoring_data['sensor-list']):
-				return 'Please specify frequency and sensors(*)!'
+			if not (passive_monitoring_data['frequency'] and passive_monitoring_data['sensor-list'] and passive_monitoring_data['active_labeling'] is not None):
+				return 'Please specify frequency, sensors and labeling option(*)!'
 			study_dict.update(passive_monitoring_data)
 
 		try:
@@ -111,10 +111,12 @@ def update_ema_details_callback(ema_json, ema_images_zip, data):
 
 @app.callback(Output('passive-monitoring-details', 'data'),
 			  [Input('frequency-list', 'value'),
-			   Input('create-study-sensors-list', 'value')],
+			   Input('create-study-sensors-list', 'value'),
+			   Input('labeling-list', 'value')],
 			  [State('passive-monitoring-details', 'data')])
-def update_passive_monitoring_details_callback(frequency, sensor_list, data):
+def update_passive_monitoring_details_callback(frequency, sensor_list, labeling_list, data):
 	data['frequency'] = frequency
 	data['sensor-list'] = sensor_list
+	data['active_labeling'] = labeling_list
 	return data
 

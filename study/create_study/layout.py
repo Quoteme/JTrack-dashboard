@@ -1,7 +1,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
 
-from study import modality_list, sensors_per_modality_dict, main, ema, frequency_list
+from study import sensors_per_modality_dict, main, frequency_dict, labeling_dict, modality_dict
 
 
 def get_create_study_div():
@@ -13,6 +13,7 @@ def get_create_study_div():
     :return: Create study div containing: title, input fields for study name, study duration and number of subjects and
             a list containing sensor + checkboxes
     """
+    modality_list = [{'label': modality, 'value': value} for modality, value in modality_dict.items()]
 
     return html.Div(id='create-study-div', children=[
         dcc.Store(id='study-details', data=get_default_study_details_dict()),
@@ -31,7 +32,7 @@ def get_create_study_div():
             dcc.Checklist(id='modality-list', options=modality_list, labelStyle={'display': 'block'}),
             html.Div(id='data-div'),
             html.Button(id='create-study-button', children='Create study'),
-            # is filled if user tries to create study, reset also other input fields
+            # is filled if user tries to create study
             dcc.Loading(children=[html.P(id='create-study-output-state')], type='circle')])])
 
 
@@ -42,7 +43,8 @@ def get_passive_monitoring_part():
     :return: passive monitoring div
     """
     sensor_checkboxes = [{'label': sensor, 'value': sensor} for sensor in sensors_per_modality_dict[main]]
-    frequencies = [{'label': str(freq) + 'Hz', 'value': freq} for freq in frequency_list]
+    frequencies = [{'label': frequency, 'value': value} for frequency, value in frequency_dict.items()]
+    labeling_options = [{'label': labeling_option, 'value': value} for labeling_option, value in labeling_dict.items()]
 
     return html.Div(id='passive-monitoring-data', children=[
         html.H4('Passive monitoring details'),
@@ -50,6 +52,8 @@ def get_passive_monitoring_part():
                            dcc.Dropdown(id='frequency-list', options=frequencies)]),
         html.Div(children=[html.Span(className='create-span', children='Sensors*:'),
                            dcc.Dropdown(id='create-study-sensors-list', options=sensor_checkboxes, multi=True)], id='sensors'),
+        html.Div(children=[html.Span(className='create-span', children='Labeling option*:'),
+                           dcc.RadioItems(id='labeling-list', options=labeling_options, labelStyle={'display': 'block'})], id='labeling')
     ])
 
 
@@ -99,5 +103,6 @@ def get_default_ema_details_dict():
 def get_default_passive_monitoring_details_dict():
     return {
         'frequency': None,
-        'sensor-list': None
+        'sensor-list': None,
+        'active_labeling': None
     }

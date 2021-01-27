@@ -24,12 +24,14 @@ def create_study(study_dict):
 	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], qr_folder), exist_ok=True)
 	os.makedirs(os.path.join(dash_study_folder, study_dict['name'], sheets_folder), exist_ok=True)
 
-	if 'images' in study_dict:
-		if study_dict['images'] in study_dict:
-			ema_images_bytes = base64.b64decode(study_dict['images'])
-			with open(os.path.join(study_path, study_dict['name'] + '_images.zip'), 'wb') as zf:
-				zf.write(ema_images_bytes)
-				study_dict['images'] = True
+	if 'images' in study_dict and study_dict['images'] in study_dict:
+		ema_images_bytes = base64.b64decode(study_dict['images'])
+		with open(os.path.join(study_path, study_dict['name'] + '_images.zip'), 'wb') as zf:
+			zf.write(ema_images_bytes)
+			study_dict['images'] = True
+
+	if 'active_labeling' in study_dict and study_dict['active_labeling'] != 0:
+		study_dict['sensor-list'].append('active_labeling')
 
 	# store json file with data
 	save_study_json(study_dict['name'], study_dict)

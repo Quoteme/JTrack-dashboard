@@ -32,9 +32,17 @@ sensors_per_modality_dict = {
     ]
 }
 
-frequency_list = [50, 100, 150, 200]
+frequency_dict = {'50Hz': 50,
+                  '100Hz': 100,
+                  '150Hz': 150,
+                  '200Hz': 200}
 
-modality_list = [{'label': 'Ecological momentary assessment', 'value': ema}, {'label': 'Passive monitoring', 'value': passive_monitoring}]
+labeling_dict = {'No labeling': 0,
+                  'Active labeling': 1,
+                  'Manual active labeling': 2}
+
+modality_dict = {'Ecological momentary assessment': ema,
+                 'Passive monitoring': passive_monitoring}
 
 table_columns = ['subject_name',
                  'app',
@@ -64,8 +72,7 @@ table_columns = ['subject_name',
                  'linear_acceleration n_batches',
                  'linear_acceleration last_time_received',
                  'ema n_batches',
-                 'ema last_time_received'
-                 ]
+                 'ema last_time_received']
 
 
 def list_studies():
