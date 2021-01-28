@@ -5,7 +5,6 @@ from study import sensors_per_modality_dict, main, frequency_dict, labeling_dict
 
 
 def get_create_study_div():
-    # TODO labeling option for passsive monitoring
     # TODO Upload images
     """
     Returns the create study div
@@ -73,8 +72,7 @@ def get_ema_part():
         html.Div(id='name-upload-json', className='upload-file'),
         html.Span("Upload for EMA images zip file:"),
         dcc.Upload(id='upload-ema-images', className='upload', children=html.Div(['Drag and Drop or ', html.A('Select ZIP File')]),
-                   multiple=False,
-                   accept='application/zip '),
+                   multiple=False),
         html.Div(id='name-upload-images')
     ])
 
