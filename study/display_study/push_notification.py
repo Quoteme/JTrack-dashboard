@@ -8,8 +8,7 @@ import dash_core_components as dcc
 
 from app import users_folder
 from study import sep, main, ema, modalities
-from study.display_study.study_data import get_qr_and_app_with_missing_data
-
+from study.display_study.study_data import get_ids_and_app_list
 
 firebase_url = 'https://fcm.googleapis.com/fcm/send'
 firebase_auth = {
@@ -19,9 +18,9 @@ firebase_auth = {
 firebase_content_type = 'application/json'
 
 
-def get_push_notification_div(study_df, user_list):
-    # TODO: EMA and passive monitoring Checklist and output if successful sent
-    qr_and_app_list = [row['id'] + sep + row['app'] for index, row in study_df.iterrows()]
+def get_push_notification_div(missing_data_dict, active_users_dict):
+    qr_and_app_list = get_ids_and_app_list(active_users_dict)
+    missing_ids_list = get_ids_and_app_list(missing_data_dict)
 
     return html.Div(id='push-notification', children=[
         html.H3('Push notifications'),
@@ -36,7 +35,7 @@ def get_push_notification_div(study_df, user_list):
             html.Button(id='every-user-button', children='All IDs',
                         **{'data-user-list': qr_and_app_list}),
             html.Button(id='user-with-missing-data-button', children='Missing data IDs',
-                        **{'data-user-list': get_qr_and_app_with_missing_data(user_list)})]),
+                        **{'data-user-list': missing_ids_list})]),
         html.Button(id='send-push-notification-button', children='Send notification'),
         html.Div(id='push-notification-output-state')
     ])

@@ -2,6 +2,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 
 from study import get_study_list_as_dict
+from study.display_study.study_table import get_user_list
 
 
 def get_current_studies_div():
@@ -21,20 +22,22 @@ def get_current_studies_div():
         dcc.Loading(html.Div(id='study-info-div'), type='circle'),
         html.Div(id='download-unused-sheets-link-div'),
         html.Div(id='study-data-div'),
-        html.Div(id='push-notification-div')
+        html.Div(id='push-notification-div'),
+        html.Div(id='remove-users-notification-div')
     ])
 
 
-def get_study_info_div(study_json, userlist):
+def get_study_info_div(study_json, study_df):
     """
     Returns information of specified study as a div
 
     :return: Study information div
     """
+
     duration = study_json["duration"]
     total_number_subjects = study_json["number-of-subjects"]
     description = study_json["description"]
-    n_enrolled_users = len(userlist)
+    n_enrolled_users = len(get_user_list(study_df)) if study_df is not None else 0
 
     active_sensors_div = html.P('Sensors: ' + ', '.join(study_json["sensor-list"])) if 'sensor-list' in study_json else ''
     ema_active_json = html.P('EMA modality: active') if 'survey' in study_json else ''

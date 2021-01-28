@@ -6,13 +6,24 @@ from app import studies_folder
 max_subjects_exp = 5
 number_of_activations = 4
 
-passive_monitoring = 'passive_monitoring'
-main = 'main'
-ema = 'ema'
-modalities = [ema, main]
+timestamp_format = "%Y-%m-%d %H:%M:%S"
 sep = ':'
 
+ema = 'ema'
+main = 'main'
+passive_monitoring = 'passive_monitoring'
+
+remove_status_code = 3
+
+modalities = [ema, main]
+suffix_per_modality_dict = {
+    ema: '_ema',
+    main: ''
+}
 sensors_per_modality_dict = {
+    ema: [
+        'ema'
+    ],
     main: [
         'accelerometer',
         'activity',
@@ -24,15 +35,20 @@ sensors_per_modality_dict = {
         'magnetic_sensor',
         'rotation_vector',
         'linear_acceleration'
-    ],
-    ema: [
-        'ema'
     ]
 }
 
-frequency_list = [50, 100, 150, 200]
+frequency_dict = {'50Hz': 50,
+                  '100Hz': 100,
+                  '150Hz': 150,
+                  '200Hz': 200}
 
-modality_list = [{'label': 'Ecological momentary assessment', 'value': ema}, {'label': 'Passive monitoring', 'value': passive_monitoring}]
+labeling_dict = {'No labeling': 0,
+                  'Active labeling': 1,
+                  'Manual active labeling': 2}
+
+modality_dict = {'Ecological momentary assessment': ema,
+                 'Passive monitoring': passive_monitoring}
 
 table_columns = ['subject_name',
                  'app',
@@ -62,8 +78,7 @@ table_columns = ['subject_name',
                  'linear_acceleration n_batches',
                  'linear_acceleration last_time_received',
                  'ema n_batches',
-                 'ema last_time_received'
-                 ]
+                 'ema last_time_received']
 
 
 def list_studies():

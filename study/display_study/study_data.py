@@ -6,7 +6,6 @@ import numpy as np
 from app import storage_folder, csv_prefix
 from exceptions.Exceptions import EmptyStudyTableException
 from study import ema, table_columns, sensors_per_modality_dict, main, sep
-from study.display_study.AppUser import AppUser
 
 
 def read_study_df(study_json):
@@ -17,7 +16,7 @@ def read_study_df(study_json):
     study_df = study_df.rename(columns={"subject_name": "id"})
     study_df = drop_unused_data(study_json, study_df)
     study_df = study_df.replace(to_replace=[np.nan, 'none', 0], value='')
-    study_df = study_df.sort_values(by=['id', 'app'])
+    study_df = study_df.sort_values(by=['app', 'id']).reset_index(drop=True)
     if len(study_df.index) == 0:
         raise EmptyStudyTableException
 
@@ -45,24 +44,12 @@ def drop_unused_data(study_json, study_df):
     return study_df
 
 
-def get_app_users(study_json, study_df):
-    """
-    return list of app user objects that store necessary data for each user that comes from the different qr code activations
-
-    :param study_df: study data frame
-    :return: list with app user objects
-    """
-    user_list = []
-    enrolled_users = np.sort(np.unique(['_'.join(str(scanned).split('_')[:-1]) for scanned in study_df['id']]))
-
-    for user in enrolled_users:
-        user_list.append(AppUser(user_name=user, data=study_df[study_df['id'].str.match(user)], study_id=study_json["name"], duration=study_json["duration"]))
-    return user_list
+def get_user_list(study_df):
+    return np.sort(np.unique(['_'.join(str(registration_id).split('_')[:-1]) for registration_id in study_df['id']]))
 
 
-def get_qr_and_app_with_missing_data(user_list):
-    missing_data_ids = []
-    for user in user_list:
-        for app, missing_data_qr_code_per_app in user.ids_with_missing_data.items():
-            missing_data_ids.extend([missing_data_qr_code + sep + app for missing_data_qr_code in missing_data_qr_code_per_app])
-    return missing_data_ids
+def get_ids_and_app_list(users_per_app_dict):
+    ids = []
+    for app, ids_per_app in users_per_app_dict.items():
+        ids.extend([id_per_app + sep + app for id_per_app in ids_per_app])
+    return sorted(ids)
