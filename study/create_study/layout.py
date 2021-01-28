@@ -5,7 +5,6 @@ from study import sensors_per_modality_dict, main, frequency_dict, labeling_dict
 
 
 def get_create_study_div():
-    # TODO Upload images
     """
     Returns the create study div
 

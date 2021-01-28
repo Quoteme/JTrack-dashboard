@@ -3,6 +3,7 @@ import dash_html_components as html
 
 from security.layout import get_log_in_div
 #TODO remove unnecessary divs
+#TODO cleanup
 hhu_icon = 'assets/icons/hhu-icon.png'
 fz_icon = 'assets/icons/fz-icon.png'
 bb_icon = 'assets/icons/bb-icon.png'
