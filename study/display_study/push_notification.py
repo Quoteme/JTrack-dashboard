@@ -8,7 +8,7 @@ import dash_core_components as dcc
 
 from app import users_folder
 from study import sep, main, ema, modalities
-from study.display_study.study_data import get_ids_and_app_with_missing_data, get_ids_and_app_of_active_users
+from study.display_study.study_data import get_ids_and_app_list
 
 firebase_url = 'https://fcm.googleapis.com/fcm/send'
 firebase_auth = {
@@ -19,8 +19,8 @@ firebase_content_type = 'application/json'
 
 
 def get_push_notification_div(missing_data_dict, active_users_dict):
-    qr_and_app_list = get_ids_and_app_of_active_users(active_users_dict)
-    missing_ids_list = get_ids_and_app_with_missing_data(missing_data_dict)
+    qr_and_app_list = get_ids_and_app_list(active_users_dict)
+    missing_ids_list = get_ids_and_app_list(missing_data_dict)
 
     return html.Div(id='push-notification', children=[
         html.H3('Push notifications'),

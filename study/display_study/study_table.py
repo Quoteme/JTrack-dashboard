@@ -13,14 +13,14 @@ def get_study_data_table(study_json, study_df):
 	"""
 
 	header = get_study_table_header(study_df)
-	body, missing_data_dict, active_users_dict = get_study_table_body(study_json, study_df)
+	body, missing_data_dict, active_users_dict, not_left_users = get_study_table_body(study_json, study_df)
 	study_table = html.Table(id='study-table', children=[html.Thead(header), html.Tbody(body)])
 
 	return html.Div(id='study-table-and-legend-div', children=[
 		html.Div(id='study-table-div', children=study_table),
 		html.Div(id='legend-div', className='row', children=[
 			html.Div(id='color-legend-div', children=get_color_legend()),
-			html.Div(id='status-code-legend-div', children=get_status_code_legend())])]), missing_data_dict, active_users_dict
+			html.Div(id='status-code-legend-div', children=get_status_code_legend())])]), missing_data_dict, active_users_dict, not_left_users
 
 
 def get_color_legend():
@@ -75,6 +75,7 @@ def get_study_table_body(study_json, study_df):
 	table_rows = []
 	missing_data = {modality: set() for modality in modalities}
 	active_users = {modality: set() for modality in modalities}
+	not_left_users = {modality: set() for modality in modalities}
 
 	for user in get_user_list(study_df):
 		user_data = study_df[study_df['id'].str.match(user)].reset_index(drop=True)
@@ -83,12 +84,12 @@ def get_study_table_body(study_json, study_df):
 			row_dict = {column: html.Td(value) for column, value in row.items()}
 
 			check_for_missing_data(row_dict, missing_data)
-			give_color(row_dict, missing_data, active_users, study_json, user_data)
+			give_color(row_dict, missing_data, active_users, not_left_users, study_json, user_data)
 
 			row = put_user_name_in_front(row_dict, index, user, study_json)
 			table_rows.append(html.Tr(row))
 
-	return table_rows, missing_data, active_users
+	return table_rows, missing_data, active_users, not_left_users
 
 
 def check_for_missing_data(row_dict, missing_data):
@@ -112,7 +113,7 @@ def check_for_missing_data(row_dict, missing_data):
 				missing_data[row_dict["app"].children].add(row_dict['id'].children)
 
 
-def give_color(row_dict, missing_data, active_users, study_json, user_data):
+def give_color(row_dict, missing_data, active_users, not_left_users, study_json, user_data):
 	"""
 	Highlight cells if conditions are true:
 	red: delayed sensor data (>= 2 days)
@@ -132,6 +133,7 @@ def give_color(row_dict, missing_data, active_users, study_json, user_data):
 
 	if not time_left:
 		active_users[row_dict["app"].children].add(row_dict['id'].children)
+		not_left_users[row_dict["app"].children].add(row_dict['id'].children)
 
 		if check_multi_registration(row_dict, user_data):
 			id_color = 'orange'

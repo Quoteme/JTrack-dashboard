@@ -48,15 +48,8 @@ def get_user_list(study_df):
     return np.sort(np.unique(['_'.join(str(registration_id).split('_')[:-1]) for registration_id in study_df['id']]))
 
 
-def get_ids_and_app_with_missing_data(missing_data):
-    missing_data_ids = []
-    for app, missing_data_qr_code_per_app in missing_data.items():
-        missing_data_ids.extend([missing_data_qr_codes + sep + app for missing_data_qr_codes in missing_data_qr_code_per_app])
-    return sorted(missing_data_ids)
-
-
-def get_ids_and_app_of_active_users(active_users):
-    active_ids = []
-    for app, active_qr_code_per_app in active_users.items():
-        active_ids.extend([active_users_qr_codes + sep + app for active_users_qr_codes in active_qr_code_per_app])
-    return sorted(active_ids)
+def get_ids_and_app_list(users_per_app_dict):
+    ids = []
+    for app, ids_per_app in users_per_app_dict.items():
+        ids.extend([id_per_app + sep + app for id_per_app in ids_per_app])
+    return sorted(ids)

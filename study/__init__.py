@@ -7,14 +7,23 @@ max_subjects_exp = 5
 number_of_activations = 4
 
 timestamp_format = "%Y-%m-%d %H:%M:%S"
-
-passive_monitoring = 'passive_monitoring'
-main = 'main'
-ema = 'ema'
-modalities = [ema, main]
 sep = ':'
 
+ema = 'ema'
+main = 'main'
+passive_monitoring = 'passive_monitoring'
+
+remove_status_code = 3
+
+modalities = [ema, main]
+suffix_per_modality_dict = {
+    ema: '_ema',
+    main: ''
+}
 sensors_per_modality_dict = {
+    ema: [
+        'ema'
+    ],
     main: [
         'accelerometer',
         'activity',
@@ -26,9 +35,6 @@ sensors_per_modality_dict = {
         'magnetic_sensor',
         'rotation_vector',
         'linear_acceleration'
-    ],
-    ema: [
-        'ema'
     ]
 }
 

@@ -1,4 +1,3 @@
-import json
 import os
 
 import dash
@@ -9,11 +8,12 @@ from app import dash_study_folder, zip_file, sheets_folder, app, user
 from exceptions.Exceptions import EmptyStudyTableException
 from dash.dependencies import Output, Input, State
 
-from study import open_study_json, save_study_json
+from study import open_study_json, save_study_json, timestamp_format, remove_status_code
 from study.create_subjects.create_subjects import create_subjects
 from study.display_study.download_sheets import zip_unused_sheets, get_download_unused_sheets_button
 from study.display_study.layout import get_study_info_div
 from study.display_study.push_notification import send_push_notification, get_push_notification_div
+from study.display_study.remove_user import get_remove_users_div, remove_user
 from study.display_study.study_data import read_study_df
 from study.display_study.study_table import get_study_data_table
 
@@ -21,7 +21,8 @@ from study.display_study.study_table import get_study_data_table
 @app.callback([Output('study-info-div', 'children'),
                Output('study-data-div', 'children'),
                Output('download-unused-sheets-link-div', 'children'),
-               Output('push-notification-div', 'children')],
+               Output('push-notification-div', 'children'),
+               Output('remove-users-notification-div', 'children')],
               [Input('current-study-list', 'value')])
 def display_study_info_callback(study_id):
     """
@@ -44,14 +45,15 @@ def display_study_info_callback(study_id):
         study_download_link = get_download_unused_sheets_button(study_json)
 
         if study_df is not None:
-            study_table, missing_data_dict, active_users_dict = get_study_data_table(study_json, study_df)
+            study_table, missing_data_dict, active_users_dict, not_left_users_dict = get_study_data_table(study_json, study_df)
             push_notification_div = get_push_notification_div(missing_data_dict, active_users_dict)
+            remove_users_div = get_remove_users_div(not_left_users_dict)
         else:
             study_table = html.Div("No data available.")
             push_notification_div = ''
-         #remove_users_div = get_remove_users_div(study_json, user_list)
+            remove_users_div = ''
 
-        return study_info_div, study_table, study_download_link, push_notification_div
+        return study_info_div, study_table, study_download_link, push_notification_div, remove_users_div
     else:
         raise PreventUpdate
 
@@ -84,6 +86,32 @@ def download_sheets(study_id):
     return send_file(os.path.join(dash_study_folder, study_id, zip_file),
                      mimetype='application/zip',
                      as_attachment=True)
+
+
+@app.callback([Output('total-subjects', 'children'),
+               Output('create-additional-subjects-input', 'value')],
+              [Input('create-additional-subjects-button', 'n_clicks')],
+              [State('current-study-list', 'value'),
+               State('create-additional-subjects-input', 'value')])
+def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
+    """
+    Creates additional subjects on button click. QR-Codes and study sheets are added to the existing directories
+
+    :param n_clicks: not used
+    :param study_id: study receiving new subjects
+    :param number_of_subjects: number of new subjects
+    :return: refreshes current number of subjects state and clears input field
+    """
+    if n_clicks and number_of_subjects and (user.role == 'master' or user.role == 'invest'):
+        study_json = open_study_json(study_id)
+        study_json["number-of-subjects"] = int(study_json["number-of-subjects"]) + number_of_subjects
+        save_study_json(study_id, study_json)
+
+        create_subjects(study_json["name"], study_json["number-of-subjects"])
+
+        return "Total number of subject: " + str(study_json["number-of-subjects"]), ''
+    else:
+        raise PreventUpdate
 
 
 @app.callback([Output('push-notification-title', 'value'),
@@ -128,27 +156,23 @@ def push_notifications(autofillbtn1, autofillbtn2, send_button, title, text, rec
     raise PreventUpdate
 
 
-@app.callback([Output('total-subjects', 'children'),
-               Output('create-additional-subjects-input', 'value')],
-              [Input('create-additional-subjects-button', 'n_clicks')],
+@app.callback(Output('remove-user-output-state', 'children'),
+              [Input('remove-user-confirm-dialog', 'submit_n_clicks')],
               [State('current-study-list', 'value'),
-               State('create-additional-subjects-input', 'value')])
-def create_additional_subjects_callback(n_clicks, study_id, number_of_subjects):
-    """
-    Creates additional subjects on button click. QR-Codes and study sheets are added to the existing directories
-
-    :param n_clicks: not used
-    :param study_id: study receiving new subjects
-    :param number_of_subjects: number of new subjects
-    :return: refreshes current number of subjects state and clears input field
-    """
-    if n_clicks and number_of_subjects and (user.role == 'master' or user.role == 'invest'):
-        study_json = open_study_json(study_id)
-        study_json["number-of-subjects"] = int(study_json["number-of-subjects"]) + number_of_subjects
-        save_study_json(study_id, study_json)
-
-        create_subjects(study_json["name"], study_json["number-of-subjects"])
-
-        return "Total number of subject: " + str(study_json["number-of-subjects"]), ''
+               State('remove-user-list', 'value')])
+def remove_user_callback(confirm_click, study_id, user_to_remove):
+    if confirm_click:
+        remove_user(study_id, user_to_remove)
+        return html.Div(user_to_remove + ' has been removed.')
     else:
         raise PreventUpdate
+
+
+@app.callback([Output('remove-user-confirm-dialog', 'message'),
+               Output('remove-user-confirm-dialog', 'displayed')],
+              [Input('remove-user-button', 'n_clicks')],
+              [State('remove-user-list', 'value')])
+def display_confirm_remove_user_callback(remove_btn, user_to_remove):
+    if remove_btn and user_to_remove and (user.role == 'master' or user.role == 'invest'):
+        return "Remove user: " + user_to_remove + " from study?", True
+    return "", False

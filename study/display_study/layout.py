@@ -22,7 +22,8 @@ def get_current_studies_div():
         dcc.Loading(html.Div(id='study-info-div'), type='circle'),
         html.Div(id='download-unused-sheets-link-div'),
         html.Div(id='study-data-div'),
-        html.Div(id='push-notification-div')
+        html.Div(id='push-notification-div'),
+        html.Div(id='remove-users-notification-div')
     ])
 
 
