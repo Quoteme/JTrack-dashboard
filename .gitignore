@@ -15,3 +15,7 @@ Subject-Sheets/
 
 # archives
 *.zip
+
+#passwdfile
+passwd.csv
+
