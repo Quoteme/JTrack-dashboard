@@ -1,12 +1,13 @@
 import json
+import time
 
 from app import users_folder
 from study import timestamp_format, sep, suffix_per_modality_dict, remove_status_code
 from study.display_study.study_data import get_ids_and_app_list
 import dash_html_components as html
 import dash_core_components as dcc
-from datetime import datetime
 import os
+from datetime import datetime
 
 
 def get_remove_users_div(not_left_users_dict):
@@ -29,14 +30,15 @@ def remove_user(study_id, user_to_remove):
     user, app = str(user_to_remove).split(sep)
     user_json_path = os.path.join(users_folder, study_id + '_' + user + '.json')
 
-    time_left_string = datetime.now().strftime(timestamp_format)
+    time_left = int(round(time.time() * 1000))
+
     time_left_key = 'time_left' + suffix_per_modality_dict[app]
     status_key = 'status' + suffix_per_modality_dict[app]
 
     with open(user_json_path) as f:
         user_data = json.load(f)
 
-    user_data[time_left_key] = time_left_string
+    user_data[time_left_key] = time_left
     user_data[status_key] = remove_status_code
 
     with open(user_json_path, 'w') as f:
