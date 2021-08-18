@@ -12,7 +12,7 @@ from study.display_study.study_data import get_ids_and_app_list
 
 firebase_url = 'https://fcm.googleapis.com/fcm/send'
 firebase_auth = {
-    main: 'key=AAAA_jwmwEU:APA91bFYuWaWejK255G8cGIlCTSumBSkUjrK_LzTNS-38D7dCOBRt4REFczSnSmsx-9tZKdJzjmR8sSU2bVBMWKADhK3TXRy6WBtOMVG9Jm77-PhtDEBowb5TwV3PxWa0PEjs4YU9bP6',
+    main: 'key=AAAAGJjFsA8:APA91bEdNt46erqI5TgplhsqqqKeyjIBQcG5Pb49h7QMW0V9XqPoHwbW4Oxo7lI9wZkkY7gSStO0M1QaCn7-Ijqj1EmYfrCwNkcPR-qv8MPKoTBWhuIvd0JGFMukUz2EstAkR-90EzVV',
     ema: 'key=AAAAqONfb68:APA91bGUjq7VcWizetjZ9BGU3WWwtRHhVHVVMtn1F_5XKFm1yZSWiYw4nC0kl5guyUbwHLEQ7V1rpLqMDi_xXjd5q3UUKBCjnHTJIymAM0UBhfwS4g7mdL9aAtqSb8SyckaJtA5XT1my'
 }
 firebase_content_type = 'application/json'
