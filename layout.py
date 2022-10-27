@@ -22,7 +22,7 @@ def get_main_page():
 def get_header():
     return html.Div(id='header-div', className='row', children=[
         html.Div(id='title-div', children=[
-            html.H1(id='title', children='JuTrack Dashboard'),
+            html.H1(id='title', children='Remsys Dashboard'),
             html.H6(id='subtitle', children=[
                 html.Span('by '),
                 html.A('Biomarker Development Group, INM-7',
@@ -53,10 +53,10 @@ def get_footer():
     return html.Div(id='footer-div', children=[
         html.Div(id='info-text', children=[
             html.P(children=
-                   "You are visiting the JuTrack website which provides access to the dashboard for managing research studies "
-                   "running on the JuTrack mobile platform."),
+                   "You are visiting the Remsys website which provides access to the dashboard for managing research studies "
+                   "running on the Remsys mobile platform."),
             html.P(children=
-                   "JuTrack is developed by the Group Biomarker Development of the Institute "
+                   "Remsys is based on JuTrack, which is developed by the Group Biomarker Development of the Institute "
                    "for Neuroscience and Medicine 7 (Brain and Behaviour) at the Forschungszentrum Jülich. It is a multifunctional "
                    "Android-based digital biomarker platform for collection of sensor, mobile usage and ecological momentary assessment "
                    "information from mobile and wearable devices."),
