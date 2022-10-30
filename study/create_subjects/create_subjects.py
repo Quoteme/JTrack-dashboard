@@ -38,7 +38,8 @@ def create_qr_codes(study_id, subject_name):
 			box_size=10,
 			border=4,
 		)
-		data = "https://jutrack.inm7.de?username=%s&studyid=%s" % (user_activation_number, study_id)
+		# os.environ['SERVER_URL']=http://remsys.ai is set in the Dockerfile
+		data = f"{os.environ['SERVER_URL']}?username={user_activation_number}&studyid={study_id}"
 		# Add data
 		qr.add_data(data)
 		qr.make(fit=True)
